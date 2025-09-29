@@ -10,7 +10,7 @@ import { FavoritesDrawer } from '@/components/FavoritesDrawer';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { FeelingMap, Song, Vibe } from '@/types';
 import songsData from '@/data/songs.json';
-import logo from '@/assets/logo.svg';
+import logo from '@/assets/logo.png';
 
 const Index = () => {
   const { t } = useTranslation();
@@ -134,7 +134,7 @@ const Index = () => {
               </div>
               <div className="flex-1 text-center">
                 <div className="flex items-center justify-center gap-4 mb-4">
-                  <img src={logo} alt="Stage Heart Logo" className="w-16 h-16 md:w-20 md:h-20" />
+                  <img src={logo} alt="Stage Heart Logo" className="w-48 h-48 md:w-60 md:h-60" />
                   <h1 className="text-6xl md:text-7xl text-foreground">
                     Stage Heart
                   </h1>
