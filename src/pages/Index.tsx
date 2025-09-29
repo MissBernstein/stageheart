@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { SongForm } from '@/components/SongForm';
+import { AutocompleteSearch } from '@/components/AutocompleteSearch';
+import { SongLibrary } from '@/components/SongLibrary';
 import { FeelingsCard } from '@/components/FeelingsCard';
 import { VibePicker } from '@/components/VibePicker';
 import { FavoritesDrawer } from '@/components/FavoritesDrawer';
@@ -9,6 +10,7 @@ import songsData from '@/data/songs.json';
 const Index = () => {
   const [currentMap, setCurrentMap] = useState<FeelingMap | null>(null);
   const [showVibePicker, setShowVibePicker] = useState(false);
+  const [showLibrary, setShowLibrary] = useState(false);
   const [searchQuery, setSearchQuery] = useState({ title: '', artist: '' });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -75,14 +77,30 @@ const Index = () => {
     setShowVibePicker(false);
   };
 
+  const handleSelectSong = (song: Song) => {
+    setCurrentMap({
+      ...song,
+      isVibeBasedMap: false
+    });
+    setShowVibePicker(false);
+    setShowLibrary(false);
+  };
+
   const handleSelectFavorite = (feelingMap: FeelingMap) => {
     setCurrentMap(feelingMap);
     setShowVibePicker(false);
+    setShowLibrary(false);
+  };
+
+  const handleRandomSong = () => {
+    const randomSong = songs[Math.floor(Math.random() * songs.length)];
+    handleSelectSong(randomSong);
   };
 
   const handleReset = () => {
     setCurrentMap(null);
     setShowVibePicker(false);
+    setShowLibrary(false);
     setSearchQuery({ title: '', artist: '' });
   };
 
@@ -102,18 +120,40 @@ const Index = () => {
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
               Stage Heart
             </h1>
-            <p className="text-xl text-foreground/70 max-w-2xl mx-auto">
+            <p className="text-xl text-foreground/70 max-w-2xl mx-auto mb-6">
               Feel the song before you sing it. Get emotional insights and performance tips for any song.
             </p>
+            
+            {/* Navigation buttons */}
+            {!currentMap && !showVibePicker && (
+              <div className="flex flex-wrap justify-center gap-3">
+                <button
+                  onClick={() => setShowLibrary(true)}
+                  className="px-6 py-2 bg-accent hover:bg-accent/80 text-accent-foreground rounded-full transition-colors text-sm font-medium"
+                >
+                  Browse Library ({songs.length} songs)
+                </button>
+                <button
+                  onClick={handleRandomSong}
+                  className="px-6 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-full transition-colors text-sm font-medium"
+                >
+                  🎲 Surprise Me
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Search Form */}
-          {!currentMap && !showVibePicker && (
-            <SongForm onSearch={searchSong} isLoading={isLoading} />
+          {!currentMap && !showVibePicker && !showLibrary && (
+            <AutocompleteSearch 
+              onSearch={searchSong} 
+              onSelectSong={handleSelectSong}
+              isLoading={isLoading} 
+            />
           )}
 
           {/* Empty state */}
-          {!currentMap && !showVibePicker && !isLoading && (
+          {!currentMap && !showVibePicker && !showLibrary && !isLoading && (
             <div className="text-center py-8">
               <p className="text-foreground/60 text-lg">
                 Enter a song and I'll map its feelings.
@@ -127,6 +167,14 @@ const Index = () => {
               onVibeSelect={handleVibeSelect}
               songTitle={searchQuery.title}
               artist={searchQuery.artist}
+            />
+          )}
+
+          {/* Song Library */}
+          {showLibrary && (
+            <SongLibrary 
+              onSelectSong={handleSelectSong}
+              onClose={() => setShowLibrary(false)}
             />
           )}
 
