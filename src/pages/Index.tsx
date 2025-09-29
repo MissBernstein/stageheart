@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { AutocompleteSearch } from '@/components/AutocompleteSearch';
 import { SongLibrary } from '@/components/SongLibrary';
+import { FeelingJourney } from '@/components/FeelingJourney';
+import { PerformancePrepTools } from '@/components/PerformancePrepTools';
 import { FeelingsCard } from '@/components/FeelingsCard';
 import { VibePicker } from '@/components/VibePicker';
 import { FavoritesDrawer } from '@/components/FavoritesDrawer';
@@ -11,6 +13,8 @@ const Index = () => {
   const [currentMap, setCurrentMap] = useState<FeelingMap | null>(null);
   const [showVibePicker, setShowVibePicker] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
+  const [showJourney, setShowJourney] = useState(false);
+  const [showPrepTools, setShowPrepTools] = useState(false);
   const [searchQuery, setSearchQuery] = useState({ title: '', artist: '' });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -84,12 +88,16 @@ const Index = () => {
     });
     setShowVibePicker(false);
     setShowLibrary(false);
+    setShowJourney(false);
+    setShowPrepTools(false);
   };
 
   const handleSelectFavorite = (feelingMap: FeelingMap) => {
     setCurrentMap(feelingMap);
     setShowVibePicker(false);
     setShowLibrary(false);
+    setShowJourney(false);
+    setShowPrepTools(false);
   };
 
   const handleRandomSong = () => {
@@ -101,6 +109,8 @@ const Index = () => {
     setCurrentMap(null);
     setShowVibePicker(false);
     setShowLibrary(false);
+    setShowJourney(false);
+    setShowPrepTools(false);
     setSearchQuery({ title: '', artist: '' });
   };
 
@@ -125,17 +135,23 @@ const Index = () => {
             </p>
             
             {/* Navigation buttons */}
-            {!currentMap && !showVibePicker && (
+            {!currentMap && !showVibePicker && !showLibrary && !showJourney && !showPrepTools && (
               <div className="flex flex-wrap justify-center gap-3">
                 <button
                   onClick={() => setShowLibrary(true)}
                   className="px-6 py-2 bg-accent hover:bg-accent/80 text-accent-foreground rounded-full transition-colors text-sm font-medium"
                 >
-                  Browse Library ({songs.length} songs)
+                  📚 Browse Library ({songs.length} songs)
+                </button>
+                <button
+                  onClick={() => setShowJourney(true)}
+                  className="px-6 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-full transition-colors text-sm font-medium"
+                >
+                  🧭 Feeling Journey
                 </button>
                 <button
                   onClick={handleRandomSong}
-                  className="px-6 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-full transition-colors text-sm font-medium"
+                  className="px-6 py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-full transition-colors text-sm font-medium"
                 >
                   🎲 Surprise Me
                 </button>
@@ -144,7 +160,7 @@ const Index = () => {
           </div>
 
           {/* Search Form */}
-          {!currentMap && !showVibePicker && !showLibrary && (
+          {!currentMap && !showVibePicker && !showLibrary && !showJourney && !showPrepTools && (
             <AutocompleteSearch 
               onSearch={searchSong} 
               onSelectSong={handleSelectSong}
@@ -153,7 +169,7 @@ const Index = () => {
           )}
 
           {/* Empty state */}
-          {!currentMap && !showVibePicker && !showLibrary && !isLoading && (
+          {!currentMap && !showVibePicker && !showLibrary && !showJourney && !showPrepTools && !isLoading && (
             <div className="text-center py-8">
               <p className="text-foreground/60 text-lg">
                 Enter a song and I'll map its feelings.
@@ -170,6 +186,15 @@ const Index = () => {
             />
           )}
 
+          {/* Feeling Journey */}
+          {showJourney && (
+            <FeelingJourney 
+              onSelectSong={handleSelectSong}
+              onClose={() => setShowJourney(false)}
+              songs={songs}
+            />
+          )}
+
           {/* Song Library */}
           {showLibrary && (
             <SongLibrary 
@@ -178,9 +203,30 @@ const Index = () => {
             />
           )}
 
+          {/* Performance Prep Tools */}
+          {showPrepTools && (
+            <PerformancePrepTools 
+              currentSong={currentMap ? songs.find(s => s.id === currentMap.id) : undefined}
+              onClose={() => setShowPrepTools(false)}
+              songs={songs}
+            />
+          )}
+
           {/* Feelings Card */}
           {currentMap && (
-            <FeelingsCard feelingMap={currentMap} />
+            <div className="space-y-4">
+              <FeelingsCard feelingMap={currentMap} />
+              
+              {/* Performance tools button */}
+              <div className="text-center">
+                <button
+                  onClick={() => setShowPrepTools(true)}
+                  className="px-6 py-2 bg-accent hover:bg-accent/80 text-accent-foreground rounded-full transition-colors text-sm font-medium"
+                >
+                  🏋️ Performance Prep Tools
+                </button>
+              </div>
+            </div>
           )}
 
           {/* Reset button */}
