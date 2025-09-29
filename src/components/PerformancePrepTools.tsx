@@ -238,7 +238,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                     <Dumbbell className="w-5 h-5 text-primary" />
                     AI Warm-up Generator
                   </h3>
-                  <div className="space-y-6">(
+                  <div className="space-y-6">
                     {!warmupData ? (
                       <div className="text-center py-8">
                         <Button
@@ -406,7 +406,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                     <Plus className="w-5 h-5 text-primary" />
                     Setlist Builder
                   </h3>
-                  <div className="space-y-6">(
+                  <div className="space-y-6">
                     {!setlistData ? (
                       <div className="text-center py-8">
                         <Button
