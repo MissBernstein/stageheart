@@ -90,10 +90,10 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
           user_id: user.id,
           song_title: currentSong.title,
           song_artist: currentSong.artist,
-          physical_warmups: warmupData.physicalWarmups || [],
-          vocal_warmups: warmupData.vocalWarmups || [],
-          emotional_prep: warmupData.emotionalPrep || [],
-          duration: warmupData.duration || 15
+            physical_warmups: warmupData.physicalWarmups || [],
+            vocal_warmups: warmupData.vocalWarmups || [],
+            emotional_prep: warmupData.emotionalPrep || [],
+            duration: Number(warmupData.duration) || 15
         });
 
       if (error) throw error;
