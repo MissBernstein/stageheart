@@ -1,4 +1,5 @@
 import { Copy, Star, CheckCircle2, Lightbulb } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { FeelingMap } from '@/types';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -10,6 +11,7 @@ interface FeelingsCardProps {
 }
 
 export const FeelingsCard = ({ feelingMap }: FeelingsCardProps) => {
+  const { t } = useTranslation();
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
   const { toast } = useToast();
   const [justCopied, setJustCopied] = useState(false);
@@ -97,7 +99,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-card-foreground mb-3 flex items-center gap-2">
               <div className="w-2 h-2 bg-accent rounded-full"></div>
-              Theme
+              {t('feelingMap.theme')}
             </h3>
             <p className="text-card-foreground/70 font-medium">
               {feelingMap.theme}
@@ -109,7 +111,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
         <div className="mb-8">
           <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
             <div className="w-2 h-2 bg-primary rounded-full"></div>
-            Core Feeling Arc
+            {t('feelingMap.coreFeelgs')}
           </h3>
           <div className="flex flex-wrap gap-3">
             {(feelingMap.core_feelings || feelingMap.emotions || []).map((feeling, index) => (
@@ -130,7 +132,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
         <div className="mb-8">
           <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
             <Lightbulb className="w-5 h-5 text-tip-icon" />
-            Emotional Access Ideas
+            {t('feelingMap.emotionalAccess')}
           </h3>
           <div className="space-y-3">
             {(feelingMap.access_ideas || feelingMap.tips || []).map((tip, index) => (
@@ -153,7 +155,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
               <div className="w-2 h-2 bg-accent rounded-full"></div>
-              Visual Cue
+              {t('feelingMap.visualCues')}
             </h3>
             <div className="p-4 bg-tip-bg/50 rounded-2xl text-center">
               <p className="text-tip-text text-lg font-medium">
@@ -173,12 +175,12 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
             {justCopied ? (
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-green-600" />
-                Copied!
+                {t('feelingMap.copied')}
               </div>
             ) : (
               <div className="flex items-center gap-2">
                 <Copy className="w-5 h-5" />
-                Copy Map
+                {t('feelingMap.copyMap')}
               </div>
             )}
           </Button>
@@ -195,12 +197,12 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
             {justSaved ? (
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5" />
-                Saved!
+                {t('feelingMap.saved')}
               </div>
             ) : (
               <div className="flex items-center gap-2">
                 <Star className={`w-5 h-5 ${isFavorite(feelingMap) ? 'fill-current' : ''}`} />
-                {isFavorite(feelingMap) ? 'Saved' : 'Save'}
+                {isFavorite(feelingMap) ? t('feelingMap.saved') : t('feelingMap.save')}
               </div>
             )}
           </Button>

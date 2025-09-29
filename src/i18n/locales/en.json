@@ -1,0 +1,110 @@
+{
+  "app": {
+    "title": "Song Feelings Map",
+    "subtitle": "Discover the emotional journey of music"
+  },
+  "search": {
+    "title": "Title",
+    "artist": "Artist", 
+    "searchSong": "Search for a song",
+    "searchPlaceholder": "Enter song title...",
+    "artistPlaceholder": "Enter artist name...",
+    "searching": "Searching...",
+    "search": "Search"
+  },
+  "library": {
+    "title": "Song Library",
+    "searchPlaceholder": "Search songs...",
+    "filterByTheme": "Filter by theme",
+    "allThemes": "All themes",
+    "viewToggle": "Toggle view",
+    "surpriseMe": "Surprise Me",
+    "noResults": "No songs found",
+    "tryDifferent": "Try a different search term or theme.",
+    "close": "Close"
+  },
+  "navigation": {
+    "browseLibrary": "Browse Library",
+    "surpriseMe": "Surprise Me", 
+    "feelingJourney": "Feeling Journey",
+    "startOver": "Start Over",
+    "favorites": "Favorites"
+  },
+  "feelingMap": {
+    "title": "Feeling Map",
+    "summary": "Summary",
+    "theme": "Theme", 
+    "coreFeelgs": "Core Feelings",
+    "emotionalAccess": "Emotional Access Ideas",
+    "visualCues": "Visual Cues",
+    "copyMap": "Copy Map",
+    "copied": "Copied!",
+    "save": "Save",
+    "saved": "Saved!",
+    "prepTools": "Performance Prep Tools"
+  },
+  "journey": {
+    "title": "Feeling Journey",
+    "subtitle": "Let's find the perfect song for your current state",
+    "mood": "How are you feeling right now?",
+    "energy": "What's your energy level?",
+    "context": "What's the context?",
+    "next": "Next",
+    "back": "Back",
+    "findSong": "Find My Song",
+    "finding": "Finding your perfect song...",
+    "tryAgain": "Try Again",
+    "selectSong": "Select This Song",
+    "recommendedSong": "Recommended Song",
+    "reason": "Why this song",
+    "emotionalJourney": "Emotional Journey",
+    "performanceTips": "Performance Tips",
+    "moods": {
+      "peaceful": "Peaceful & calm",
+      "joyful": "Joyful & upbeat", 
+      "melancholy": "Melancholy & reflective",
+      "energetic": "Energetic & excited",
+      "romantic": "Romantic & tender",
+      "spiritual": "Spiritual & reverent"
+    },
+    "energyLevels": {
+      "low": "Low & gentle",
+      "medium": "Medium & balanced",
+      "high": "High & vibrant"
+    },
+    "contexts": {
+      "practice": "Practice session",
+      "performance": "Performance/concert",
+      "personal": "Personal reflection",
+      "social": "Social gathering",
+      "worship": "Worship/spiritual"
+    }
+  },
+  "prep": {
+    "title": "Performance Prep Tools",
+    "warmupGenerator": "Warm-up Routine Generator",
+    "setlistBuilder": "Setlist Builder",
+    "generateWarmup": "Generate Warm-up Routine",
+    "generating": "Generating warm-up routine...",
+    "buildSetlist": "Build 5-Song Setlist",
+    "building": "Building your setlist...",
+    "physicalWarmup": "Physical Warm-up",
+    "vocalWarmup": "Vocal Warm-up", 
+    "mentalPrep": "Mental Preparation",
+    "setlistTitle": "Your 5-Song Setlist",
+    "overallArc": "Overall Emotional Arc",
+    "transitionTips": "Transition Tips",
+    "tryAgain": "Try Again"
+  },
+  "favorites": {
+    "title": "Saved Feeling Maps",
+    "empty": "No favorites yet",
+    "emptyDesc": "Save some feeling maps to see them here!",
+    "remove": "Remove from favorites"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Try again"
+  }
+}

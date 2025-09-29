@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AutocompleteSearch } from '@/components/AutocompleteSearch';
 import { SongLibrary } from '@/components/SongLibrary';
 import { FeelingJourney } from '@/components/FeelingJourney';
@@ -6,10 +7,13 @@ import { PerformancePrepTools } from '@/components/PerformancePrepTools';
 import { FeelingsCard } from '@/components/FeelingsCard';
 import { VibePicker } from '@/components/VibePicker';
 import { FavoritesDrawer } from '@/components/FavoritesDrawer';
+import { LanguageToggle } from '@/components/LanguageToggle';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { FeelingMap, Song, Vibe } from '@/types';
 import songsData from '@/data/songs.json';
 
 const Index = () => {
+  const { t } = useTranslation();
   const [currentMap, setCurrentMap] = useState<FeelingMap | null>(null);
   const [showVibePicker, setShowVibePicker] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
@@ -127,12 +131,21 @@ const Index = () => {
         <div className="space-y-8">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-              Stage Heart
-            </h1>
-            <p className="text-xl text-foreground/70 max-w-2xl mx-auto mb-6">
-              Feel the song before you sing it. Get emotional insights and performance tips for any song.
-            </p>
+            <div className="flex justify-between items-start mb-6">
+              <div className="flex-1" />
+              <div className="flex-1 text-center">
+                <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+                  {t('app.title')}
+                </h1>
+                <p className="text-xl text-foreground/70 max-w-2xl mx-auto">
+                  {t('app.subtitle')}
+                </p>
+              </div>
+              <div className="flex-1 flex justify-end gap-2">
+                <ThemeToggle />
+                <LanguageToggle />
+              </div>
+            </div>
             
             {/* Navigation buttons */}
             {!currentMap && !showVibePicker && !showLibrary && !showJourney && !showPrepTools && (
@@ -141,19 +154,19 @@ const Index = () => {
                   onClick={() => setShowLibrary(true)}
                   className="px-6 py-2 bg-accent hover:bg-accent/80 text-accent-foreground rounded-full transition-colors text-sm font-medium"
                 >
-                  📚 Browse Library ({songs.length} songs)
+                  📚 {t('navigation.browseLibrary')} ({songs.length} songs)
                 </button>
                 <button
                   onClick={() => setShowJourney(true)}
                   className="px-6 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-full transition-colors text-sm font-medium"
                 >
-                  🧭 Feeling Journey
+                  🧭 {t('navigation.feelingJourney')}
                 </button>
                 <button
                   onClick={handleRandomSong}
                   className="px-6 py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-full transition-colors text-sm font-medium"
                 >
-                  🎲 Surprise Me
+                  🎲 {t('navigation.surpriseMe')}
                 </button>
               </div>
             )}

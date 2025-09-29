@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,7 @@ interface AutocompleteSearchProps {
 }
 
 export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: AutocompleteSearchProps) => {
+  const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [artist, setArtist] = useState('');
   const [suggestions, setSuggestions] = useState<Song[]>([]);
@@ -108,10 +110,10 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
             </div>
             <div>
               <h2 className="text-2xl font-semibold text-card-foreground">
-                Song Feelings Map
+                {t('search.searchSong')}
               </h2>
               <p className="text-sm text-card-foreground/70">
-                feel the song before you sing it
+                {t('app.subtitle')}
               </p>
             </div>
           </div>
@@ -119,13 +121,13 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
           <div className="space-y-4 relative">
             <div className="relative">
               <label htmlFor="title" className="block text-sm font-medium text-card-foreground/80 mb-2">
-                Song Title
+                {t('search.title')}
               </label>
               <Input
                 ref={inputRef}
                 id="title"
                 type="text"
-                placeholder="Start typing a song title..."
+                placeholder={t('search.searchPlaceholder')}
                 value={title}
                 onChange={(e) => handleInputChange(e.target.value)}
                 onFocus={() => title && setShowSuggestions(true)}
@@ -172,12 +174,12 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
             
             <div>
               <label htmlFor="artist" className="block text-sm font-medium text-card-foreground/80 mb-2">
-                Artist <span className="text-card-foreground/50">(optional)</span>
+                {t('search.artist')} <span className="text-card-foreground/50">(optional)</span>
               </label>
               <Input
                 id="artist"
                 type="text"
-                placeholder="Enter artist name..."
+                placeholder={t('search.artistPlaceholder')}
                 value={artist}
                 onChange={(e) => setArtist(e.target.value)}
                 className="h-12 text-lg bg-input border-input-border focus:border-input-focus transition-colors"
@@ -193,12 +195,12 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
             {isLoading ? (
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                Mapping feelings...
+                {t('search.searching')}
               </div>
             ) : (
               <div className="flex items-center gap-2">
                 <Search className="w-5 h-5" />
-                Generate Feeling Map
+                {t('search.search')}
               </div>
             )}
           </Button>

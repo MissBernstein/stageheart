@@ -1,0 +1,110 @@
+{
+  "app": {
+    "title": "Gefühls-Landkarte für Lieder",
+    "subtitle": "Entdecke die emotionale Reise der Musik"
+  },
+  "search": {
+    "title": "Titel",
+    "artist": "Künstler",
+    "searchSong": "Nach einem Lied suchen", 
+    "searchPlaceholder": "Liedtitel eingeben...",
+    "artistPlaceholder": "Künstlername eingeben...",
+    "searching": "Suche...",
+    "search": "Suchen"
+  },
+  "library": {
+    "title": "Lied-Bibliothek",
+    "searchPlaceholder": "Lieder durchsuchen...",
+    "filterByTheme": "Nach Thema filtern",
+    "allThemes": "Alle Themen",
+    "viewToggle": "Ansicht wechseln",
+    "surpriseMe": "Überrasch mich",
+    "noResults": "Keine Lieder gefunden",
+    "tryDifferent": "Versuche einen anderen Suchbegriff oder ein anderes Thema.",
+    "close": "Schließen"
+  },
+  "navigation": {
+    "browseLibrary": "Bibliothek durchstöbern",
+    "surpriseMe": "Überrasch mich",
+    "feelingJourney": "Gefühls-Reise", 
+    "startOver": "Von vorne beginnen",
+    "favorites": "Favoriten"
+  },
+  "feelingMap": {
+    "title": "Gefühls-Landkarte",
+    "summary": "Zusammenfassung",
+    "theme": "Thema",
+    "coreFeelgs": "Grundgefühle", 
+    "emotionalAccess": "Emotionaler Zugang",
+    "visualCues": "Visuelle Hinweise",
+    "copyMap": "Karte kopieren",
+    "copied": "Kopiert!",
+    "save": "Speichern",
+    "saved": "Gespeichert!",
+    "prepTools": "Aufführungs-Vorbereitung"
+  },
+  "journey": {
+    "title": "Gefühls-Reise",
+    "subtitle": "Lass uns das perfekte Lied für deinen aktuellen Zustand finden",
+    "mood": "Wie fühlst du dich gerade?",
+    "energy": "Wie ist dein Energielevel?",
+    "context": "Was ist der Kontext?",
+    "next": "Weiter",
+    "back": "Zurück",
+    "findSong": "Mein Lied finden",
+    "finding": "Finde dein perfektes Lied...",
+    "tryAgain": "Nochmal versuchen",
+    "selectSong": "Dieses Lied auswählen",
+    "recommendedSong": "Empfohlenes Lied",
+    "reason": "Warum dieses Lied",
+    "emotionalJourney": "Emotionale Reise",
+    "performanceTips": "Aufführungs-Tipps",
+    "moods": {
+      "peaceful": "Friedlich & ruhig",
+      "joyful": "Fröhlich & beschwingt",
+      "melancholy": "Melancholisch & nachdenklich", 
+      "energetic": "Energiegeladen & aufgeregt",
+      "romantic": "Romantisch & zärtlich",
+      "spiritual": "Spirituell & ehrfürchtig"
+    },
+    "energyLevels": {
+      "low": "Niedrig & sanft",
+      "medium": "Mittel & ausgewogen",
+      "high": "Hoch & lebhaft"
+    },
+    "contexts": {
+      "practice": "Übungsstunde",
+      "performance": "Aufführung/Konzert",
+      "personal": "Persönliche Reflexion",
+      "social": "Geselliges Beisammensein",
+      "worship": "Gottesdienst/Spirituelles"
+    }
+  },
+  "prep": {
+    "title": "Aufführungs-Vorbereitung",
+    "warmupGenerator": "Aufwärm-Routine Generator",
+    "setlistBuilder": "Setlist-Ersteller",
+    "generateWarmup": "Aufwärm-Routine erstellen",
+    "generating": "Erstelle Aufwärm-Routine...",
+    "buildSetlist": "5-Lieder Setlist erstellen",
+    "building": "Erstelle deine Setlist...",
+    "physicalWarmup": "Körperliches Aufwärmen",
+    "vocalWarmup": "Stimmliches Aufwärmen",
+    "mentalPrep": "Mentale Vorbereitung",
+    "setlistTitle": "Deine 5-Lieder Setlist",
+    "overallArc": "Gesamter emotionaler Bogen",
+    "transitionTips": "Übergangs-Tipps",
+    "tryAgain": "Nochmal versuchen"
+  },
+  "favorites": {
+    "title": "Gespeicherte Gefühls-Landkarten",
+    "empty": "Noch keine Favoriten",
+    "emptyDesc": "Speichere einige Gefühls-Landkarten, um sie hier zu sehen!",
+    "remove": "Aus Favoriten entfernen"
+  },
+  "common": {
+    "loading": "Lädt...",
+    "error": "Etwas ist schiefgelaufen",
+    "retry": "Nochmal versuchen"
+  }
+}
