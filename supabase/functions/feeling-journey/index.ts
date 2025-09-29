@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { mood, energy, context, type } = await req.json();
+    const { mood, energy, context, type, songCount = 5 } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
@@ -72,16 +72,13 @@ Recommend the most suitable song from the dataset and explain why it's perfect f
     } else if (type === "setlist") {
       systemPrompt = `You are a performance consultant helping create emotionally cohesive setlists. Consider emotional flow, energy management, and audience engagement.`;
       
-      prompt = `Create a 5-song setlist starting with "${mood}" as the opening song. Use songs from the available dataset to create an emotional journey for the audience.
+      prompt = `Create a ${songCount}-song setlist starting with "${mood}" as the opening song. Use songs from the available dataset to create an emotional journey for the audience.
       
-      Return as JSON:
+      Return as JSON with ${songCount} songs in the setlist array:
       {
         "setlist": [
-          {"position": 1, "song": "song title", "purpose": "opening energy"},
-          {"position": 2, "song": "song title", "purpose": "building momentum"},
-          {"position": 3, "song": "song title", "purpose": "emotional peak"},
-          {"position": 4, "song": "song title", "purpose": "reflection/intimate moment"},
-          {"position": 5, "song": "song title", "purpose": "uplifting finale"}
+          {"position": 1, "song": "song title", "purpose": "role in the setlist"},
+          ... (continue for all ${songCount} songs)
         ],
         "overallArc": "description of the emotional journey",
         "transitionTips": ["2 tips for smooth transitions between songs"]

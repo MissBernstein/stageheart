@@ -20,6 +20,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
   const [isLoadingSetlist, setIsLoadingSetlist] = useState(false);
   const [setlistSongs, setSetlistSongs] = useState<Song[]>([]);
   const [savedWarmups, setSavedWarmups] = useState<any[]>([]);
+  const [songCount, setSongCount] = useState(5);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -156,7 +157,8 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
       const { data, error } = await supabase.functions.invoke('feeling-journey', {
         body: { 
           mood: currentSong.title,
-          type: 'setlist' 
+          type: 'setlist',
+          songCount: songCount
         }
       });
 
@@ -408,7 +410,20 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                   </h3>
                   <div className="space-y-6">
                     {!setlistData ? (
-                      <div className="text-center py-8">
+                      <div className="text-center py-8 space-y-4">
+                        <div className="flex items-center justify-center gap-4">
+                          <label className="text-sm font-medium">
+                            Number of songs:
+                          </label>
+                          <input
+                            type="number"
+                            min="3"
+                            max="10"
+                            value={songCount}
+                            onChange={(e) => setSongCount(Math.max(3, Math.min(10, parseInt(e.target.value) || 5)))}
+                            className="w-20 px-3 py-2 border border-input bg-background rounded-md text-center"
+                          />
+                        </div>
                         <Button
                           onClick={generateSetlist}
                           disabled={isLoadingSetlist}
@@ -422,11 +437,11 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                           ) : (
                             <>
                               <Plus className="w-4 h-4 mr-2" />
-                              Build 5-Song Setlist
+                              Build {songCount}-Song Setlist
                             </>
                           )}
                         </Button>
-                        <p className="text-sm text-card-foreground/60 mt-2">
+                        <p className="text-sm text-card-foreground/60">
                           Create an emotionally cohesive setlist starting with your selected song
                         </p>
                       </div>

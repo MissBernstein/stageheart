@@ -229,6 +229,12 @@ const Index = () => {
                   🧭 {t('navigation.feelingJourney')}
                 </button>
                 <button
+                  onClick={() => setShowPrepTools(true)}
+                  className="px-6 py-2 bg-primary-soft hover:bg-button-primary-hover text-primary rounded-full transition-colors text-sm font-medium"
+                >
+                  🏋️ Performance Prep
+                </button>
+                <button
                   onClick={handleRandomSong}
                   className="px-6 py-2 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-sm font-medium"
                 >
