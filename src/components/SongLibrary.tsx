@@ -47,7 +47,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 overflow-y-auto">
+    <div className="fixed inset-0 bg-background z-50 overflow-y-auto">
       <div className="container mx-auto px-4 py-8">
         <div className="bg-card rounded-3xl shadow-card border border-card-border max-w-6xl mx-auto">
           {/* Header */}

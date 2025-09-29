@@ -8,9 +8,9 @@ import { FeelingsCard } from '@/components/FeelingsCard';
 import { VibePicker } from '@/components/VibePicker';
 import { FavoritesDrawer } from '@/components/FavoritesDrawer';
 import { LanguageToggle } from '@/components/LanguageToggle';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { FeelingMap, Song, Vibe } from '@/types';
 import songsData from '@/data/songs.json';
+import logo from '@/assets/logo.svg';
 
 const Index = () => {
   const { t } = useTranslation();
@@ -120,8 +120,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative">
-      {/* Background gradient overlay */}
-      <div className="fixed inset-0 bg-gradient-to-br from-background/90 via-background/95 to-background/90" />
+      {/* Solid background */}
+      <div className="fixed inset-0 bg-background" />
       
       {/* Main content */}
       <div className="relative z-10 container mx-auto px-4 py-12">
@@ -133,15 +133,17 @@ const Index = () => {
                 <FavoritesDrawer onSelectFavorite={handleSelectFavorite} />
               </div>
               <div className="flex-1 text-center">
-                <h1 className="text-6xl md:text-7xl text-foreground mb-4">
-                  Stage Heart
-                </h1>
-                <p className="text-xl text-foreground/80 max-w-2xl mx-auto">
+                <div className="flex items-center justify-center gap-4 mb-4">
+                  <img src={logo} alt="Stage Heart Logo" className="w-16 h-16 md:w-20 md:h-20" />
+                  <h1 className="text-6xl md:text-7xl text-foreground">
+                    Stage Heart
+                  </h1>
+                </div>
+                <p className="text-xl text-foreground max-w-2xl mx-auto">
                   {t('app.subtitle')}
                 </p>
               </div>
-              <div className="flex-1 flex justify-end gap-2">
-                <ThemeToggle />
+              <div className="flex-1 flex justify-end">
                 <LanguageToggle />
               </div>
             </div>
@@ -151,19 +153,19 @@ const Index = () => {
               <div className="flex flex-wrap justify-center gap-3">
                 <button
                   onClick={() => setShowLibrary(true)}
-                  className="px-6 py-2 bg-accent hover:bg-accent/80 text-accent-foreground rounded-full transition-colors text-sm font-medium"
+                  className="px-6 py-2 bg-accent hover:bg-button-secondary-hover text-accent-foreground rounded-full transition-colors text-sm font-medium"
                 >
                   📚 {t('navigation.browseLibrary')} ({songs.length} songs)
                 </button>
                 <button
                   onClick={() => setShowJourney(true)}
-                  className="px-6 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-full transition-colors text-sm font-medium"
+                  className="px-6 py-2 bg-primary-soft hover:bg-button-primary-hover text-primary rounded-full transition-colors text-sm font-medium"
                 >
                   🧭 {t('navigation.feelingJourney')}
                 </button>
                 <button
                   onClick={handleRandomSong}
-                  className="px-6 py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-full transition-colors text-sm font-medium"
+                  className="px-6 py-2 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-sm font-medium"
                 >
                   🎲 {t('navigation.surpriseMe')}
                 </button>
@@ -183,7 +185,7 @@ const Index = () => {
           {/* Empty state */}
           {!currentMap && !showVibePicker && !showLibrary && !showJourney && !showPrepTools && !isLoading && (
             <div className="text-center py-8">
-              <p className="text-foreground/60 text-lg">
+              <p className="text-muted-foreground text-lg">
                 Enter a song and I'll map its feelings.
               </p>
             </div>
@@ -233,7 +235,7 @@ const Index = () => {
               <div className="text-center">
                 <button
                   onClick={() => setShowPrepTools(true)}
-                  className="px-6 py-2 bg-accent hover:bg-accent/80 text-accent-foreground rounded-full transition-colors text-sm font-medium"
+                  className="px-6 py-2 bg-accent hover:bg-button-secondary-hover text-accent-foreground rounded-full transition-colors text-sm font-medium"
                 >
                   🏋️ Performance Prep Tools
                 </button>
@@ -246,7 +248,7 @@ const Index = () => {
             <div className="text-center">
               <button
                 onClick={handleReset}
-                className="text-foreground/60 hover:text-foreground transition-colors text-sm underline underline-offset-4"
+                className="text-muted-foreground hover:text-foreground transition-colors text-sm underline underline-offset-4"
               >
                 ← Search another song
               </button>

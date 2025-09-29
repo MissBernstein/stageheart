@@ -23,12 +23,12 @@ export const VibePicker = ({ onVibeSelect, songTitle, artist }: VibePickerProps)
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <div className="bg-card/80 backdrop-blur-sm rounded-3xl p-8 shadow-card border border-card-border">
+      <div className="bg-card rounded-3xl p-8 shadow-card border border-card-border">
         <div className="text-center mb-6">
           <h3 className="text-xl font-semibold text-card-foreground mb-2">
             I don't know that one yet!
           </h3>
-          <p className="text-card-foreground/70">
+          <p className="text-muted-foreground">
             No worries — pick a vibe for <strong>"{songTitle}"</strong>
             {artist && ` by ${artist}`} and I'll still help:
           </p>
@@ -36,7 +36,7 @@ export const VibePicker = ({ onVibeSelect, songTitle, artist }: VibePickerProps)
 
         <div className="space-y-4">
           <div>
-            <label htmlFor="vibe" className="block text-sm font-medium text-card-foreground/80 mb-2">
+            <label htmlFor="vibe" className="block text-sm font-medium text-card-foreground mb-2">
               Choose a vibe
             </label>
             <Select value={selectedVibeId} onValueChange={setSelectedVibeId}>
@@ -48,7 +48,7 @@ export const VibePicker = ({ onVibeSelect, songTitle, artist }: VibePickerProps)
                   <SelectItem 
                     key={vibe.id} 
                     value={vibe.id}
-                    className="text-lg py-3 hover:bg-primary/10"
+                    className="text-lg py-3 hover:bg-primary-soft"
                   >
                     {vibe.label}
                   </SelectItem>
@@ -66,7 +66,7 @@ export const VibePicker = ({ onVibeSelect, songTitle, artist }: VibePickerProps)
           </Button>
         </div>
 
-        <p className="text-xs text-card-foreground/50 text-center mt-4">
+        <p className="text-xs text-muted-foreground text-center mt-4">
           This will be a vibe-based map (no specific lyrics analysis)
         </p>
       </div>

@@ -67,14 +67,14 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
 
   return (
     <div className="w-full max-w-2xl mx-auto animate-in slide-in-from-bottom-4 duration-500">
-      <div className="bg-card/70 backdrop-blur-md rounded-3xl p-8 shadow-card border-2 border-primary/30">
+      <div className="bg-card rounded-3xl p-8 shadow-card border-2 border-card-border">
         {/* Header with song info */}
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-card-foreground mb-2">
             {feelingMap.title}
           </h2>
           {feelingMap.artist && (
-            <p className="text-lg text-card-foreground/70">
+            <p className="text-lg text-muted-foreground">
               by {feelingMap.artist}
             </p>
           )}
@@ -88,7 +88,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
         {/* Summary */}
         {feelingMap.summary && (
           <div className="mb-6">
-            <p className="text-lg text-card-foreground/80 leading-relaxed italic">
+            <p className="text-lg text-card-foreground leading-relaxed italic">
               {feelingMap.summary}
             </p>
           </div>
@@ -101,7 +101,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
               <div className="w-2 h-2 bg-accent rounded-full"></div>
               {t('feelingMap.theme')}
             </h3>
-            <p className="text-card-foreground/70 font-medium">
+            <p className="text-muted-foreground font-medium">
               {feelingMap.theme}
             </p>
           </div>
@@ -138,7 +138,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
             {(feelingMap.access_ideas || feelingMap.tips || []).map((tip, index) => (
               <div
                 key={index}
-                className="flex items-start gap-3 p-4 bg-tip-bg rounded-2xl transition-all duration-200 hover:bg-tip-bg/80"
+                className="flex items-start gap-3 p-4 bg-tip-bg rounded-2xl transition-all duration-200 hover:bg-muted"
                 style={{
                   animationDelay: `${((feelingMap.core_feelings || feelingMap.emotions || []).length + index) * 100}ms`,
                 }}
@@ -157,7 +157,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
               <div className="w-2 h-2 bg-accent rounded-full"></div>
               {t('feelingMap.visualCues')}
             </h3>
-            <div className="p-4 bg-tip-bg/50 rounded-2xl text-center">
+            <div className="p-4 bg-muted rounded-2xl text-center">
               <p className="text-tip-text text-lg font-medium">
                 {feelingMap.visual}
               </p>
@@ -171,7 +171,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
             href={`https://genius.com/search?q=${encodeURIComponent(`${feelingMap.title} ${feelingMap.artist || ''}`)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full p-4 bg-primary/20 hover:bg-primary/30 text-primary border-2 border-primary/40 rounded-2xl transition-all duration-200 font-semibold"
+            className="flex items-center justify-center gap-2 w-full p-4 bg-primary-soft hover:bg-button-primary-hover text-primary border-2 border-card-border rounded-2xl transition-all duration-200 font-semibold"
           >
             <ExternalLink className="w-5 h-5" />
             View Lyrics on Genius

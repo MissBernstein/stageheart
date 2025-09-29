@@ -102,17 +102,17 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <div className="bg-card/80 backdrop-blur-sm rounded-3xl p-8 shadow-card border border-card-border">
+      <div className="bg-card rounded-3xl p-8 shadow-card border border-card-border">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-primary/10 rounded-2xl">
+            <div className="p-3 bg-primary-soft rounded-2xl">
               <Music className="w-6 h-6 text-primary" />
             </div>
             <div>
               <h2 className="text-2xl font-semibold text-card-foreground">
                 {t('search.searchSong')}
               </h2>
-              <p className="text-sm text-card-foreground/70">
+              <p className="text-sm text-muted-foreground">
                 {t('app.subtitle')}
               </p>
             </div>
@@ -120,7 +120,7 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
           
           <div className="space-y-4 relative">
             <div className="relative">
-              <label htmlFor="title" className="block text-sm font-medium text-card-foreground/80 mb-2">
+              <label htmlFor="title" className="block text-sm font-medium text-card-foreground mb-2">
                 {t('search.title')}
               </label>
               <Input
@@ -148,8 +148,8 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
                       key={song.id}
                       type="button"
                       onClick={() => handleSuggestionClick(song)}
-                      className={`w-full text-left p-4 border-b border-card-border last:border-b-0 hover:bg-accent/50 transition-colors ${
-                        index === activeSuggestion ? 'bg-accent/50' : ''
+                      className={`w-full text-left p-4 border-b border-card-border last:border-b-0 hover:bg-accent transition-colors ${
+                        index === activeSuggestion ? 'bg-accent' : ''
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -158,10 +158,10 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
                           <div className="font-medium text-card-foreground">
                             {song.title}
                           </div>
-                          <div className="text-sm text-card-foreground/70">
+                          <div className="text-sm text-muted-foreground">
                             {song.artist}
                           </div>
-                          <div className="text-xs text-card-foreground/50 mt-1">
+                          <div className="text-xs text-muted-foreground mt-1">
                             {song.theme}
                           </div>
                         </div>
@@ -173,8 +173,8 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
             </div>
             
             <div>
-              <label htmlFor="artist" className="block text-sm font-medium text-card-foreground/80 mb-2">
-                {t('search.artist')} <span className="text-card-foreground/50">(optional)</span>
+              <label htmlFor="artist" className="block text-sm font-medium text-card-foreground mb-2">
+                {t('search.artist')} <span className="text-muted-foreground">(optional)</span>
               </label>
               <Input
                 id="artist"

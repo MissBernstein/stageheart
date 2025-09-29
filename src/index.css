@@ -5,132 +5,63 @@
 /* Stage Heart Design System - Bold, colorful, warm glassmorphism */
 
 @layer base {
+
   :root {
-    /* Core background - warm cream */
-    --background: 36 69% 85%;
-    --foreground: 256 46% 11%;
-
-    /* Primary - vibrant teal */
-    --primary: 177 45% 39%;
-    --primary-foreground: 0 0% 100%;
-    --primary-soft: 177 45% 85%;
-    
-    /* Accent - warm peach */
-    --accent: 25 44% 76%;
-    --accent-foreground: 256 46% 11%;
-    --accent-soft: 25 44% 90%;
-    
-    /* Cards and surfaces - glassmorphism with teal tint */
-    --card: 177 45% 95%;
-    --card-foreground: 256 46% 11%;
-    --card-border: 177 45% 70%;
-    
-    /* Emotions and pills - bold teal */
-    --emotion-bg: 177 45% 85%;
-    --emotion-text: 187 52% 20%;
-    --emotion-border: 177 45% 60%;
-    
-    /* Tips and content - dark teal */
-    --tip-bg: 187 52% 85%;
-    --tip-text: 187 52% 20%;
-    --tip-icon: 177 45% 39%;
-    
-    /* Interactive elements */
-    --button-primary: 177 45% 39%;
-    --button-primary-hover: 177 45% 30%;
-    --button-secondary: 25 44% 76%;
-    --button-secondary-hover: 25 44% 70%;
-    
-    /* Inputs */
-    --input: 36 69% 90%;
-    --input-border: 177 45% 60%;
-    --input-focus: 177 45% 39%;
-    
-    /* Favorites and stars - warm peach */
-    --star: 25 44% 65%;
-    --star-hover: 25 44% 55%;
-    
-    /* Gradients - bold colorful */
-    --gradient-hero: linear-gradient(135deg, hsl(177, 45%, 60%), hsl(36, 69%, 75%), hsl(25, 44%, 76%));
-    --gradient-card: linear-gradient(145deg, hsl(177, 45%, 92%), hsl(36, 69%, 88%));
-    --gradient-emotion: linear-gradient(120deg, hsl(177, 45%, 85%), hsl(187, 52%, 80%));
-    
-    /* Shadows - colorful teal tint */
-    --shadow-soft: 0 4px 20px -4px hsl(177, 45%, 50% / 0.25);
-    --shadow-card: 0 8px 30px -8px hsl(177, 45%, 40% / 0.2);
-    --shadow-emotion: 0 2px 8px -2px hsl(177, 45%, 50% / 0.15);
-    
-    /* Required shadcn compatibility variables */
-    --border: 177 45% 70%;
-    --ring: 177 45% 39%;
-    --muted: 36 69% 80%;
-    --muted-foreground: 256 46% 30%;
-    --popover: 36 69% 90%;
-    --popover-foreground: 256 46% 11%;
-    --secondary: 25 44% 76%;
-    --secondary-foreground: 256 46% 11%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --radius: 1rem;
-  }
-
-  .dark {
-    /* Core dark background - deep navy */
+    /* Core background - deep navy */
     --background: 256 46% 11%;
     --foreground: 36 69% 85%;
 
-    /* Dark primary - bright teal */
+    /* Primary - bright teal */
     --primary: 177 45% 50%;
     --primary-foreground: 256 46% 11%;
     --primary-soft: 177 45% 25%;
     
-    /* Dark accent - muted peach */
+    /* Accent - muted peach */
     --accent: 25 44% 60%;
     --accent-foreground: 256 46% 11%;
     --accent-soft: 25 44% 20%;
     
-    /* Dark cards and surfaces - glassmorphism with teal */
+    /* Cards and surfaces - solid teal */
     --card: 187 52% 15%;
     --card-foreground: 36 69% 85%;
     --card-border: 177 45% 30%;
     
-    /* Dark emotions and pills */
+    /* Emotions and pills */
     --emotion-bg: 177 45% 20%;
     --emotion-text: 177 45% 80%;
     --emotion-border: 177 45% 35%;
     
-    /* Dark tips and content */
+    /* Tips and content */
     --tip-bg: 187 52% 18%;
     --tip-text: 177 45% 75%;
     --tip-icon: 177 45% 60%;
     
-    /* Dark interactive elements */
+    /* Interactive elements */
     --button-primary: 177 45% 50%;
     --button-primary-hover: 177 45% 60%;
     --button-secondary: 25 44% 40%;
     --button-secondary-hover: 25 44% 50%;
     
-    /* Dark inputs */
+    /* Inputs */
     --input: 256 46% 15%;
     --input-border: 177 45% 30%;
     --input-focus: 177 45% 50%;
     
-    /* Dark favorites and stars */
+    /* Favorites and stars */
     --star: 25 44% 70%;
     --star-hover: 25 44% 80%;
     
-    /* Dark gradients - colorful */
+    /* Gradients - colorful */
     --gradient-hero: linear-gradient(135deg, hsl(256, 46%, 15%), hsl(187, 52%, 25%), hsl(177, 45%, 30%));
     --gradient-card: linear-gradient(145deg, hsl(187, 52%, 18%), hsl(177, 45%, 22%));
     --gradient-emotion: linear-gradient(120deg, hsl(177, 45%, 22%), hsl(187, 52%, 20%));
     
-    /* Dark shadows - teal glow */
-    --shadow-soft: 0 4px 20px -4px hsl(177, 45%, 40% / 0.3);
-    --shadow-card: 0 8px 30px -8px hsl(177, 45%, 50% / 0.25);
-    --shadow-emotion: 0 2px 8px -2px hsl(177, 45%, 40% / 0.2);
+    /* Shadows - solid */
+    --shadow-soft: 0 4px 20px -4px hsl(177, 45%, 40%);
+    --shadow-card: 0 8px 30px -8px hsl(177, 45%, 50%);
+    --shadow-emotion: 0 2px 8px -2px hsl(177, 45%, 40%);
     
-    /* Dark shadcn compatibility variables */
+    /* Shadcn compatibility variables */
     --border: 177 45% 30%;
     --ring: 177 45% 50%;
     --muted: 256 46% 18%;
@@ -141,6 +72,8 @@
     --secondary-foreground: 36 69% 85%;
     --destructive: 0 75% 60%;
     --destructive-foreground: 0 0% 100%;
+
+    --radius: 1rem;
   }
 }
 
@@ -151,7 +84,7 @@
 
   body {
     @apply bg-background text-foreground;
-    background: var(--gradient-hero);
+    background: hsl(var(--background));
     min-height: 100vh;
   }
 

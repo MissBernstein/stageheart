@@ -105,7 +105,7 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
   };
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 overflow-y-auto">
+    <div className="fixed inset-0 bg-background z-50 overflow-y-auto">
       <div className="container mx-auto px-4 py-8">
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
@@ -153,8 +153,8 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
                       onClick={() => setMood(option.id)}
                       className={`p-4 text-left rounded-xl border transition-all ${
                         mood === option.id
-                          ? 'border-primary bg-primary/10'
-                          : 'border-card-border hover:border-primary/50'
+                          ? 'border-primary bg-primary-soft'
+                          : 'border-card-border hover:border-primary'
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -188,8 +188,8 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
                       onClick={() => setEnergy(option.id)}
                       className={`p-4 text-left rounded-xl border transition-all ${
                         energy === option.id
-                          ? 'border-primary bg-primary/10'
-                          : 'border-card-border hover:border-primary/50'
+                          ? 'border-primary bg-primary-soft'
+                          : 'border-card-border hover:border-primary'
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -228,8 +228,8 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
                       onClick={() => setContext(option.id)}
                       className={`p-4 text-left rounded-xl border transition-all ${
                         context === option.id
-                          ? 'border-primary bg-primary/10'
-                          : 'border-card-border hover:border-primary/50'
+                          ? 'border-primary bg-primary-soft'
+                          : 'border-card-border hover:border-primary'
                       }`}
                     >
                       <div className="flex items-center gap-3">

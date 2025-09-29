@@ -16,7 +16,7 @@ export const FavoritesDrawer = ({ onSelectFavorite }: FavoritesDrawerProps) => {
       <SheetTrigger asChild>
         <Button
           variant="secondary"
-          className="fixed top-6 right-6 z-50 h-12 px-4 bg-card/80 backdrop-blur-sm hover:bg-card border border-card-border rounded-2xl shadow-card"
+          className="fixed top-6 right-6 z-50 h-12 px-4 bg-card hover:bg-muted border border-card-border rounded-2xl shadow-card"
         >
           <Star className="w-5 h-5 mr-2 text-star" />
           <span className="hidden sm:inline">Favorites</span>
@@ -28,7 +28,7 @@ export const FavoritesDrawer = ({ onSelectFavorite }: FavoritesDrawerProps) => {
         </Button>
       </SheetTrigger>
       
-      <SheetContent className="w-full sm:max-w-md bg-card/95 backdrop-blur-sm border-card-border">
+      <SheetContent className="w-full sm:max-w-md bg-card border-card-border">
         <SheetHeader className="mb-6">
           <SheetTitle className="text-2xl font-bold text-card-foreground flex items-center gap-2">
             <Star className="w-6 h-6 text-star fill-current" />
@@ -39,11 +39,11 @@ export const FavoritesDrawer = ({ onSelectFavorite }: FavoritesDrawerProps) => {
         <div className="space-y-4">
           {favorites.length === 0 ? (
             <div className="text-center py-12">
-              <Music2 className="w-12 h-12 text-card-foreground/30 mx-auto mb-4" />
-              <p className="text-card-foreground/60">
+              <Music2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">
                 No saved feeling maps yet.
               </p>
-              <p className="text-sm text-card-foreground/40 mt-2">
+              <p className="text-sm text-muted-foreground mt-2">
                 Save your favorite song maps to access them quickly!
               </p>
             </div>
@@ -51,7 +51,7 @@ export const FavoritesDrawer = ({ onSelectFavorite }: FavoritesDrawerProps) => {
             favorites.map((favorite, index) => (
               <div
                 key={`${favorite.title}-${favorite.artist}-${index}`}
-                className="bg-card-foreground/5 rounded-2xl p-4 border border-card-border/50 hover:bg-card-foreground/10 transition-colors group"
+                className="bg-muted rounded-2xl p-4 border border-card-border hover:bg-secondary transition-colors group"
               >
                 <div className="flex items-start justify-between gap-3">
                   <button
@@ -62,7 +62,7 @@ export const FavoritesDrawer = ({ onSelectFavorite }: FavoritesDrawerProps) => {
                       {favorite.title}
                     </h4>
                     {favorite.artist && (
-                      <p className="text-sm text-card-foreground/70 mb-2">
+                      <p className="text-sm text-muted-foreground mb-2">
                         by {favorite.artist}
                       </p>
                     )}
@@ -81,7 +81,7 @@ export const FavoritesDrawer = ({ onSelectFavorite }: FavoritesDrawerProps) => {
                         </span>
                       ))}
                       {(favorite.core_feelings || favorite.emotions || []).length > 3 && (
-                        <span className="text-xs px-2 py-1 bg-card-foreground/10 text-card-foreground/60 rounded-full">
+                        <span className="text-xs px-2 py-1 bg-muted text-muted-foreground rounded-full">
                           +{(favorite.core_feelings || favorite.emotions || []).length - 3}
                         </span>
                       )}
@@ -92,7 +92,7 @@ export const FavoritesDrawer = ({ onSelectFavorite }: FavoritesDrawerProps) => {
                     variant="ghost"
                     size="sm"
                     onClick={() => removeFavorite(favorite)}
-                    className="text-card-foreground/40 hover:text-red-500 hover:bg-red-50 p-2 h-8 w-8"
+                    className="text-muted-foreground hover:text-destructive hover:bg-destructive-foreground p-2 h-8 w-8"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>

@@ -21,17 +21,17 @@ export const SongForm = ({ onSearch, isLoading }: SongFormProps) => {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <div className="bg-card/80 backdrop-blur-sm rounded-3xl p-8 shadow-card border border-card-border">
+      <div className="bg-card rounded-3xl p-8 shadow-card border border-card-border">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-primary/10 rounded-2xl">
+            <div className="p-3 bg-primary-soft rounded-2xl">
               <Music className="w-6 h-6 text-primary" />
             </div>
             <div>
               <h2 className="text-2xl font-semibold text-card-foreground">
                 Song Feelings Map
               </h2>
-              <p className="text-sm text-card-foreground/70">
+              <p className="text-sm text-muted-foreground">
                 feel the song before you sing it
               </p>
             </div>
@@ -39,7 +39,7 @@ export const SongForm = ({ onSearch, isLoading }: SongFormProps) => {
           
           <div className="space-y-4">
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-card-foreground/80 mb-2">
+              <label htmlFor="title" className="block text-sm font-medium text-card-foreground mb-2">
                 Song Title
               </label>
               <Input
@@ -54,8 +54,8 @@ export const SongForm = ({ onSearch, isLoading }: SongFormProps) => {
             </div>
             
             <div>
-              <label htmlFor="artist" className="block text-sm font-medium text-card-foreground/80 mb-2">
-                Artist <span className="text-card-foreground/50">(optional)</span>
+              <label htmlFor="artist" className="block text-sm font-medium text-card-foreground mb-2">
+                Artist <span className="text-muted-foreground">(optional)</span>
               </label>
               <Input
                 id="artist"
