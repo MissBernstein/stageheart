@@ -1,0 +1,68 @@
+[
+  {
+    "id": "hallelujah",
+    "title": "Hallelujah",
+    "artist": "Leonard Cohen",
+    "emotions": ["reverent", "tender", "melancholy", "hopeful"],
+    "tips": [
+      "Keep breath deep and steady for long phrases",
+      "Soften jaw and lips to maintain warmth",
+      "Slight upward gaze to invite openness"
+    ]
+  },
+  {
+    "id": "uptownfunk",
+    "title": "Uptown Funk",
+    "artist": "Bruno Mars",
+    "emotions": ["playful", "bold", "flirty", "energetic"],
+    "tips": [
+      "Bounce knees lightly for groove",
+      "Punch consonants for clarity and swagger",
+      "Smile wide to brighten tone"
+    ]
+  },
+  {
+    "id": "sing",
+    "title": "Sing",
+    "artist": "Pentatonix",
+    "emotions": ["uplifting", "joyful", "bright"],
+    "tips": [
+      "Lift soft palate for resonance",
+      "Relax shoulders to free breath",
+      "Use light articulation for crisp sound"
+    ]
+  },
+  {
+    "id": "luegitvobergundtal",
+    "title": "Luegit vo Berg und Tal",
+    "artist": "Swiss Traditional",
+    "emotions": ["nostalgic", "tender", "calm"],
+    "tips": [
+      "Keep tone warm and centered",
+      "Allow small natural rubato for storytelling",
+      "Gentle vibrato at phrase ends"
+    ]
+  },
+  {
+    "id": "someone-like-you",
+    "title": "Someone Like You",
+    "artist": "Adele",
+    "emotions": ["yearning", "vulnerable", "bittersweet", "powerful"],
+    "tips": [
+      "Start soft and build gradually to avoid strain",
+      "Use breath support on long sustained notes",
+      "Allow emotion to guide dynamic changes"
+    ]
+  },
+  {
+    "id": "happy",
+    "title": "Happy",
+    "artist": "Pharrell Williams",
+    "emotions": ["joyful", "carefree", "bouncy", "infectious"],
+    "tips": [
+      "Keep rhythm alive in your body",
+      "Brighten vowels with a natural smile",
+      "Use staccato touches for playful articulation"
+    ]
+  }
+]

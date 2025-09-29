@@ -1,0 +1,122 @@
+[
+  {
+    "id": "playful",
+    "label": "Playful",
+    "emotions": ["cheeky", "sparkly", "lighthearted", "bouncy"],
+    "tips": [
+      "Keep jaw mobile and smile lightly to brighten tone",
+      "Use crisp consonants and short phrases for bounce",
+      "Add gentle body sway to keep the groove alive"
+    ]
+  },
+  {
+    "id": "hopeful",
+    "label": "Hopeful",
+    "emotions": ["uplifted", "open", "tender", "glowing"],
+    "tips": [
+      "Lengthen out-breaths to smooth phrases",
+      "Lift soft palate for a rounder, resonant color",
+      "Let the eyes lift slightly to suggest openness"
+    ]
+  },
+  {
+    "id": "sad",
+    "label": "Sad",
+    "emotions": ["aching", "fragile", "intimate", "yearning"],
+    "tips": [
+      "Sing a touch under mezzo-forte to keep vulnerability",
+      "Loosen jaw and keep vibrato gentle at phrase ends",
+      "Allow small breaths between ideas—no rush"
+    ]
+  },
+  {
+    "id": "angry",
+    "label": "Angry",
+    "emotions": ["charged", "defiant", "hot", "driven"],
+    "tips": [
+      "Ground through feet and keep ribs buoyant for supported power",
+      "Use clean, punchy consonants—avoid throat squeeze",
+      "Channel intensity forward; release shoulders and neck"
+    ]
+  },
+  {
+    "id": "romantic",
+    "label": "Romantic",
+    "emotions": ["warm", "velvety", "glowing", "intimate"],
+    "tips": [
+      "Legato lines with steady airflow and gentle onset",
+      "Soften lips on vowels for a plush color",
+      "Invite micro-smiles through the eyes, not just the mouth"
+    ]
+  },
+  {
+    "id": "contemplative",
+    "label": "Contemplative",
+    "emotions": ["reflective", "hushed", "still", "thoughtful"],
+    "tips": [
+      "Use slightly slower pace and clear diction",
+      "Keep dynamics in the mezzo-piano to mezzo range",
+      "Let small silences land between phrases"
+    ]
+  },
+  {
+    "id": "epic",
+    "label": "Epic / Anthemic",
+    "emotions": ["triumphant", "vast", "electric", "soaring"],
+    "tips": [
+      "Stack posture tall and expand ribs for sustained power",
+      "Aim vowels forward and high for ring",
+      "Build dynamics across sections; save peak for the climax"
+    ]
+  },
+  {
+    "id": "groovy",
+    "label": "Groovy",
+    "emotions": ["cool", "locked-in", "confident", "slinky"],
+    "tips": [
+      "Subdivision in the body (knees/hips) to keep pocket",
+      "Lean into consonants on backbeat placements",
+      "Keep jaw relaxed; think 'speechy' vowels for clarity"
+    ]
+  },
+  {
+    "id": "spiritual",
+    "label": "Spiritual",
+    "emotions": ["reverent", "grounded", "uplifted", "glowing"],
+    "tips": [
+      "Deep, quiet inhales; long phrases on warm vowels",
+      "Ease the larynx with yawny space for depth",
+      "Eyes soft; invite resonance rather than force"
+    ]
+  },
+  {
+    "id": "nostalgic",
+    "label": "Nostalgic",
+    "emotions": ["bittersweet", "hazy", "tender", "glimmering"],
+    "tips": [
+      "Use a gentle onset and slight rubato for storytelling",
+      "Color vowels slightly darker for a vintage feel",
+      "Let breaths coincide with lyric images"
+    ]
+  },
+  {
+    "id": "empowering",
+    "label": "Empowering",
+    "emotions": ["bold", "steady", "radiant", "assured"],
+    "tips": [
+      "Anchor breath low; think 'wide back' on inhales",
+      "Clear diction on key affirming words",
+      "Lift posture and visualize sending sound to the back row"
+    ]
+  },
+  {
+    "id": "lullaby",
+    "label": "Lullaby",
+    "emotions": ["soothing", "safe", "floaty", "warm"],
+    "tips": [
+      "Soft dynamics with ultra-steady airflow",
+      "Rounded vowels and minimal consonant bite",
+      "Slight rocking motion to steady tempo and breath"
+    ]
+  }
+]

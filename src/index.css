@@ -2,41 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Song Feelings Map Design System - Music-inspired, calm, and airy */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core background gradient */
+    --background: 240 25% 98%;
+    --foreground: 240 10% 15%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
+    /* Music-inspired purple-blue palette */
+    --primary: 260 70% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 260 50% 85%;
+    
+    /* Warm accent for emotions */
+    --accent: 25 90% 65%;
+    --accent-foreground: 25 20% 20%;
+    --accent-soft: 25 60% 92%;
+    
+    /* Cards and surfaces */
+    --card: 240 30% 99%;
+    --card-foreground: 240 15% 20%;
+    --card-border: 240 20% 90%;
+    
+    /* Emotions and pills */
+    --emotion-bg: 260 40% 95%;
+    --emotion-text: 260 60% 35%;
+    --emotion-border: 260 30% 85%;
+    
+    /* Tips and content */
+    --tip-bg: 200 40% 96%;
+    --tip-text: 200 50% 30%;
+    --tip-icon: 200 60% 50%;
+    
+    /* Interactive elements */
+    --button-primary: 260 70% 60%;
+    --button-primary-hover: 260 70% 55%;
+    --button-secondary: 240 15% 95%;
+    --button-secondary-hover: 240 15% 90%;
+    
+    /* Inputs */
+    --input: 240 20% 96%;
+    --input-border: 240 20% 85%;
+    --input-focus: 260 60% 70%;
+    
+    /* Favorites and stars */
+    --star: 45 100% 60%;
+    --star-hover: 45 100% 55%;
+    
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(260, 60%, 70%), hsl(200, 60%, 75%));
+    --gradient-card: linear-gradient(145deg, hsl(240, 40%, 99%), hsl(260, 30%, 97%));
+    --gradient-emotion: linear-gradient(120deg, hsl(260, 40%, 96%), hsl(280, 35%, 94%));
+    
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -4px hsl(260, 30%, 70% / 0.15);
+    --shadow-card: 0 8px 30px -8px hsl(260, 40%, 60% / 0.12);
+    --shadow-emotion: 0 2px 8px -2px hsl(260, 30%, 60% / 0.1);
+    
+    --radius: 1rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -101,5 +125,7 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    background: var(--gradient-hero);
+    min-height: 100vh;
   }
 }

@@ -14,38 +14,47 @@ export default {
     },
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          soft: "hsl(var(--primary-soft))",
         },
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          soft: "hsl(var(--accent-soft))",
         },
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+          border: "hsl(var(--card-border))",
+        },
+        emotion: {
+          bg: "hsl(var(--emotion-bg))",
+          text: "hsl(var(--emotion-text))",
+          border: "hsl(var(--emotion-border))",
+        },
+        tip: {
+          bg: "hsl(var(--tip-bg))",
+          text: "hsl(var(--tip-text))",
+          icon: "hsl(var(--tip-icon))",
+        },
+        button: {
+          primary: "hsl(var(--button-primary))",
+          "primary-hover": "hsl(var(--button-primary-hover))",
+          secondary: "hsl(var(--button-secondary))",
+          "secondary-hover": "hsl(var(--button-secondary-hover))",
+        },
+        input: {
+          DEFAULT: "hsl(var(--input))",
+          border: "hsl(var(--input-border))",
+          focus: "hsl(var(--input-focus))",
+        },
+        star: {
+          DEFAULT: "hsl(var(--star))",
+          hover: "hsl(var(--star-hover))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
