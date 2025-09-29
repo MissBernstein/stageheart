@@ -134,10 +134,10 @@ const Index = () => {
             <div className="flex justify-between items-start mb-6">
               <div className="flex-1" />
               <div className="flex-1 text-center">
-                <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-                  {t('app.title')}
+                <h1 className="text-6xl md:text-7xl text-foreground mb-4">
+                  Stage Heart
                 </h1>
-                <p className="text-xl text-foreground/70 max-w-2xl mx-auto">
+                <p className="text-xl text-foreground/80 max-w-2xl mx-auto">
                   {t('app.subtitle')}
                 </p>
               </div>

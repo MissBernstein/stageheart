@@ -67,7 +67,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
 
   return (
     <div className="w-full max-w-2xl mx-auto animate-in slide-in-from-bottom-4 duration-500">
-      <div className="bg-card/90 backdrop-blur-sm rounded-3xl p-8 shadow-card border border-card-border">
+      <div className="bg-card/70 backdrop-blur-md rounded-3xl p-8 shadow-card border-2 border-primary/30">
         {/* Header with song info */}
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-card-foreground mb-2">
