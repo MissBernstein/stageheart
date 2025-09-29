@@ -1,5 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Session } from '@supabase/supabase-js';
+import { useToast } from '@/hooks/use-toast';
 import { AutocompleteSearch } from '@/components/AutocompleteSearch';
 import { SongLibrary } from '@/components/SongLibrary';
 import { FeelingJourney } from '@/components/FeelingJourney';
@@ -14,6 +18,10 @@ import logo from '@/assets/logo.png';
 
 const Index = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
   const [currentMap, setCurrentMap] = useState<FeelingMap | null>(null);
   const [showVibePicker, setShowVibePicker] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
@@ -23,6 +31,57 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const songs: Song[] = songsData;
+
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      if (!session) {
+        navigate('/auth');
+      }
+      setLoading(false);
+    });
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (!session) {
+        navigate('/auth');
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to log out. Please try again.',
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Logged out',
+        description: 'You have been successfully logged out.',
+      });
+      navigate('/auth');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
 
   const searchSong = (title: string, artist: string) => {
     setIsLoading(true);
@@ -143,8 +202,14 @@ const Index = () => {
                   {t('app.subtitle')}
                 </p>
               </div>
-              <div className="flex-1 flex justify-end">
+              <div className="flex-1 flex justify-end items-center gap-3">
                 <LanguageToggle />
+                <button
+                  onClick={handleLogout}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+                >
+                  Logout
+                </button>
               </div>
             </div>
             
