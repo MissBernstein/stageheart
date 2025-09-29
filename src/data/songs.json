@@ -264,5 +264,201 @@
       "Wink, smirk; hype each other."
     ],
     "visual": "🕺✨ / 🔥 funky neon"
+  },
+  {
+    "id": "allofme",
+    "title": "All of Me",
+    "artist": "John Legend",
+    "summary": "A heartfelt love song laying bare imperfections and unconditional devotion.",
+    "theme": "Vulnerable, whole-hearted love.",
+    "core_feelings": ["tender devotion","self-acceptance","romantic awe"],
+    "access_ideas": [
+      "Recall loving someone completely with their quirks and all.",
+      "Sing with relaxed jaw and deep belly breath for warmth.",
+      "Soften gaze; imagine singing directly to a loved one."
+    ],
+    "visual": "💗 intertwined hearts / piano keys"
+  },
+  {
+    "id": "alliwantforchristmas",
+    "title": "All I Want for Christmas Is You",
+    "artist": "Mariah Carey",
+    "summary": "Festive love anthem longing only for togetherness at Christmas.",
+    "theme": "Playful holiday love and excitement.",
+    "core_feelings": ["sparkly joy","romantic glee","holiday warmth"],
+    "access_ideas": [
+      "Think of festive mornings and wanting just one special person.",
+      "Smile wide; keep shoulders loose; sparkle in the eyes.",
+      "Bounce gently with the groove and joy."
+    ],
+    "visual": "🎄🎁❤️ holiday lights"
+  },
+  {
+    "id": "betterisoneday",
+    "title": "Better Is One Day",
+    "artist": "Matt Redman / gospel",
+    "summary": "Celebrating being close to God; one day with Him better than thousands elsewhere.",
+    "theme": "Awe-filled worship and longing for closeness.",
+    "core_feelings": ["reverence","deep peace","joyful devotion"],
+    "access_ideas": [
+      "Recall a sacred space or moment of spiritual peace.",
+      "Keep breath steady and spacious; open chest upward.",
+      "Eyes lifted softly as if to sky or light."
+    ],
+    "visual": "⛪✨ rays of light"
+  },
+  {
+    "id": "downtotheriver",
+    "title": "Down to the River to Pray",
+    "artist": "Traditional / gospel",
+    "summary": "An invitation to join in prayer, cleansing, and renewal at the river.",
+    "theme": "Communal hope and washing away burdens.",
+    "core_feelings": ["quiet surrender","gentle hope","community warmth"],
+    "access_ideas": [
+      "Picture walking to water with friends and prayerful hearts.",
+      "Sway slowly side to side; easy breath and hum.",
+      "Soft gaze or eyes closed; meditative calm."
+    ],
+    "visual": "💧 flowing river / hands joined"
+  },
+  {
+    "id": "gimmesomelovin",
+    "title": "Gimme Some Lovin'",
+    "artist": "Spencer Davis Group",
+    "summary": "Energetic plea for affection; joyful, bluesy groove.",
+    "theme": "Playful longing and upbeat flirtation.",
+    "core_feelings": ["energetic want","cheeky joy","bluesy heat"],
+    "access_ideas": [
+      "Think of asking for love with a grin and bounce.",
+      "Knees and hips loose; smile wide.",
+      "Punch consonants for playful urgency."
+    ],
+    "visual": "🎹🔥 groovy neon heart"
+  },
+  {
+    "id": "hailholyqueen",
+    "title": "Hail Holy Queen",
+    "artist": "Traditional hymn / gospel arrangement",
+    "summary": "Powerful Marian praise that builds from reverent to exultant celebration.",
+    "theme": "Sacred reverence turning into joyful praise.",
+    "core_feelings": ["devotion","rising joy","majestic awe"],
+    "access_ideas": [
+      "Imagine a grand cathedral echo or safe sacred space.",
+      "Begin reverent and still, then swell into joy.",
+      "Lift gaze and chest, generous resonance."
+    ],
+    "visual": "👑✨ shining crown and light"
+  },
+  {
+    "id": "hallelujahgospel",
+    "title": "Hallelujah",
+    "artist": "Gospel / Praise versions",
+    "summary": "Joyful shout of gratitude and celebration of life and divine love.",
+    "theme": "Ecstatic praise and grateful release.",
+    "core_feelings": ["soaring joy","grateful relief","communal celebration"],
+    "access_ideas": [
+      "Think of overcoming something hard and praising life itself.",
+      "Loosen arms; open smile; upward glance.",
+      "Sing like a wave breaking free."
+    ],
+    "visual": "🙌🎶 radiant light"
+  },
+  {
+    "id": "madetoliveforyou",
+    "title": "Made To Live For You",
+    "artist": "Gospel contemporary",
+    "summary": "Affirming life's purpose found in love and faith.",
+    "theme": "Calling, joy, and surrender to divine love.",
+    "core_feelings": ["uplift","purpose","joyful belonging"],
+    "access_ideas": [
+      "Recall feeling safe in your life's mission.",
+      "Expand chest, stand tall; breathe into purpose.",
+      "Look upward with grateful eyes."
+    ],
+    "visual": "🌟🙌 light and heart"
+  },
+  {
+    "id": "silentnight",
+    "title": "Silent Night",
+    "artist": "Traditional carol",
+    "summary": "Peaceful Christmas night—calm, sacred, and full of love.",
+    "theme": "Gentle holiness and serene comfort.",
+    "core_feelings": ["peace","tender reverence","warm love"],
+    "access_ideas": [
+      "Picture a still winter night with candlelight.",
+      "Breath slow and deep; jaw loose for hush.",
+      "Sing softly as a lullaby to the world."
+    ],
+    "visual": "🌙✨ candle in night"
+  },
+  {
+    "id": "sittinonthedock",
+    "title": "Sittin' on the Dock of the Bay",
+    "artist": "Otis Redding",
+    "summary": "Quiet reflection on life's drift, loneliness, and gentle acceptance.",
+    "theme": "Bittersweet peace and solitude.",
+    "core_feelings": ["wistful calm","gentle sadness","resigned peace"],
+    "access_ideas": [
+      "Think of time alone processing change.",
+      "Slow sway; loosen jaw; let sighs out.",
+      "Eyes soft, distant horizon gaze."
+    ],
+    "visual": "⚓🌅 dock and sunset water"
+  },
+  {
+    "id": "think",
+    "title": "Think",
+    "artist": "Aretha Franklin",
+    "summary": "Bold demand for respect and reconsideration—fierce and groovy.",
+    "theme": "Empowerment and reclaiming voice.",
+    "core_feelings": ["sass","anger-turned-power","playful command"],
+    "access_ideas": [
+      "Remember standing up for yourself, sharp but playful.",
+      "Hands on hips stance, loose head bob, crisp diction.",
+      "Strong consonants; smirk and wink."
+    ],
+    "visual": "💃🔥 lightning bold"
+  },
+  {
+    "id": "whitechristmas",
+    "title": "White Christmas",
+    "artist": "Bing Crosby (classic)",
+    "summary": "Dreaming of a nostalgic snowy holiday—warm, wistful joy.",
+    "theme": "Gentle nostalgia and holiday hope.",
+    "core_feelings": ["cozy longing","warmth","peaceful cheer"],
+    "access_ideas": [
+      "Recall a warm, cozy winter memory.",
+      "Gentle sway, soft eyes, slow smile.",
+      "Light airy breath; floaty tone."
+    ],
+    "visual": "❄️🎄 snowy window glow"
+  },
+  {
+    "id": "yeswecancan",
+    "title": "Yes We Can Can",
+    "artist": "Pointer Sisters",
+    "summary": "Playful call for togetherness, change, and positivity.",
+    "theme": "Empowerment with a groove; communal optimism.",
+    "core_feelings": ["cheerful drive","hopeful unity","playful bounce"],
+    "access_ideas": [
+      "Think of rallying friends for something better.",
+      "Bounce knees, smile wide, open body.",
+      "Call and response feel—invite group energy."
+    ],
+    "visual": "✊✨ groovy sunburst"
+  },
+  {
+    "id": "youaremysunshine",
+    "title": "You Are My Sunshine",
+    "artist": "Ray Charles",
+    "summary": "Sweet yet bittersweet love—someone brightening your life but with underlying sadness.",
+    "theme": "Tender love mixed with fragility.",
+    "core_feelings": ["sweet affection","wistful ache","warm gratitude"],
+    "access_ideas": [
+      "Think of someone who lights you up but maybe isn't always there.",
+      "Warm smile with slight wistfulness; gentle sway.",
+      "Keep breath soft and steady like rocking a child."
+    ],
+    "visual": "☀️🌻 glowing sun"
   }
 ]
