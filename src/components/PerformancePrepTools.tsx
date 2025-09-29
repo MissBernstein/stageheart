@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Mic, Brain, Clock, Loader2, Plus, X } from 'lucide-react';
+import { Dumbbell, Mic, Brain, Clock, Loader2, Plus, Save, Trash2 } from 'lucide-react';
 import { Song } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -14,17 +14,36 @@ interface PerformancePrepToolsProps {
 }
 
 export const PerformancePrepTools = ({ currentSong, onClose, songs }: PerformancePrepToolsProps) => {
-  const [activeTab, setActiveTab] = useState<'warmup' | 'setlist'>('warmup');
   const [warmupData, setWarmupData] = useState<any>(null);
   const [setlistData, setSetlistData] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingWarmup, setIsLoadingWarmup] = useState(false);
+  const [isLoadingSetlist, setIsLoadingSetlist] = useState(false);
   const [setlistSongs, setSetlistSongs] = useState<Song[]>([]);
+  const [savedWarmups, setSavedWarmups] = useState<any[]>([]);
   const { toast } = useToast();
+
+  useEffect(() => {
+    loadSavedWarmups();
+  }, []);
+
+  const loadSavedWarmups = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('saved_warmups')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setSavedWarmups(data || []);
+    } catch (error) {
+      console.error('Error loading saved warmups:', error);
+    }
+  };
 
   const generateWarmup = async () => {
     if (!currentSong) return;
     
-    setIsLoading(true);
+    setIsLoadingWarmup(true);
     try {
       const { data, error } = await supabase.functions.invoke('feeling-journey', {
         body: { 
@@ -54,14 +73,85 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsLoadingWarmup(false);
     }
+  };
+
+  const saveWarmup = async () => {
+    if (!currentSong || !warmupData) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('saved_warmups')
+        .insert({
+          user_id: user.id,
+          song_title: currentSong.title,
+          song_artist: currentSong.artist,
+          physical_warmups: warmupData.physicalWarmups || [],
+          vocal_warmups: warmupData.vocalWarmups || [],
+          emotional_prep: warmupData.emotionalPrep || [],
+          duration: warmupData.duration || 15
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Saved!",
+        description: "Warm-up routine saved to your collection.",
+      });
+      
+      loadSavedWarmups();
+    } catch (error) {
+      console.error('Error saving warmup:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save warmup routine. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteSavedWarmup = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('saved_warmups')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Deleted",
+        description: "Warm-up routine removed from your collection.",
+      });
+      
+      loadSavedWarmups();
+    } catch (error) {
+      console.error('Error deleting warmup:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete warmup routine.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const loadSavedWarmup = (warmup: any) => {
+    setWarmupData({
+      physicalWarmups: warmup.physical_warmups,
+      vocalWarmups: warmup.vocal_warmups,
+      emotionalPrep: warmup.emotional_prep,
+      duration: warmup.duration
+    });
   };
 
   const generateSetlist = async () => {
     if (!currentSong) return;
     
-    setIsLoading(true);
+    setIsLoadingSetlist(true);
     try {
       const { data, error } = await supabase.functions.invoke('feeling-journey', {
         body: { 
@@ -83,7 +173,6 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
 
       setSetlistData(data);
       
-      // Find actual song objects for the setlist
       const foundSongs = data.setlist?.map((item: any) => 
         songs.find(s => s.title.toLowerCase().includes(item.song.toLowerCase()) || 
                       item.song.toLowerCase().includes(s.title.toLowerCase()))
@@ -98,7 +187,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsLoadingSetlist(false);
     }
   };
 
@@ -142,38 +231,22 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                 </p>
               </div>
             ) : (
-              <>
-                {/* Tabs */}
-                <div className="flex gap-2 mb-6">
-                  <Button
-                    variant={activeTab === 'warmup' ? 'default' : 'outline'}
-                    onClick={() => setActiveTab('warmup')}
-                    className="flex-1"
-                  >
-                    <Mic className="w-4 h-4 mr-2" />
-                    Warm-up Routine
-                  </Button>
-                  <Button
-                    variant={activeTab === 'setlist' ? 'default' : 'outline'}
-                    onClick={() => setActiveTab('setlist')}
-                    className="flex-1"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Build Setlist
-                  </Button>
-                </div>
-
-                {/* Warm-up Tab */}
-                {activeTab === 'warmup' && (
-                  <div className="space-y-6">
+              <div className="space-y-8">
+                {/* AI Warm-up Generator */}
+                <div className="space-y-4">
+                  <h3 className="text-xl font-semibold flex items-center gap-2">
+                    <Dumbbell className="w-5 h-5 text-primary" />
+                    AI Warm-up Generator
+                  </h3>
+                  <div className="space-y-6">(
                     {!warmupData ? (
                       <div className="text-center py-8">
                         <Button
                           onClick={generateWarmup}
-                          disabled={isLoading}
+                          disabled={isLoadingWarmup}
                           size="lg"
                         >
-                          {isLoading ? (
+                          {isLoadingWarmup ? (
                             <>
                               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                               Generating routine...
@@ -181,7 +254,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                           ) : (
                             <>
                               <Dumbbell className="w-4 h-4 mr-2" />
-                              Generate Warm-up Routine
+                              Generate AI Warm-up
                             </>
                           )}
                         </Button>
@@ -261,29 +334,87 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                             Total Duration: {warmupData.duration} minutes
                           </span>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setWarmupData(null)}
-                        >
-                          Generate New Routine
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={saveWarmup}
+                          >
+                            <Save className="w-4 h-4 mr-2" />
+                            Save
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setWarmupData(null)}
+                          >
+                            Generate New
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
+                </div>
+
+                {/* Saved Warm-ups */}
+                {savedWarmups.length > 0 && (
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-semibold flex items-center gap-2">
+                      <Save className="w-5 h-5 text-primary" />
+                      Saved Warm-ups
+                    </h3>
+                    <div className="space-y-2">
+                      {savedWarmups.map((warmup) => (
+                        <div
+                          key={warmup.id}
+                          className="flex items-center justify-between p-4 bg-card-accent/20 rounded-lg"
+                        >
+                          <div className="flex-1">
+                            <h4 className="font-medium">{warmup.song_title}</h4>
+                            {warmup.song_artist && (
+                              <p className="text-sm text-card-foreground/60">{warmup.song_artist}</p>
+                            )}
+                            <p className="text-xs text-card-foreground/50 mt-1">
+                              {warmup.duration} min • {new Date(warmup.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => loadSavedWarmup(warmup)}
+                            >
+                              Load
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => deleteSavedWarmup(warmup.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
 
-                {/* Setlist Tab */}
-                {activeTab === 'setlist' && (
-                  <div className="space-y-6">
+                {/* Setlist Generator */}
+                <div className="space-y-4">
+                  <h3 className="text-xl font-semibold flex items-center gap-2">
+                    <Plus className="w-5 h-5 text-primary" />
+                    Setlist Builder
+                  </h3>
+                  <div className="space-y-6">(
                     {!setlistData ? (
                       <div className="text-center py-8">
                         <Button
                           onClick={generateSetlist}
-                          disabled={isLoading}
+                          disabled={isLoadingSetlist}
                           size="lg"
                         >
-                          {isLoading ? (
+                          {isLoadingSetlist ? (
                             <>
                               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                               Building setlist...
@@ -368,8 +499,8 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                       </Button>
                     )}
                   </div>
-                )}
-              </>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>

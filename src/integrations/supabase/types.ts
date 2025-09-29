@@ -35,6 +35,42 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_warmups: {
+        Row: {
+          created_at: string
+          duration: number
+          emotional_prep: string[]
+          id: string
+          physical_warmups: string[]
+          song_artist: string | null
+          song_title: string
+          user_id: string
+          vocal_warmups: string[]
+        }
+        Insert: {
+          created_at?: string
+          duration: number
+          emotional_prep: string[]
+          id?: string
+          physical_warmups: string[]
+          song_artist?: string | null
+          song_title: string
+          user_id: string
+          vocal_warmups: string[]
+        }
+        Update: {
+          created_at?: string
+          duration?: number
+          emotional_prep?: string[]
+          id?: string
+          physical_warmups?: string[]
+          song_artist?: string | null
+          song_title?: string
+          user_id?: string
+          vocal_warmups?: string[]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
