@@ -2,8 +2,11 @@ export interface Song {
   id: string;
   title: string;
   artist: string;
-  emotions: string[];
-  tips: string[];
+  summary: string;
+  theme: string;
+  core_feelings: string[];
+  access_ideas: string[];
+  visual: string;
 }
 
 export interface Vibe {
@@ -14,6 +17,9 @@ export interface Vibe {
 }
 
 export interface FeelingMap extends Song {
+  // Legacy fields for backward compatibility
+  emotions?: string[];
+  tips?: string[];
   isVibeBasedMap?: boolean;
   vibeLabel?: string;
 }

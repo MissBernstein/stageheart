@@ -72,17 +72,17 @@ export const FavoritesDrawer = ({ onSelectFavorite }: FavoritesDrawerProps) => {
                       </p>
                     )}
                     <div className="flex flex-wrap gap-1">
-                      {favorite.emotions.slice(0, 3).map((emotion, i) => (
+                      {(favorite.core_feelings || favorite.emotions || []).slice(0, 3).map((feeling, i) => (
                         <span
                           key={i}
                           className="text-xs px-2 py-1 bg-emotion-bg text-emotion-text rounded-full"
                         >
-                          {emotion}
+                          {feeling}
                         </span>
                       ))}
-                      {favorite.emotions.length > 3 && (
+                      {(favorite.core_feelings || favorite.emotions || []).length > 3 && (
                         <span className="text-xs px-2 py-1 bg-card-foreground/10 text-card-foreground/60 rounded-full">
-                          +{favorite.emotions.length - 3}
+                          +{(favorite.core_feelings || favorite.emotions || []).length - 3}
                         </span>
                       )}
                     </div>

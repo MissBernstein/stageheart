@@ -62,8 +62,11 @@ const Index = () => {
       id: `vibe-${vibe.id}-${Date.now()}`,
       title: searchQuery.title,
       artist: searchQuery.artist,
-      emotions: vibe.emotions,
-      tips: vibe.tips,
+      summary: `Vibe-based feeling map for "${searchQuery.title}"`,
+      theme: vibe.label,
+      core_feelings: vibe.emotions,
+      access_ideas: vibe.tips,
+      visual: "🎭",
       isVibeBasedMap: true,
       vibeLabel: vibe.label
     };

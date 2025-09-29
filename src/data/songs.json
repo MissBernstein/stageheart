@@ -1,68 +1,268 @@
 [
   {
-    "id": "hallelujah",
-    "title": "Hallelujah",
-    "artist": "Leonard Cohen",
-    "emotions": ["reverent", "tender", "melancholy", "hopeful"],
-    "tips": [
-      "Keep breath deep and steady for long phrases",
-      "Soften jaw and lips to maintain warmth",
-      "Slight upward gaze to invite openness"
-    ]
+    "id": "bridgeovertroubledwater",
+    "title": "Bridge Over Troubled Water",
+    "artist": "Simon & Garfunkel",
+    "summary": "Someone promises to be a safe place for a friend who's struggling.",
+    "theme": "Unconditional support and comfort.",
+    "core_feelings": ["deep empathy","warm reassurance","quiet strength"],
+    "access_ideas": [
+      "Think of a friend you helped when they were down.",
+      "Relax jaw and shoulders; let your voice feel like a hug.",
+      "Imagine your sound wrapping around someone like a blanket."
+    ],
+    "visual": "🕯️ or a calm bridge over water"
+  },
+  {
+    "id": "mustangsally",
+    "title": "Mustang Sally",
+    "artist": "Wilson Pickett (popular version)",
+    "summary": "A man warns Sally who just got a Mustang to slow down and stop leaving him behind.",
+    "theme": "Freedom and rebellion; someone trying to keep up.",
+    "core_feelings": ["playful groove","cheeky frustration"],
+    "access_ideas": [
+      "Picture calling after someone rushing ahead—half laughing, half annoyed.",
+      "Loosen hips and shoulders; sway with the beat and feel the swagger.",
+      "Exchange grins—cheeky, not angry."
+    ],
+    "visual": "🚗💨 Red Mustang speeding away"
+  },
+  {
+    "id": "signedsealeddelivered",
+    "title": "Signed, Sealed, Delivered (I'm Yours)",
+    "artist": "Stevie Wonder",
+    "summary": "A lover returns saying: I messed up, but I'm back for good—my heart is yours.",
+    "theme": "Renewed love, gratitude, excitement.",
+    "core_feelings": ["joy","celebration","i've learned"],
+    "access_ideas": [
+      "Recall a heartfelt apology accepted—feel relief and joy.",
+      "Light bounce in knees, open chest, smile wide—almost dancing.",
+      "Share grins—party energy!"
+    ],
+    "visual": "💌 Love letter sealed with a kiss"
+  },
+  {
+    "id": "canthelpfallinginlove",
+    "title": "Can't Help Falling in Love",
+    "artist": "Elvis Presley (popular version)",
+    "summary": "Surrendering to love—despite caution, the heart knows it's right.",
+    "theme": "Tender, timeless love bigger than control.",
+    "core_feelings": ["gentle awe","quiet surrender","warm devotion"],
+    "access_ideas": [
+      "Recall a safe, deep love moment.",
+      "Soften shoulders, drop jaw, breathe slowly.",
+      "Soften eye contact—sing like a collective hug."
+    ],
+    "visual": "💞 Soft glowing heart"
+  },
+  {
+    "id": "forgetyou",
+    "title": "Forget You",
+    "artist": "CeeLo Green",
+    "summary": "An ex moves on with someone flashy; the singer vents and laughs it off.",
+    "theme": "Bitter heartbreak turned cheeky empowerment.",
+    "core_feelings": ["playful sass","undercurrent of hurt"],
+    "access_ideas": [
+      "Channel a breakup that stung but made you stronger.",
+      "Shoulders back, chin high—hair-flip energy.",
+      "Grin with an 'oh really?' vibe."
+    ],
+    "visual": "💔✨ Broken heart with sparkle"
+  },
+  {
+    "id": "yourethevoice",
+    "title": "You're the Voice",
+    "artist": "John Farnham",
+    "summary": "A call to speak up and stand together for change.",
+    "theme": "Courage and collective strength.",
+    "core_feelings": ["rising determination","hopeful power","triumphant unity"],
+    "access_ideas": [
+      "Recall standing up for something important.",
+      "Plant feet firmly; expand breath and spine.",
+      "Lock eyes: 'we're in this together'."
+    ],
+    "visual": "📣 Raised fist / sunrise"
+  },
+  {
+    "id": "hewillsupply",
+    "title": "He Will Supply",
+    "artist": "Gospel standard",
+    "summary": "Declaration of trust that God will provide strength, hope, and love.",
+    "theme": "Faith, reassurance, surrender.",
+    "core_feelings": ["warm trust","rising hope","joyful praise"],
+    "access_ideas": [
+      "Recall being guided through difficulty.",
+      "Relax shoulders, open chest; sing with comfort.",
+      "Exchange gentle nods—safe and grateful."
+    ],
+    "visual": "🕊️ Dove / glowing light"
+  },
+  {
+    "id": "comehome",
+    "title": "Come Home",
+    "artist": "Contemporary worship / pop variants",
+    "summary": "A plea for someone loved to return—physically or emotionally.",
+    "theme": "Yearning and hope for reunion.",
+    "core_feelings": ["tender longing","vulnerable hope","quiet joy"],
+    "access_ideas": [
+      "Think of missing someone and longing for their return.",
+      "Soften chest and throat; sigh-like breaths.",
+      "Gentle eye contact—calling someone home together."
+    ],
+    "visual": "🏡 Glowing house / light in the night"
+  },
+  {
+    "id": "hosanna",
+    "title": "Hosanna",
+    "artist": "Gospel/Praise",
+    "summary": "Joyful shout of praise and celebration for God's greatness.",
+    "theme": "Triumphant faith and unstoppable joy.",
+    "core_feelings": ["explosive joy","awe","unstoppable celebration"],
+    "access_ideas": [
+      "Recall a moment of relief and gratitude.",
+      "Loosen everything; bounce and sway; wide smiles.",
+      "Share eye contact and movement with joy."
+    ],
+    "visual": "🙌 / ✨ sunburst"
+  },
+  {
+    "id": "youvegotafriend",
+    "title": "You've Got a Friend",
+    "artist": "Carole King / James Taylor",
+    "summary": "No matter how dark it gets, a true friend will be there.",
+    "theme": "Unconditional support and love.",
+    "core_feelings": ["calm reassurance","warm connection","quiet joy"],
+    "access_ideas": [
+      "Think of someone who's always had your back.",
+      "Relax shoulders, soften gaze, slight smile.",
+      "Gentle nods and soft eye contact."
+    ],
+    "visual": "🤝 Hands / 🕯️ candle"
+  },
+  {
+    "id": "proudmary",
+    "title": "Proud Mary",
+    "artist": "Creedence Clearwater Revival / Tina Turner",
+    "summary": "Leaving a tough life behind and finding freedom and joy rolling down the river.",
+    "theme": "Breaking free and celebrating after hardship.",
+    "core_feelings": ["start weary","burst into wild joy","unstoppable groove"],
+    "access_ideas": [
+      "Recall quitting something heavy and feeling free.",
+      "Begin still and heavy, then bounce and let go.",
+      "Lock eyes and grin on the 'rolling' parts."
+    ],
+    "visual": "🚤 Riverboat / 🌊 waves"
+  },
+  {
+    "id": "diavoloinme",
+    "title": "Diavolo in Me",
+    "artist": "Zucchero (or arrangement)",
+    "summary": "Set ablaze by irresistible desire—thrilling, dangerous passion.",
+    "theme": "Overpowering attraction; joyful surrender.",
+    "core_feelings": ["magnetic pull","rising heat","wild surrender"],
+    "access_ideas": [
+      "Recall being swept away by chemistry and desire.",
+      "Open chest, subtle hips, half-smile, gleaming eyes.",
+      "Share mischievous glances—dangerous game together."
+    ],
+    "visual": "🔥😈 / ❤️‍🔥"
+  },
+  {
+    "id": "dufragschmiweribi",
+    "title": "Du fragsch mi, wer i bi",
+    "artist": "Swiss (dialect song)",
+    "summary": "Someone asks who you really are; you dare to show your true self.",
+    "theme": "Identity, authenticity, vulnerability.",
+    "core_feelings": ["tender self-reveal","quiet courage","soft gratitude"],
+    "access_ideas": [
+      "Remember being truly seen by someone safe.",
+      "Soften chest and throat; allow small sighs.",
+      "Gentle eye contact or close eyes—a shared secret."
+    ],
+    "visual": "🕯️ / 🌱 sprout"
+  },
+  {
+    "id": "icangotogodinprayer",
+    "title": "I Can Go to God in Prayer",
+    "artist": "Gospel standard",
+    "summary": "You can always talk to God, pour out worries, and find comfort and strength.",
+    "theme": "Prayer as refuge and empowerment.",
+    "core_feelings": ["humble need","comforting safety","grateful joy"],
+    "access_ideas": [
+      "Recall the peace after speaking your truth.",
+      "Drop shoulders; open palms upward; heartfelt tone.",
+      "Sing as one body praying together."
+    ],
+    "visual": "🙏 / 🌅 sunrise"
+  },
+  {
+    "id": "aquariusletthethesunshinein",
+    "title": "Aquarius / Let the Sunshine In",
+    "artist": "The 5th Dimension",
+    "summary": "Celebration of a new era of love, freedom, and hope after darkness.",
+    "theme": "Awakening and collective joy.",
+    "core_feelings": ["cosmic wonder","excitement","ecstatic joy"],
+    "access_ideas": [
+      "Remember a new beginning—first spring day, good news dance.",
+      "Start fluid and swaying; open arms and chest on 'sunshine'.",
+      "Grins and eye contact—breaking into light together."
+    ],
+    "visual": "☀️ radiant sun / 🌌✨"
+  },
+  {
+    "id": "higherground",
+    "title": "Higher Ground",
+    "artist": "Stevie Wonder",
+    "summary": "Determined push to grow and move toward a better life and spirituality.",
+    "theme": "Resilience, self-betterment, motion.",
+    "core_feelings": ["strong drive","hopeful striving","joyful triumph"],
+    "access_ideas": [
+      "Recall deciding to rise and change.",
+      "Bounce with the groove; spine tall and proud.",
+      "Share grit and joy with the room."
+    ],
+    "visual": "⬆️ stairs / 🌄 sunrise mountains"
+  },
+  {
+    "id": "sing",
+    "title": "Sing",
+    "artist": "Pentatonix (or arrangement)",
+    "summary": "Invitation to sing out, unite, and free yourself through music.",
+    "theme": "Joyful self-expression and togetherness.",
+    "core_feelings": ["lighthearted fun","shared energy","liberating joy"],
+    "access_ideas": [
+      "Think of singing with friends and feeling connected.",
+      "Bounce lightly, smile, open chest.",
+      "Bright smiles—almost laughing while singing."
+    ],
+    "visual": "🎤 / 🎶"
+  },
+  {
+    "id": "luegitvobargundtal",
+    "title": "Luegit vo Bärg und Tal",
+    "artist": "Swiss Traditional",
+    "summary": "Admire the beauty of nature; feel gratitude and joy.",
+    "theme": "Awe, peace, praise for life.",
+    "core_feelings": ["calm wonder","expanding joy","lighthearted celebration"],
+    "access_ideas": [
+      "Imagine standing in the mountains—crisp air, vastness.",
+      "Open chest, deep breath; voice like a wide horizon.",
+      "Gentle glances, relaxed shoulders—greet the sun."
+    ],
+    "visual": "🏔️ peaks / 🌸 alpine meadow"
   },
   {
     "id": "uptownfunk",
     "title": "Uptown Funk",
     "artist": "Bruno Mars",
-    "emotions": ["playful", "bold", "flirty", "energetic"],
-    "tips": [
-      "Bounce knees lightly for groove",
-      "Punch consonants for clarity and swagger",
-      "Smile wide to brighten tone"
-    ]
-  },
-  {
-    "id": "sing",
-    "title": "Sing",
-    "artist": "Pentatonix",
-    "emotions": ["uplifting", "joyful", "bright"],
-    "tips": [
-      "Lift soft palate for resonance",
-      "Relax shoulders to free breath",
-      "Use light articulation for crisp sound"
-    ]
-  },
-  {
-    "id": "luegitvobergundtal",
-    "title": "Luegit vo Berg und Tal",
-    "artist": "Swiss Traditional",
-    "emotions": ["nostalgic", "tender", "calm"],
-    "tips": [
-      "Keep tone warm and centered",
-      "Allow small natural rubato for storytelling",
-      "Gentle vibrato at phrase ends"
-    ]
-  },
-  {
-    "id": "someone-like-you",
-    "title": "Someone Like You",
-    "artist": "Adele",
-    "emotions": ["yearning", "vulnerable", "bittersweet", "powerful"],
-    "tips": [
-      "Start soft and build gradually to avoid strain",
-      "Use breath support on long sustained notes",
-      "Allow emotion to guide dynamic changes"
-    ]
-  },
-  {
-    "id": "happy",
-    "title": "Happy",
-    "artist": "Pharrell Williams",
-    "emotions": ["joyful", "carefree", "bouncy", "infectious"],
-    "tips": [
-      "Keep rhythm alive in your body",
-      "Brighten vowels with a natural smile",
-      "Use staccato touches for playful articulation"
-    ]
+    "summary": "Swagger-filled party anthem: confidence, style, unstoppable fun.",
+    "theme": "Pure joy and self-assurance.",
+    "core_feelings": ["playful swagger","electric excitement","unstoppable party joy"],
+    "access_ideas": [
+      "Recall a night you felt alive and carefree.",
+      "Loose hips, bouncy knees; chin up; playful shoulders.",
+      "Wink, smirk; hype each other."
+    ],
+    "visual": "🕺✨ / 🔥 funky neon"
   }
 ]

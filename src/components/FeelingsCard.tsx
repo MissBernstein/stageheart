@@ -16,12 +16,17 @@ export const FeelingsCard = ({ feelingMap }: FeelingsCardProps) => {
   const [justSaved, setJustSaved] = useState(false);
 
   const handleCopy = async () => {
-    const text = `${feelingMap.title}${feelingMap.artist ? ` by ${feelingMap.artist}` : ''}
+    const text = `${feelingMap.title}${feelingMap.artist ? ` — ${feelingMap.artist}` : ''}
 
-Emotions: ${feelingMap.emotions.join(', ')}
+${feelingMap.summary}
+${feelingMap.theme}
 
-Performance Tips:
-${feelingMap.tips.map(tip => `• ${tip}`).join('\n')}${feelingMap.isVibeBasedMap ? '\n\n(Generated from vibe-based mapping)' : ''}`;
+Core feeling arc: ${feelingMap.core_feelings?.join(', ') || feelingMap.emotions?.join(', ')}
+
+Performance tips:
+${(feelingMap.access_ideas || feelingMap.tips)?.map(tip => `• ${tip}`).join('\n')}
+
+Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Generated from vibe-based mapping)' : ''}`;
 
     try {
       await navigator.clipboard.writeText(text);
@@ -78,14 +83,36 @@ ${feelingMap.tips.map(tip => `• ${tip}`).join('\n')}${feelingMap.isVibeBasedMa
           )}
         </div>
 
-        {/* Emotions */}
+        {/* Summary */}
+        {feelingMap.summary && (
+          <div className="mb-6">
+            <p className="text-lg text-card-foreground/80 leading-relaxed italic">
+              {feelingMap.summary}
+            </p>
+          </div>
+        )}
+
+        {/* Theme */}
+        {feelingMap.theme && (
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-card-foreground mb-3 flex items-center gap-2">
+              <div className="w-2 h-2 bg-accent rounded-full"></div>
+              Theme
+            </h3>
+            <p className="text-card-foreground/70 font-medium">
+              {feelingMap.theme}
+            </p>
+          </div>
+        )}
+
+        {/* Core Feelings Arc */}
         <div className="mb-8">
           <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
             <div className="w-2 h-2 bg-primary rounded-full"></div>
-            Emotion Palette
+            Core Feeling Arc
           </h3>
           <div className="flex flex-wrap gap-3">
-            {feelingMap.emotions.map((emotion, index) => (
+            {(feelingMap.core_feelings || feelingMap.emotions || []).map((feeling, index) => (
               <span
                 key={index}
                 className="px-4 py-2 bg-emotion-bg text-emotion-text border border-emotion-border rounded-full text-sm font-medium shadow-emotion transition-all duration-200 hover:scale-105"
@@ -93,7 +120,7 @@ ${feelingMap.tips.map(tip => `• ${tip}`).join('\n')}${feelingMap.isVibeBasedMa
                   animationDelay: `${index * 100}ms`,
                 }}
               >
-                {emotion}
+                {feeling}
               </span>
             ))}
           </div>
@@ -103,15 +130,15 @@ ${feelingMap.tips.map(tip => `• ${tip}`).join('\n')}${feelingMap.isVibeBasedMa
         <div className="mb-8">
           <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
             <Lightbulb className="w-5 h-5 text-tip-icon" />
-            Performance Hints
+            Emotional Access Ideas
           </h3>
           <div className="space-y-3">
-            {feelingMap.tips.map((tip, index) => (
+            {(feelingMap.access_ideas || feelingMap.tips || []).map((tip, index) => (
               <div
                 key={index}
                 className="flex items-start gap-3 p-4 bg-tip-bg rounded-2xl transition-all duration-200 hover:bg-tip-bg/80"
                 style={{
-                  animationDelay: `${(feelingMap.emotions.length + index) * 100}ms`,
+                  animationDelay: `${((feelingMap.core_feelings || feelingMap.emotions || []).length + index) * 100}ms`,
                 }}
               >
                 <div className="w-2 h-2 bg-tip-icon rounded-full mt-2 flex-shrink-0"></div>
@@ -120,6 +147,21 @@ ${feelingMap.tips.map(tip => `• ${tip}`).join('\n')}${feelingMap.isVibeBasedMa
             ))}
           </div>
         </div>
+
+        {/* Visual Cue */}
+        {feelingMap.visual && (
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
+              <div className="w-2 h-2 bg-accent rounded-full"></div>
+              Visual Cue
+            </h3>
+            <div className="p-4 bg-tip-bg/50 rounded-2xl text-center">
+              <p className="text-tip-text text-lg font-medium">
+                {feelingMap.visual}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="flex gap-3">
