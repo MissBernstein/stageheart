@@ -123,16 +123,15 @@ const Index = () => {
       {/* Background gradient overlay */}
       <div className="fixed inset-0 bg-gradient-to-br from-background/90 via-background/95 to-background/90" />
       
-      {/* Favorites drawer */}
-      <FavoritesDrawer onSelectFavorite={handleSelectFavorite} />
-      
       {/* Main content */}
       <div className="relative z-10 container mx-auto px-4 py-12">
         <div className="space-y-8">
           {/* Header */}
           <div className="text-center mb-12">
             <div className="flex justify-between items-start mb-6">
-              <div className="flex-1" />
+              <div className="flex-1 flex justify-start">
+                <FavoritesDrawer onSelectFavorite={handleSelectFavorite} />
+              </div>
               <div className="flex-1 text-center">
                 <h1 className="text-6xl md:text-7xl text-foreground mb-4">
                   Stage Heart

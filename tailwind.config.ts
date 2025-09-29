@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        comforter: ['Comforter', 'cursive'],
+        heading: ['Love Ya Like A Sister', 'cursive'],
       },
       colors: {
         border: "hsl(var(--border))",
