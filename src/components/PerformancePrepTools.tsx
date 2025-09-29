@@ -6,6 +6,7 @@ import { Dumbbell, Mic, Brain, Clock, Loader2, Plus, Save, Trash2 } from 'lucide
 import { Song } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import vibesData from '@/data/vibes.json';
 
 interface PerformancePrepToolsProps {
   currentSong?: Song;
@@ -21,6 +22,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
   const [setlistSongs, setSetlistSongs] = useState<Song[]>([]);
   const [savedWarmups, setSavedWarmups] = useState<any[]>([]);
   const [songCount, setSongCount] = useState(5);
+  const [selectedVibe, setSelectedVibe] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -42,15 +44,21 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
   };
 
   const generateWarmup = async () => {
-    if (!currentSong) return;
+    if (!currentSong && !selectedVibe) return;
     
     setIsLoadingWarmup(true);
     try {
+      const vibe = vibesData.find(v => v.id === selectedVibe);
+      
       const { data, error } = await supabase.functions.invoke('feeling-journey', {
-        body: { 
+        body: currentSong ? { 
           mood: currentSong.title,
           energy: currentSong.core_feelings.join(', '),
           type: 'warmup' 
+        } : {
+          vibe: vibe?.label,
+          energy: vibe?.emotions.join(', '),
+          type: 'warmup'
         }
       });
 
@@ -79,22 +87,26 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
   };
 
   const saveWarmup = async () => {
-    if (!currentSong || !warmupData) return;
+    if (!warmupData) return;
+    if (!currentSong && !selectedVibe) return;
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      const vibe = vibesData.find(v => v.id === selectedVibe);
+
       const { error } = await supabase
         .from('saved_warmups')
         .insert({
           user_id: user.id,
-          song_title: currentSong.title,
-          song_artist: currentSong.artist,
-            physical_warmups: warmupData.physicalWarmups || [],
-            vocal_warmups: warmupData.vocalWarmups || [],
-            emotional_prep: warmupData.emotionalPrep || [],
-            duration: Number(warmupData.duration) || 15
+          song_title: currentSong?.title || null,
+          song_artist: currentSong?.artist || null,
+          vibe: vibe?.label || null,
+          physical_warmups: warmupData.physicalWarmups || [],
+          vocal_warmups: warmupData.vocalWarmups || [],
+          emotional_prep: warmupData.emotionalPrep || [],
+          duration: Number(warmupData.duration) || 15
         });
 
       if (error) throw error;
@@ -226,11 +238,79 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
           </CardHeader>
 
           <CardContent>
-            {!currentSong ? (
-              <div className="text-center py-8">
-                <p className="text-card-foreground/60">
-                  Select a song first to generate performance preparation tools.
-                </p>
+            {!currentSong && !selectedVibe ? (
+              <div className="space-y-6">
+                <div className="text-center py-4">
+                  <p className="text-card-foreground/60 mb-6">
+                    Select a vibe category to generate a warm-up routine
+                  </p>
+                </div>
+                
+                {/* Vibe Selector */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {vibesData.map((vibe) => (
+                    <button
+                      key={vibe.id}
+                      onClick={() => {
+                        setSelectedVibe(vibe.id);
+                        setWarmupData(null);
+                      }}
+                      className={`p-4 rounded-lg border-2 transition-all ${
+                        selectedVibe === vibe.id
+                          ? 'border-primary bg-primary/10'
+                          : 'border-card-border hover:border-primary/50'
+                      }`}
+                    >
+                      <h4 className="font-semibold mb-2">{vibe.label}</h4>
+                      <p className="text-xs text-card-foreground/60">
+                        {vibe.emotions.slice(0, 2).join(', ')}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Saved Warm-ups Section - Always visible */}
+                {savedWarmups.length > 0 && (
+                  <div className="mt-8 space-y-4">
+                    <h3 className="text-xl font-semibold flex items-center gap-2">
+                      <Save className="w-5 h-5 text-primary" />
+                      Saved Warm-ups
+                    </h3>
+                    <div className="space-y-2">
+                      {savedWarmups.map((warmup) => (
+                        <div
+                          key={warmup.id}
+                          className="flex items-center justify-between p-4 bg-card-accent/20 rounded-lg"
+                        >
+                          <div className="flex-1">
+                            <h4 className="font-medium">
+                              {warmup.vibe || `${warmup.song_title}${warmup.song_artist ? ` by ${warmup.song_artist}` : ''}`}
+                            </h4>
+                            <p className="text-xs text-card-foreground/50 mt-1">
+                              {warmup.duration} min • {new Date(warmup.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => loadSavedWarmup(warmup)}
+                            >
+                              Load
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => deleteSavedWarmup(warmup.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="space-y-8">
@@ -239,10 +319,15 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                   <h3 className="text-xl font-semibold flex items-center gap-2">
                     <Dumbbell className="w-5 h-5 text-primary" />
                     AI Warm-up Generator
+                    {selectedVibe && !currentSong && (
+                      <Badge variant="secondary" className="ml-2">
+                        {vibesData.find(v => v.id === selectedVibe)?.label}
+                      </Badge>
+                    )}
                   </h3>
                   <div className="space-y-6">
                     {!warmupData ? (
-                      <div className="text-center py-8">
+                      <div className="text-center py-8 space-y-4">
                         <Button
                           onClick={generateWarmup}
                           disabled={isLoadingWarmup}
@@ -260,8 +345,22 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                             </>
                           )}
                         </Button>
-                        <p className="text-sm text-card-foreground/60 mt-2">
-                          Get a personalized warm-up based on your song's emotional requirements
+                        {!currentSong && (
+                          <button
+                            onClick={() => {
+                              setSelectedVibe(null);
+                              setWarmupData(null);
+                            }}
+                            className="text-sm text-card-foreground/60 hover:text-card-foreground underline"
+                          >
+                            ← Choose different vibe
+                          </button>
+                        )}
+                        <p className="text-sm text-card-foreground/60">
+                          {currentSong 
+                            ? "Get a personalized warm-up based on your song's emotional requirements"
+                            : "Get a warm-up routine tailored to your selected vibe"
+                          }
                         </p>
                       </div>
                     ) : (
@@ -359,7 +458,8 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                 </div>
 
                 {/* Saved Warm-ups */}
-                {savedWarmups.length > 0 && (
+                {/* Saved Warm-ups - Only show when song is selected */}
+                {currentSong && savedWarmups.length > 0 && (
                   <div className="space-y-4">
                     <h3 className="text-xl font-semibold flex items-center gap-2">
                       <Save className="w-5 h-5 text-primary" />
@@ -372,8 +472,10 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                           className="flex items-center justify-between p-4 bg-card-accent/20 rounded-lg"
                         >
                           <div className="flex-1">
-                            <h4 className="font-medium">{warmup.song_title}</h4>
-                            {warmup.song_artist && (
+                            <h4 className="font-medium">
+                              {warmup.vibe || `${warmup.song_title}${warmup.song_artist ? ` by ${warmup.song_artist}` : ''}`}
+                            </h4>
+                            {warmup.song_artist && !warmup.vibe && (
                               <p className="text-sm text-card-foreground/60">{warmup.song_artist}</p>
                             )}
                             <p className="text-xs text-card-foreground/50 mt-1">

@@ -9,7 +9,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { mood, energy, context, type, songCount = 5 } = await req.json();
+    const { mood, energy, context, type, songCount = 5, vibe } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
@@ -59,7 +59,11 @@ Recommend the most suitable song from the dataset and explain why it's perfect f
     } else if (type === "warmup") {
       systemPrompt = `You are a vocal coach creating personalized warm-up routines based on song emotions and performance requirements. Provide practical, actionable vocal and physical warm-ups.`;
       
-      prompt = `Create a warm-up routine for performing "${mood}" with core feelings: ${energy}. 
+      const warmupContext = vibe 
+        ? `Create a warm-up routine for the "${vibe}" vibe with core feelings: ${energy}.`
+        : `Create a warm-up routine for performing "${mood}" with core feelings: ${energy}.`;
+      
+      prompt = `${warmupContext} 
       
       Return as JSON:
       {

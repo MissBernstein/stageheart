@@ -43,8 +43,9 @@ export type Database = {
           id: string
           physical_warmups: string[]
           song_artist: string | null
-          song_title: string
+          song_title: string | null
           user_id: string
+          vibe: string | null
           vocal_warmups: string[]
         }
         Insert: {
@@ -54,8 +55,9 @@ export type Database = {
           id?: string
           physical_warmups: string[]
           song_artist?: string | null
-          song_title: string
+          song_title?: string | null
           user_id: string
+          vibe?: string | null
           vocal_warmups: string[]
         }
         Update: {
@@ -65,8 +67,9 @@ export type Database = {
           id?: string
           physical_warmups?: string[]
           song_artist?: string | null
-          song_title?: string
+          song_title?: string | null
           user_id?: string
+          vibe?: string | null
           vocal_warmups?: string[]
         }
         Relationships: []
