@@ -80,7 +80,11 @@ const Index = () => {
   }
 
   if (!session) {
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-muted-foreground">Redirecting to login...</p>
+      </div>
+    );
   }
 
   const searchSong = (title: string, artist: string) => {
@@ -192,15 +196,15 @@ const Index = () => {
                 <FavoritesDrawer onSelectFavorite={handleSelectFavorite} />
               </div>
               <div className="flex-1 text-center">
-                <div className="flex items-center justify-center gap-4 mb-4">
-                  <img src={logo} alt="Stage Heart Logo" className="w-20 h-auto object-contain" />
-                  <h1 className="text-6xl md:text-7xl text-foreground">
+                <div className="flex flex-col items-center justify-center gap-4 py-6">
+                  <img src={logo} alt="Stage Heart Logo" className="w-28 h-28 md:w-36 md:h-36 object-contain mx-auto" />
+                  <h1 className="text-3xl md:text-5xl font-bold text-foreground text-center">
                     Stage Heart
                   </h1>
+                  <p className="text-base md:text-lg text-foreground max-w-2xl mx-auto text-center">
+                    {t('app.subtitle') || 'Discover the emotional journey of music'}
+                  </p>
                 </div>
-                <p className="text-xl text-foreground max-w-2xl mx-auto">
-                  {t('app.subtitle')}
-                </p>
               </div>
               <div className="flex-1 flex justify-end items-center gap-3">
                 <LanguageToggle />
@@ -220,25 +224,25 @@ const Index = () => {
                   onClick={() => setShowLibrary(true)}
                   className="px-6 py-2 bg-accent hover:bg-button-secondary-hover text-accent-foreground rounded-full transition-colors text-sm font-medium"
                 >
-                  📚 {t('navigation.browseLibrary')} ({songs.length} songs)
+                  {t('navigation.browseLibrary')} ({songs.length} songs)
                 </button>
                 <button
                   onClick={() => setShowJourney(true)}
                   className="px-6 py-2 bg-primary-soft hover:bg-button-primary-hover text-primary rounded-full transition-colors text-sm font-medium"
                 >
-                  🧭 {t('navigation.feelingJourney')}
+                  {t('navigation.feelingJourney')}
                 </button>
                 <button
                   onClick={() => setShowPrepTools(true)}
                   className="px-6 py-2 bg-primary-soft hover:bg-button-primary-hover text-primary rounded-full transition-colors text-sm font-medium"
                 >
-                  🏋️ Performance Prep
+                  Performance Prep
                 </button>
                 <button
                   onClick={handleRandomSong}
                   className="px-6 py-2 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-sm font-medium"
                 >
-                  🎲 {t('navigation.surpriseMe')}
+                  {t('navigation.surpriseMe')}
                 </button>
               </div>
             )}

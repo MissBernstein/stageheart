@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, Filter, Shuffle, Grid, List } from 'lucide-react';
+import jukeboxIcon from '@/assets/jukeboxicon.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Song } from '@/types';
@@ -53,7 +54,8 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
           {/* Header */}
           <div className="p-6 border-b border-card-border">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold text-card-foreground">
+              <h2 className="text-2xl font-semibold text-card-foreground flex items-center gap-3">
+                <img src={jukeboxIcon} alt="Jukebox Icon" className="w-16 h-16 object-contain" />
                 {t('library.title')}
               </h2>
               <button

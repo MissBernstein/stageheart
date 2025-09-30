@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, Music } from 'lucide-react';
+import musicalNotesIcon from '@/assets/musicalnotesicon.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Song } from '@/types';
@@ -48,11 +49,24 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
   };
 
   useEffect(() => {
-    searchSongs(title);
-  }, [title]);
+    if (title.trim()) {
+      searchSongs(title);
+      setShowSuggestions(true);
+    } else if (artist.trim()) {
+      searchSongs(artist);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [title, artist]);
 
-  const handleInputChange = (value: string) => {
-    setTitle(value);
+  const handleInputChange = (value: string, field: 'title' | 'artist') => {
+    if (field === 'title') {
+      setTitle(value);
+    } else {
+      setArtist(value);
+    }
     setShowSuggestions(true);
     setActiveSuggestion(-1);
   };
@@ -104,18 +118,14 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
     <div className="w-full max-w-2xl mx-auto">
       <div className="bg-card rounded-3xl p-8 shadow-card border border-card-border">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-primary-soft rounded-2xl">
-              <Music className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-semibold text-card-foreground">
-                {t('search.searchSong')}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {t('app.subtitle')}
-              </p>
-            </div>
+          <div className="flex flex-col items-center justify-center gap-3 mb-6">
+            <img src={musicalNotesIcon} alt="Musical Notes Icon" className="w-14 h-14 object-contain mx-auto" />
+            <h2 className="text-2xl font-semibold text-card-foreground text-center">
+              {t('search.searchSong')}
+            </h2>
+            <p className="text-sm text-muted-foreground text-center">
+              {t('app.subtitle')}
+            </p>
           </div>
           
           <div className="space-y-4 relative">
@@ -129,7 +139,7 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
                 type="text"
                 placeholder={t('search.searchPlaceholder')}
                 value={title}
-                onChange={(e) => handleInputChange(e.target.value)}
+                onChange={(e) => handleInputChange(e.target.value, 'title')}
                 onFocus={() => title && setShowSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                 onKeyDown={handleKeyDown}
@@ -181,7 +191,10 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
                 type="text"
                 placeholder={t('search.artistPlaceholder')}
                 value={artist}
-                onChange={(e) => setArtist(e.target.value)}
+                onChange={(e) => handleInputChange(e.target.value, 'artist')}
+                onFocus={() => artist && setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                onKeyDown={handleKeyDown}
                 className="h-12 text-lg bg-input border-input-border focus:border-input-focus transition-colors"
               />
             </div>
