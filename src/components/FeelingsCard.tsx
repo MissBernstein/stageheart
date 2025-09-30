@@ -1,10 +1,12 @@
-import { Copy, Star, CheckCircle2, Lightbulb, ExternalLink } from 'lucide-react';
+import { Copy, Star, CheckCircle2, Lightbulb, ExternalLink, Save } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { FeelingMap } from '@/types';
 import { useFavorites } from '@/hooks/useFavorites';
+import { usePersonalNotes } from '@/hooks/usePersonalNotes';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface FeelingsCardProps {
   feelingMap: FeelingMap;
@@ -13,9 +15,16 @@ interface FeelingsCardProps {
 export const FeelingsCard = ({ feelingMap }: FeelingsCardProps) => {
   const { t } = useTranslation();
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
+  const { getNote, saveNote } = usePersonalNotes();
   const { toast } = useToast();
   const [justCopied, setJustCopied] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
+  const [personalNote, setPersonalNote] = useState('');
+  const [noteSaved, setNoteSaved] = useState(false);
+
+  useEffect(() => {
+    setPersonalNote(getNote(feelingMap));
+  }, [feelingMap, getNote]);
 
   const handleCopy = async () => {
     const text = `${feelingMap.title}${feelingMap.artist ? ` — ${feelingMap.artist}` : ''}
@@ -63,6 +72,16 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
         description: "You can find this map in your favorites drawer.",
       });
     }
+  };
+
+  const handleSaveNote = () => {
+    saveNote(feelingMap, personalNote);
+    setNoteSaved(true);
+    setTimeout(() => setNoteSaved(false), 2000);
+    toast({
+      title: "Note saved!",
+      description: "Your personal note has been saved.",
+    });
   };
 
   return (
@@ -176,6 +195,37 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
             <ExternalLink className="w-5 h-5" />
             View Lyrics on Genius
           </a>
+        </div>
+
+        {/* Personal Notes */}
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
+            <div className="w-2 h-2 bg-accent rounded-full"></div>
+            Personal Notes
+          </h3>
+          <Textarea
+            value={personalNote}
+            onChange={(e) => setPersonalNote(e.target.value)}
+            placeholder="Add your personal notes about this song..."
+            className="min-h-[100px] mb-3 rounded-2xl resize-none"
+          />
+          <Button
+            onClick={handleSaveNote}
+            variant="secondary"
+            className="w-full h-12 text-base font-semibold bg-button-secondary hover:bg-button-secondary-hover rounded-2xl transition-all duration-200"
+          >
+            {noteSaved ? (
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-green-600" />
+                Note Saved
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Save className="w-5 h-5" />
+                Save Note
+              </div>
+            )}
+          </Button>
         </div>
 
         {/* Action Buttons */}
