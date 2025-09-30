@@ -1,4 +1,4 @@
-import { Copy, Star, CheckCircle2, Lightbulb, ExternalLink, Save } from 'lucide-react';
+import { Copy, Star, CheckCircle2, Lightbulb, ExternalLink, Save, Headphones } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -184,17 +184,32 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
           </div>
         )}
 
-        {/* View Lyrics Button */}
+        {/* Listen & Learn Section */}
         <div className="mb-8">
-          <a
-            href={`https://genius.com/search?q=${encodeURIComponent(`${feelingMap.title} ${feelingMap.artist || ''}`)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full p-4 bg-primary-soft hover:bg-button-primary-hover text-primary border-2 border-card-border rounded-2xl transition-all duration-200 font-semibold"
-          >
-            <ExternalLink className="w-5 h-5" />
-            View Lyrics on Genius
-          </a>
+          <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
+            <div className="w-2 h-2 bg-accent rounded-full"></div>
+            Listen & Learn
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <a
+              href={`https://listen.tidal.com/search?q=${encodeURIComponent(`${feelingMap.title} ${feelingMap.artist || ''}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 p-4 bg-primary-soft hover:bg-button-primary-hover text-primary border-2 border-card-border rounded-2xl transition-all duration-200 font-semibold"
+            >
+              <Headphones className="w-5 h-5" />
+              Listen on Tidal
+            </a>
+            <a
+              href={`https://genius.com/search?q=${encodeURIComponent(`${feelingMap.title} ${feelingMap.artist || ''}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 p-4 bg-primary-soft hover:bg-button-primary-hover text-primary border-2 border-card-border rounded-2xl transition-all duration-200 font-semibold"
+            >
+              <ExternalLink className="w-5 h-5" />
+              View Lyrics on Genius
+            </a>
+          </div>
         </div>
 
         {/* Personal Notes */}
