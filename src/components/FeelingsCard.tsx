@@ -1,7 +1,14 @@
-import { Copy, Star, CheckCircle2, Lightbulb, ExternalLink, Save, Headphones } from 'lucide-react';
+import { Copy, Star, CheckCircle2, ExternalLink, Save } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import themeIcon from '@/assets/themeicon.png';
+import lightbulbIcon from '@/assets/lightbulbicon.png';
+import visualCueIcon from '@/assets/visualcueicon.png';
+import headphonesIcon from '@/assets/headphonesicon.png';
+import personalNotesIcon from '@/assets/personalnotesicon.png';
+import generalHeartIcon from '@/assets/generalhearticon.png';
+
 import { FeelingMap } from '@/types';
 import { useFavorites } from '@/hooks/useFavorites';
 import { usePersonalNotes } from '@/hooks/usePersonalNotes';
@@ -118,7 +125,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
         {(feelingMap.theme_detail || feelingMap.theme) && (
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-card-foreground mb-3 flex items-center gap-2">
-              <div className="w-2 h-2 bg-accent rounded-full"></div>
+              <img src={themeIcon} alt="Theme icon" className="w-6 h-6 object-contain" />
               {t('feelingMap.theme')}
             </h3>
             {feelingMap.theme_detail && (
@@ -137,7 +144,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
         {/* Core Feelings Arc */}
         <div className="mb-8">
           <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
-            <div className="w-2 h-2 bg-primary rounded-full"></div>
+            <img src={generalHeartIcon} alt="Core feelings icon" className="w-6 h-6 object-contain" />
             {t('feelingMap.coreFeelgs')}
           </h3>
           <div className="flex flex-wrap gap-3">
@@ -158,7 +165,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
         {/* Performance Tips */}
         <div className="mb-8">
           <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
-            <Lightbulb className="w-5 h-5 text-tip-icon" />
+            <img src={lightbulbIcon} alt="Emotional access icon" className="w-6 h-6 object-contain" />
             {t('feelingMap.emotionalAccess')}
           </h3>
           <div className="space-y-3">
@@ -181,7 +188,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
         {feelingMap.visual && (
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
-              <div className="w-2 h-2 bg-accent rounded-full"></div>
+              <img src={visualCueIcon} alt="Visual cue icon" className="w-6 h-6 object-contain" />
               {t('feelingMap.visualCues')}
             </h3>
             <div className="p-4 bg-muted rounded-2xl text-center">
@@ -195,7 +202,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
         {/* Listen & Learn Section */}
         <div className="mb-8">
           <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
-            <div className="w-2 h-2 bg-accent rounded-full"></div>
+            <img src={headphonesIcon} alt="Listen and learn icon" className="w-6 h-6 object-contain" />
             Listen & Learn
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -205,7 +212,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 p-4 bg-primary-soft hover:bg-button-primary-hover text-primary border-2 border-card-border rounded-2xl transition-all duration-200 font-semibold"
             >
-              <Headphones className="w-5 h-5" />
+              <img src={headphonesIcon} alt="" aria-hidden="true" className="w-5 h-5 object-contain" />
               Listen on Tidal
             </a>
             <a
@@ -223,7 +230,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
         {/* Personal Notes */}
         <div className="mb-8">
           <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center gap-2">
-            <div className="w-2 h-2 bg-accent rounded-full"></div>
+            <img src={personalNotesIcon} alt="Personal notes icon" className="w-6 h-6 object-contain" />
             Personal Notes
           </h3>
           <Textarea
