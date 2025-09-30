@@ -4,6 +4,7 @@ export interface Song {
   artist: string;
   summary: string;
   theme: string;
+  theme_detail?: string;
   core_feelings: string[];
   access_ideas: string[];
   visual: string;

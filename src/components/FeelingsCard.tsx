@@ -27,10 +27,11 @@ export const FeelingsCard = ({ feelingMap }: FeelingsCardProps) => {
   }, [feelingMap, getNote]);
 
   const handleCopy = async () => {
+    const themeDetail = feelingMap.theme_detail ?? feelingMap.theme ?? '';
     const text = `${feelingMap.title}${feelingMap.artist ? ` — ${feelingMap.artist}` : ''}
 
 ${feelingMap.summary}
-${feelingMap.theme}
+${themeDetail}${feelingMap.theme_detail ? `\nCanonical theme: ${feelingMap.theme}` : ''}
 
 Core feeling arc: ${feelingMap.core_feelings?.join(', ') || feelingMap.emotions?.join(', ')}
 
@@ -114,15 +115,22 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
         )}
 
         {/* Theme */}
-        {feelingMap.theme && (
+        {(feelingMap.theme_detail || feelingMap.theme) && (
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-card-foreground mb-3 flex items-center gap-2">
               <div className="w-2 h-2 bg-accent rounded-full"></div>
               {t('feelingMap.theme')}
             </h3>
-            <p className="text-muted-foreground font-medium">
-              {feelingMap.theme}
-            </p>
+            {feelingMap.theme_detail && (
+              <p className="text-muted-foreground font-medium">
+                {feelingMap.theme_detail}
+              </p>
+            )}
+            {feelingMap.theme && (
+              <p className="text-xs text-muted-foreground/80 mt-2 uppercase tracking-wide">
+                Canonical: {feelingMap.theme}
+              </p>
+            )}
           </div>
         )}
 

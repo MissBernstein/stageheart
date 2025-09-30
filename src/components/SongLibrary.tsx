@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, Filter, Shuffle, Grid, List } from 'lucide-react';
+import { Search, Shuffle, Grid, List } from 'lucide-react';
 import jukeboxIcon from '@/assets/jukeboxicon.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Song } from '@/types';
 import songsData from '@/data/songs.json';
+import { getCanonicalThemes } from '@/lib/themes';
 
 interface SongLibraryProps {
   onSelectSong: (song: Song) => void;
@@ -20,24 +21,20 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
   
   const songs: Song[] = songsData;
 
-  // Get unique themes for filtering
-  const themes = Array.from(new Set(songs.map(song => {
-    // Extract first part of theme before period or comma
-    const theme = song.theme.split(/[.,]/)[0].trim();
-    return theme;
-  }))).sort();
+  const themes = useMemo(() => getCanonicalThemes(), []);
 
   const filteredSongs = songs.filter(song => {
-    const searchMatch = !searchQuery || 
-      song.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      song.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      song.theme.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const query = searchQuery.toLowerCase();
+    const themeText = (song.theme_detail ?? song.theme).toLowerCase();
+    const searchMatch = !searchQuery ||
+      song.title.toLowerCase().includes(query) ||
+      song.artist.toLowerCase().includes(query) ||
+      themeText.includes(query) ||
       song.core_feelings.some(feeling => 
-        feeling.toLowerCase().includes(searchQuery.toLowerCase())
+        feeling.toLowerCase().includes(query)
       );
     
-    const themeMatch = !selectedTheme || 
-      song.theme.toLowerCase().includes(selectedTheme.toLowerCase());
+    const themeMatch = !selectedTheme || song.theme === selectedTheme;
     
     return searchMatch && themeMatch;
   });

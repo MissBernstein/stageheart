@@ -37,7 +37,8 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
     const matches = songs.filter(song => {
       const titleMatch = normalizeString(song.title).includes(queryNorm);
       const artistMatch = normalizeString(song.artist).includes(queryNorm);
-      const themeMatch = normalizeString(song.theme).includes(queryNorm);
+      const themeText = song.theme_detail ? `${song.theme} ${song.theme_detail}` : song.theme;
+      const themeMatch = normalizeString(themeText).includes(queryNorm);
       const feelingsMatch = song.core_feelings.some(feeling => 
         normalizeString(feeling).includes(queryNorm)
       );
@@ -172,7 +173,7 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
                             {song.artist}
                           </div>
                           <div className="text-xs text-muted-foreground mt-1">
-                            {song.theme}
+                            {song.theme_detail ?? song.theme}
                           </div>
                         </div>
                       </div>
