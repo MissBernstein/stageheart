@@ -133,7 +133,7 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md p-8 space-y-6">
         <div className="text-center space-y-4">
-          <img src={logo} alt="Stage Heart Logo" className="w-24 h-24 mx-auto" />
+          <img src={logo} alt="Stage Heart Logo" className="w-20 h-auto mx-auto object-contain" />
           <h1 className="text-4xl font-bold text-foreground">Stage Heart</h1>
           <p className="text-muted-foreground">
             {isLogin ? 'Welcome back' : 'Create your account'}

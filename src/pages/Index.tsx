@@ -193,7 +193,7 @@ const Index = () => {
               </div>
               <div className="flex-1 text-center">
                 <div className="flex items-center justify-center gap-4 mb-4">
-                  <img src={logo} alt="Stage Heart Logo" className="w-48 h-48 md:w-60 md:h-60" />
+                  <img src={logo} alt="Stage Heart Logo" className="w-20 h-auto object-contain" />
                   <h1 className="text-6xl md:text-7xl text-foreground">
                     Stage Heart
                   </h1>
