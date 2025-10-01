@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { FeelingMap } from '@/types';
-
-const FAVORITES_KEY = 'song-feelings-favorites';
+import { FAVORITES_STORAGE_KEY } from '@/lib/storageKeys';
+import { seedZurichChoirForExistingSongsV1 } from '@/lib/categorySeed';
 
 export const useFavorites = () => {
   const [favorites, setFavorites] = useState<FeelingMap[]>([]);
 
   useEffect(() => {
-    const stored = localStorage.getItem(FAVORITES_KEY);
+    if (typeof window === 'undefined') return;
+
+    seedZurichChoirForExistingSongsV1();
+
+    const stored = localStorage.getItem(FAVORITES_STORAGE_KEY);
     if (stored) {
       try {
         setFavorites(JSON.parse(stored));
@@ -19,7 +23,7 @@ export const useFavorites = () => {
 
   const saveFavorites = (newFavorites: FeelingMap[]) => {
     setFavorites(newFavorites);
-    localStorage.setItem(FAVORITES_KEY, JSON.stringify(newFavorites));
+    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(newFavorites));
   };
 
   const addFavorite = (feelingMap: FeelingMap) => {

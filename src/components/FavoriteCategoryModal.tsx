@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -145,8 +145,7 @@ export function FavoriteCategoryModal({ song, open, onOpenChange, onSave }: Favo
                 onClick={() => setIsCreating(true)}
                 className="w-full mt-2"
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Create new category
+                ➕ Create Category
               </Button>
             )}
           </div>

@@ -24,3 +24,15 @@ export interface FeelingMap extends Song {
   isVibeBasedMap?: boolean;
   vibeLabel?: string;
 }
+
+export interface Category {
+  id: string;
+  name: string;
+  createdAt: number;
+  isPreset?: boolean;
+}
+
+export interface CategorySong {
+  categoryId: string;
+  songId: string;
+}
