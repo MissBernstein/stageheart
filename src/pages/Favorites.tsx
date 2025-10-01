@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Music, MoreVertical, Pencil, Trash2, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AnimatedButton } from '@/ui/AnimatedButton';
 import { AnimatedAccordion, type AnimatedAccordionItem } from '@/ui/AnimatedAccordion';
 import { AnimatedListItem } from '@/ui/AnimatedListItem';
@@ -191,16 +191,16 @@ export default function Favorites() {
               <ArrowLeft className="w-5 h-5" />
               <span className="sr-only">Back to home</span>
             </AnimatedButton>
-          <div className="flex items-center gap-3">
-            <img
-              src={generalHeartIcon}
-              alt="Heart icon"
-              className="w-8 h-8 object-contain"
-            />
-            <h1 className="text-2xl font-bold">My Favorites</h1>
+            <Link to="/" className="flex items-center gap-3">
+              <img
+                src={generalHeartIcon}
+                alt="Heart icon"
+                className="w-8 h-8 object-contain"
+              />
+              <h1 className="text-2xl font-bold">My Favorites</h1>
+            </Link>
           </div>
-        </div>
-      </header>
+        </header>
 
       <main className="container mx-auto px-4 py-8">
         {favorites.length === 0 ? (

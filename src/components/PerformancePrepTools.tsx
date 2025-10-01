@@ -3,7 +3,7 @@ import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Save, Trash2 } from 'lucide-react';
+import { Clock, Trash2 } from 'lucide-react';
 import { Song } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MotionIfOkay } from '@/ui/MotionIfOkay';
 import { fadeInUp, motionDur, motionEase } from '@/ui/motion';
 import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
+import { useNavigate } from 'react-router-dom';
 import {
   generateWarmupPlan,
   WARMUP_VIBE_OPTIONS,
@@ -36,8 +37,10 @@ import {
   storeSetlistSource,
 } from '@/lib/setlistBuilder';
 import { WarmupCriteriaPreview } from '@/components/WarmupCriteriaPreview';
+import { Input } from '@/components/ui/input';
 
 const WARMUP_PREF_KEY = 'warmup-preferences';
+const WARMUP_LABELS_KEY = 'warmup-custom-labels';
 type NonNullVoiceType = Exclude<VoiceType, null>;
 
 const VOICE_OPTIONS: { id: NonNullVoiceType; label: string }[] = [
@@ -57,6 +60,25 @@ const SETLIST_SOURCE_OPTIONS: { id: SetlistSource; label: string; description: s
   { id: 'favorites', label: 'My Favorites', description: 'Only your saved favorites.' },
   { id: 'open', label: 'Open', description: 'Include outside suggestions.' },
 ];
+
+const getStoredWarmupLabels = (): Record<string, string> => {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = localStorage.getItem(WARMUP_LABELS_KEY);
+    return raw ? (JSON.parse(raw) as Record<string, string>) : {};
+  } catch {
+    return {};
+  }
+};
+
+const persistWarmupLabels = (labels: Record<string, string>) => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(WARMUP_LABELS_KEY, JSON.stringify(labels));
+  } catch (error) {
+    console.error('Error persisting warmup labels:', error);
+  }
+};
 
 interface PerformancePrepToolsProps {
   currentSong?: Song;
@@ -80,6 +102,10 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
   const lastWarmupRequestRef = useRef<WarmupRequest | null>(null);
   const { toast, success, error } = useToast();
   const prefersReducedMotion = usePrefersReducedMotion();
+  const hoverLift = prefersReducedMotion ? undefined : { y: -2, scale: 1.01 };
+  const [renamingWarmupId, setRenamingWarmupId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadSavedWarmups();
@@ -258,7 +284,12 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setSavedWarmups(data || []);
+      const labels = getStoredWarmupLabels();
+      const mapped = (data || []).map((warmup) => ({
+        ...warmup,
+        custom_label: labels[warmup.id] ?? warmup.custom_label ?? null,
+      }));
+      setSavedWarmups(mapped);
     } catch (error) {
       console.error('Error loading saved warmups:', error);
     }
@@ -318,7 +349,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
           physical_warmups: warmupData.physicalWarmups || [],
           vocal_warmups: warmupData.vocalWarmups || [],
           emotional_prep: warmupData.emotionalPrep || [],
-          duration: Number(warmupData.duration) || 15
+          duration: Number(warmupData.duration) || 15,
         });
 
       if (error) throw error;
@@ -342,12 +373,40 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
       if (error) throw error;
 
       success('Warm-up removed', 'Warm-up routine removed from your collection.');
-      
+      const labels = getStoredWarmupLabels();
+      if (labels[id]) {
+        delete labels[id];
+        persistWarmupLabels(labels);
+      }
+
       loadSavedWarmups();
     } catch (err) {
       console.error('Error deleting warmup:', err);
       error('Error', 'Failed to delete warmup routine.');
     }
+  };
+
+  const renameSavedWarmup = async () => {
+    if (!renamingWarmupId) return;
+    const trimmed = renameValue.trim();
+    if (!trimmed) {
+      error('Name required', 'Enter a name to save this warm-up.');
+      return;
+    }
+
+    const labels = getStoredWarmupLabels();
+    labels[renamingWarmupId] = trimmed;
+    persistWarmupLabels(labels);
+
+    setSavedWarmups((prev) =>
+      prev.map((warmup) =>
+        warmup.id === renamingWarmupId ? { ...warmup, custom_label: trimmed } : warmup,
+      ),
+    );
+
+    success('Warm-up renamed');
+    setRenamingWarmupId(null);
+    setRenameValue('');
   };
 
   const loadSavedWarmup = (warmup: any) => {
@@ -357,6 +416,20 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
       emotionalPrep: warmup.emotional_prep,
       duration: warmup.duration
     });
+  };
+
+  const beginRenameWarmup = (warmup: any) => {
+    setRenamingWarmupId(warmup.id);
+    setRenameValue(
+      warmup.custom_label ||
+        warmup.vibe ||
+        (warmup.song_title ? `${warmup.song_title}${warmup.song_artist ? ` by ${warmup.song_artist}` : ''}` : '')
+    );
+  };
+
+  const cancelRenameWarmup = () => {
+    setRenamingWarmupId(null);
+    setRenameValue('');
   };
 
   const generateSetlist = async () => {
@@ -408,9 +481,22 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
           <Card className="max-w-4xl mx-auto">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <img src={prepIcon} alt="Performance prep icon" className="w-12 h-12" />
-                Performance Prep Tools
+              <CardTitle>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    navigate('/');
+                  }}
+                  className="flex items-center gap-2 group"
+                >
+                  <img
+                    src={prepIcon}
+                    alt="Performance prep icon"
+                    className="w-12 h-12 transition-transform duration-200 group-hover:scale-105"
+                  />
+                  <span>Performance Prep Tools</span>
+                </button>
               </CardTitle>
               <AnimatedButton
                 variant="ghost"
@@ -646,36 +732,92 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
 
               {savedWarmups.length > 0 && (
                 <section className="space-y-4">
-                  <h3 className="text-xl font-semibold flex items-center gap-2">
-                    <Save className="w-5 h-5 text-primary" />
-                    Saved Warm-ups
-                  </h3>
+                  <h3 className="text-xl font-semibold">Saved Warm-ups</h3>
                   <ul className="space-y-2">
                     <AnimatePresence>
                       {savedWarmups.map((warmup) => (
-                        <AnimatedListItem
-                          key={warmup.id}
-                          className="flex items-center justify-between rounded-lg bg-card-accent/20 p-4"
-                        >
-                          <div className="flex-1">
-                            <h4 className="font-medium">
-                              {warmup.vibe || `${warmup.song_title}${warmup.song_artist ? ` by ${warmup.song_artist}` : ''}`}
-                            </h4>
-                            {warmup.song_artist && !warmup.vibe && (
-                            <p className="text-sm text-card-foreground/60">{warmup.song_artist}</p>
-                          )}
-                          <p className="text-xs text-card-foreground/50 mt-1">
-                            {warmup.duration} min • {new Date(warmup.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                          <div className="flex gap-2">
-                            <AnimatedButton variant="outline" size="sm" onClick={() => loadSavedWarmup(warmup)}>
-                              Load
-                            </AnimatedButton>
-                            <AnimatedButton variant="outline" size="sm" onClick={() => deleteSavedWarmup(warmup.id)}>
-                              <Trash2 className="w-4 h-4" />
-                            </AnimatedButton>
-                          </div>
+                        <AnimatedListItem key={warmup.id} className="rounded-xl border border-card-border/40 bg-card/60">
+                          <motion.div
+                            className="flex items-center justify-between gap-4 px-5 py-4"
+                            whileHover={hoverLift}
+                            whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+                            transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
+                          >
+                            <div className="flex-1 min-w-0">
+                              {renamingWarmupId === warmup.id ? (
+                                <div className="space-y-2">
+                                  <Input
+                                    value={renameValue}
+                                    onChange={(e) => setRenameValue(e.target.value)}
+                                    placeholder="Warm-up name"
+                                    className="h-9"
+                                    autoFocus
+                                  />
+                                  <div className="flex flex-wrap gap-2">
+                                    <AnimatedButton
+                                      size="sm"
+                                      onClick={renameSavedWarmup}
+                                      className="px-3 justify-center"
+                                    >
+                                      Save Name
+                                    </AnimatedButton>
+                                    <AnimatedButton
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={cancelRenameWarmup}
+                                      className="px-3 justify-center"
+                                    >
+                                      Cancel
+                                    </AnimatedButton>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  <h4 className="font-medium truncate">
+                                    {warmup.custom_label ||
+                                      warmup.vibe ||
+                                      `${warmup.song_title}${
+                                        warmup.song_artist ? ` by ${warmup.song_artist}` : ''
+                                      }`}
+                                  </h4>
+                                  {warmup.song_artist && !warmup.vibe && (
+                                    <p className="text-sm text-card-foreground/60 truncate">{warmup.song_artist}</p>
+                                  )}
+                                  <p className="mt-1 text-xs text-card-foreground/50">
+                                    {warmup.duration} min • {new Date(warmup.created_at).toLocaleDateString()}
+                                  </p>
+                                </>
+                              )}
+                            </div>
+                            <div className="flex shrink-0 gap-2">
+                              {renamingWarmupId !== warmup.id && (
+                                <AnimatedButton
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => beginRenameWarmup(warmup)}
+                                  className="px-3 justify-center"
+                                >
+                                  Rename
+                                </AnimatedButton>
+                              )}
+                              <AnimatedButton
+                                variant="outline"
+                                size="sm"
+                                onClick={() => loadSavedWarmup(warmup)}
+                                className="px-3 justify-center"
+                              >
+                                Load
+                              </AnimatedButton>
+                              <AnimatedButton
+                                variant="outline"
+                                size="sm"
+                                onClick={() => deleteSavedWarmup(warmup.id)}
+                                className="px-3 justify-center"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </AnimatedButton>
+                            </div>
+                          </motion.div>
                         </AnimatedListItem>
                       ))}
                     </AnimatePresence>
@@ -757,66 +899,70 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                       <ul className="space-y-3">
                         <AnimatePresence>
                           {setlistData.items.length === 0 && (
-                            <AnimatedListItem className="rounded-lg bg-card-accent/10 p-3 text-sm text-card-foreground/60">
+                            <AnimatedListItem className="rounded-xl border border-card-border/40 bg-card/60 px-5 py-3 text-sm text-card-foreground/60">
                               No songs available for the selected source yet.
                             </AnimatedListItem>
                           )}
-                        {setlistData.items.map((item, index) => {
-                          const matchingSong = setlistSongs.find(song => song.id === item.id);
-                          const entry = setlistData.setlist[index];
-                          return (
-                            <AnimatedListItem
-                              key={`${item.id}-${index}`}
-                              className="flex items-center gap-4 rounded-lg bg-card-accent/20 p-4"
-                            >
-                              <div className="w-8 text-2xl font-bold text-primary">
-                                {entry?.position ?? index + 1}
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <h4 className="font-medium">{item.title}</h4>
-                                  {item.external && (
-                                    <Badge variant="outline" className="text-amber-400 border-amber-400">
-                                      Suggested
-                                    </Badge>
-                                  )}
-                                </div>
-                                <p className="text-sm text-card-foreground/60">
-                                  {entry?.purpose || item.reason || 'Maintains narrative flow'}
-                                </p>
-                                {matchingSong && matchingSong.core_feelings?.length > 0 && (
-                                  <div className="mt-1 flex flex-wrap gap-1">
-                                    {matchingSong.core_feelings.slice(0, 2).map((feeling, i) => (
-                                      <Badge key={i} variant="secondary" className="text-xs">
-                                        {feeling}
-                                      </Badge>
-                                    ))}
+                          {setlistData.items.map((item, index) => {
+                            const matchingSong = setlistSongs.find(song => song.id === item.id);
+                            const entry = setlistData.setlist[index];
+                            return (
+                              <AnimatedListItem key={`${item.id}-${index}`} className="rounded-xl border border-card-border/40 bg-card/60">
+                                <motion.div
+                                  className="flex items-center gap-4 px-5 py-4"
+                                  whileHover={hoverLift}
+                                  whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+                                  transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
+                                >
+                                  <div className="w-8 text-2xl font-bold text-primary">
+                                    {entry?.position ?? index + 1}
                                   </div>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                {item.external && (
-                                  <AnimatedButton
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleAddExternalToLibrary(item)}
-                                  >
-                                    + Add to Library
-                                  </AnimatedButton>
-                                )}
-                                {matchingSong && (
-                                  <AnimatedButton
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => addToPersonalSetlist(matchingSong)}
-                                  >
-                                    Add
-                                  </AnimatedButton>
-                                )}
-                              </div>
-                            </AnimatedListItem>
-                          );
-                        })}
+                                  <div className="flex-1 min-w-0 space-y-1">
+                                    <div className="flex items-center gap-2">
+                                      <h4 className="font-medium">{item.title}</h4>
+                                      {item.external && (
+                                        <Badge variant="outline" className="border-amber-400 text-amber-400">
+                                          Suggested
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <p className="text-sm text-card-foreground/60">
+                                      {entry?.purpose || item.reason || 'Maintains narrative flow'}
+                                    </p>
+                                    {matchingSong && matchingSong.core_feelings?.length > 0 && (
+                                      <div className="flex flex-wrap gap-1">
+                                        {matchingSong.core_feelings.slice(0, 2).map((feeling, i) => (
+                                          <Badge key={i} variant="secondary" className="text-xs">
+                                            {feeling}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="flex shrink-0 items-center gap-2">
+                                    {item.external && (
+                                      <AnimatedButton
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleAddExternalToLibrary(item)}
+                                      >
+                                        + Add to Library
+                                      </AnimatedButton>
+                                    )}
+                                    {matchingSong && (
+                                      <AnimatedButton
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => addToPersonalSetlist(matchingSong)}
+                                      >
+                                        Add
+                                      </AnimatedButton>
+                                    )}
+                                  </div>
+                                </motion.div>
+                              </AnimatedListItem>
+                            );
+                          })}
                         </AnimatePresence>
                       </ul>
 

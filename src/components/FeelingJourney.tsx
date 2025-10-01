@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
+import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Song } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import feelingJourneyIcon from '@/assets/feelingjourneyicon.png';
+import { motion } from 'framer-motion';
+import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
+import { motionDur, motionEase } from '@/ui/motion';
+import { useNavigate } from 'react-router-dom';
 
 interface FeelingJourneyProps {
   onSelectSong: (song: Song) => void;
@@ -24,6 +28,9 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
   const [recommendation, setRecommendation] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const hoverLift = prefersReducedMotion ? undefined : { y: -2, scale: 1.02 };
+  const navigate = useNavigate();
 
   const moodOptions = [
     { id: 'happy', label: 'Happy & Uplifted', icon: '😊' },
@@ -111,13 +118,22 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-3">
-                <img
-                  src={feelingJourneyIcon}
-                  alt="Feeling journey icon"
-                  className="w-10 h-10 object-contain"
-                />
-                Feeling Journey
+              <CardTitle>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    navigate('/');
+                  }}
+                  className="flex items-center gap-3 group"
+                >
+                  <img
+                    src={feelingJourneyIcon}
+                    alt="Feeling journey icon"
+                    className="w-10 h-10 object-contain transition-transform duration-200 group-hover:scale-105"
+                  />
+                  <span>Feeling Journey</span>
+                </button>
               </CardTitle>
               <button
                 onClick={onClose}
@@ -148,31 +164,36 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
             {step === 1 && (
               <div className="space-y-4">
                 <h3 className="font-medium mb-4">How are you feeling right now?</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {moodOptions.map((option) => (
-                    <button
-                      key={option.id}
-                      onClick={() => setMood(option.id)}
-                      className={`p-4 text-left rounded-xl border transition-all ${
-                        mood === option.id
-                          ? 'border-primary bg-primary-soft'
-                          : 'border-card-border hover:border-primary'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  {moodOptions.map((option) => {
+                    const isActive = mood === option.id;
+                    return (
+                      <motion.button
+                        key={option.id}
+                        type="button"
+                        onClick={() => setMood(option.id)}
+                        whileHover={hoverLift}
+                        whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+                        transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
+                        className={`flex items-center gap-3 rounded-2xl border px-5 py-4 text-left transition-colors ${
+                          isActive
+                            ? 'border-primary bg-primary-soft text-primary-foreground'
+                            : 'border-card-border/70 bg-card/70 hover:border-primary'
+                        }`}
+                      >
                         <span className="text-2xl">{option.icon}</span>
                         <span className="font-medium">{option.label}</span>
-                      </div>
-                    </button>
-                  ))}
+                      </motion.button>
+                    );
+                  })}
                 </div>
-                <Button
+                <AnimatedButton
                   onClick={() => setStep(2)}
                   disabled={!mood}
-                  className="w-full"
+                  className="flex w-full items-center justify-center gap-2"
                 >
-                  Next <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
+                  Next <ArrowRight className="w-4 h-4" />
+                </AnimatedButton>
               </div>
             )}
 
@@ -180,35 +201,40 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
             {step === 2 && (
               <div className="space-y-4">
                 <h3 className="font-medium mb-4">What's your energy level?</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {energyOptions.map((option) => (
-                    <button
-                      key={option.id}
-                      onClick={() => setEnergy(option.id)}
-                      className={`p-4 text-left rounded-xl border transition-all ${
-                        energy === option.id
-                          ? 'border-primary bg-primary-soft'
-                          : 'border-card-border hover:border-primary'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  {energyOptions.map((option) => {
+                    const isActive = energy === option.id;
+                    return (
+                      <motion.button
+                        key={option.id}
+                        type="button"
+                        onClick={() => setEnergy(option.id)}
+                        whileHover={hoverLift}
+                        whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+                        transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
+                        className={`flex items-center gap-3 rounded-2xl border px-5 py-4 text-left transition-colors ${
+                          isActive
+                            ? 'border-primary bg-primary-soft text-primary-foreground'
+                            : 'border-card-border/70 bg-card/70 hover:border-primary'
+                        }`}
+                      >
                         <span className="text-2xl">{option.icon}</span>
                         <span className="font-medium">{option.label}</span>
-                      </div>
-                    </button>
-                  ))}
+                      </motion.button>
+                    );
+                  })}
                 </div>
                 <div className="flex gap-3">
-                  <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
+                  <AnimatedButton variant="outline" onClick={() => setStep(1)} className="flex-1">
                     Back
-                  </Button>
-                  <Button
+                  </AnimatedButton>
+                  <AnimatedButton
                     onClick={() => setStep(3)}
                     disabled={!energy}
-                    className="flex-1"
+                    className="flex-1 flex items-center justify-center gap-2"
                   >
-                    Next <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
+                    Next <ArrowRight className="w-4 h-4" />
+                  </AnimatedButton>
                 </div>
               </div>
             )}
@@ -217,44 +243,42 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
             {step === 3 && (
               <div className="space-y-4">
                 <h3 className="font-medium mb-4">What's the performance context?</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {contextOptions.map((option) => (
-                    <button
-                      key={option.id}
-                      onClick={() => setContext(option.id)}
-                      className={`p-4 text-left rounded-xl border transition-all ${
-                        context === option.id
-                          ? 'border-primary bg-primary-soft'
-                          : 'border-card-border hover:border-primary'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  {contextOptions.map((option) => {
+                    const isActive = context === option.id;
+                    return (
+                      <motion.button
+                        key={option.id}
+                        type="button"
+                        onClick={() => setContext(option.id)}
+                        whileHover={hoverLift}
+                        whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+                        transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
+                        className={`flex items-center gap-3 rounded-2xl border px-5 py-4 text-left transition-colors ${
+                          isActive
+                            ? 'border-primary bg-primary-soft text-primary-foreground'
+                            : 'border-card-border/70 bg-card/70 hover:border-primary'
+                        }`}
+                      >
                         <span className="text-2xl">{option.icon}</span>
                         <span className="font-medium">{option.label}</span>
-                      </div>
-                    </button>
-                  ))}
+                      </motion.button>
+                    );
+                  })}
                 </div>
                 <div className="flex gap-3">
-                  <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
+                  <AnimatedButton variant="outline" onClick={() => setStep(2)} className="flex-1">
                     Back
-                  </Button>
-                  <Button
+                  </AnimatedButton>
+                  <AnimatedButton
                     onClick={getRecommendation}
                     disabled={!context || isLoading}
-                    className="flex-1"
+                    isLoading={isLoading}
+                    loadingText="Finding your song..."
+                    className="flex-1 flex items-center justify-center gap-2"
                   >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Finding your song...
-                      </>
-                    ) : (
-                      <>
-                        Get Recommendation <ArrowRight className="w-4 h-4 ml-2" />
-                      </>
-                    )}
-                  </Button>
+                    Get Recommendation <ArrowRight className="w-4 h-4" />
+                  </AnimatedButton>
                 </div>
               </div>
             )}
@@ -294,12 +318,12 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
                 </div>
 
                 <div className="flex gap-3">
-                  <Button variant="outline" onClick={reset} className="flex-1">
+                  <AnimatedButton variant="outline" onClick={reset} className="flex-1">
                     Try Again
-                  </Button>
-                  <Button onClick={handleSelectRecommendedSong} className="flex-1">
+                  </AnimatedButton>
+                  <AnimatedButton onClick={handleSelectRecommendedSong} className="flex-1">
                     Use This Song
-                  </Button>
+                  </AnimatedButton>
                 </div>
               </div>
             )}

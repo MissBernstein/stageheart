@@ -22,6 +22,7 @@ import { AnimatedButton } from '@/ui/AnimatedButton';
 import { fadeInUp } from '@/ui/motion';
 import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
 import { MotionIfOkay } from '@/ui/MotionIfOkay';
+import { Link } from 'react-router-dom';
 
 const Index = () => {
   const { t } = useTranslation();
@@ -190,6 +191,14 @@ const Index = () => {
     setSearchQuery({ title: '', artist: '' });
   };
 
+  const handleBrandClick = () => {
+    if (currentMap || showVibePicker || showLibrary || showJourney || showPrepTools) {
+      handleReset();
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <MotionIfOkay>
       <motion.div
@@ -223,24 +232,33 @@ const Index = () => {
                 </AnimatedButton>
               </div>
               <div className="flex-1 text-center">
-                <div className="flex flex-col items-center justify-center gap-4 py-6">
-                  <img src={logo} alt="Stage Heart Logo" className="w-28 h-28 md:w-36 md:h-36 object-contain mx-auto" />
+                <button
+                  type="button"
+                  onClick={handleBrandClick}
+                  className="flex flex-col items-center justify-center gap-4 py-6 group"
+                >
+                  <img
+                    src={logo}
+                    alt="Stage Heart Logo"
+                    className="w-28 h-28 md:w-36 md:h-36 object-contain mx-auto transition-transform duration-200 group-hover:scale-105"
+                  />
                   <h1 className="text-3xl md:text-5xl font-bold text-foreground text-center">
                     Stage Heart
                   </h1>
                   <p className="text-base md:text-lg text-foreground max-w-2xl mx-auto text-center">
                     {t('app.subtitle') || 'Discover the emotional journey of music'}
                   </p>
-                </div>
+                </button>
               </div>
               <div className="flex-1 flex justify-end items-center gap-3">
                 <LanguageToggle />
-                <button
+                <AnimatedButton
+                  size="sm"
                   onClick={handleLogout}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+                  className="rounded-full border border-card-border/60 bg-card/70 px-4 py-2 text-sm font-medium text-card-foreground hover:bg-card/80 justify-center"
                 >
                   Logout
-                </button>
+                </AnimatedButton>
               </div>
             </div>
             
