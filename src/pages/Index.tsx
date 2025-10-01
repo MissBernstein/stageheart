@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
+import { Heart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { AutocompleteSearch } from '@/components/AutocompleteSearch';
 import { SongLibrary } from '@/components/SongLibrary';
 import { FeelingJourney } from '@/components/FeelingJourney';
@@ -207,6 +209,15 @@ const Index = () => {
                 </div>
               </div>
               <div className="flex-1 flex justify-end items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/favorites')}
+                  className="gap-2"
+                >
+                  <Heart className="h-4 w-4" />
+                  Favorites
+                </Button>
                 <LanguageToggle />
                 <button
                   onClick={handleLogout}

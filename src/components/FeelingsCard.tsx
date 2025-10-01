@@ -1,4 +1,5 @@
 import { Copy, Star, CheckCircle2, ExternalLink, Save } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,8 +13,8 @@ import generalHeartIcon from '@/assets/generalhearticon.png';
 import { FeelingMap } from '@/types';
 import { useFavorites } from '@/hooks/useFavorites';
 import { usePersonalNotes } from '@/hooks/usePersonalNotes';
+import { FavoriteCategoryModal } from '@/components/FavoriteCategoryModal';
 import { useToast } from '@/hooks/use-toast';
-import { useState, useEffect } from 'react';
 
 interface FeelingsCardProps {
   feelingMap: FeelingMap;
@@ -28,6 +29,7 @@ export const FeelingsCard = ({ feelingMap }: FeelingsCardProps) => {
   const [justSaved, setJustSaved] = useState(false);
   const [personalNote, setPersonalNote] = useState('');
   const [noteSaved, setNoteSaved] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   useEffect(() => {
     setPersonalNote(getNote(feelingMap));
@@ -72,13 +74,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
         description: "The feeling map has been removed from your favorites.",
       });
     } else {
-      addFavorite(feelingMap);
-      setJustSaved(true);
-      setTimeout(() => setJustSaved(false), 2000);
-      toast({
-        title: "Added to favorites!",
-        description: "You can find this map in your favorites drawer.",
-      });
+      setShowCategoryModal(true);
     }
   };
 
@@ -301,6 +297,12 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
           </Button>
         </div>
       </div>
+
+      <FavoriteCategoryModal
+        song={feelingMap}
+        open={showCategoryModal}
+        onOpenChange={setShowCategoryModal}
+      />
     </div>
   );
 };
