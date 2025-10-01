@@ -17,6 +17,15 @@ import {
   WarmupRequest,
   WarmupPlan,
 } from '@/lib/warmupGenerator';
+import {
+  buildSetlist,
+  SetlistRequest,
+  SetlistResponse,
+  SetlistSource,
+  SetlistItem,
+  getStoredSetlistSource,
+  storeSetlistSource,
+} from '@/lib/setlistBuilder';
 
 const WARMUP_PREF_KEY = 'warmup-preferences';
 type NonNullVoiceType = Exclude<VoiceType, null>;
@@ -33,6 +42,12 @@ const TECHNIQUE_OPTIONS: { id: Technique; label: string }[] = [
   { id: 'head_voice', label: 'Head Voice' },
 ];
 
+const SETLIST_SOURCE_OPTIONS: { id: SetlistSource; label: string; description: string }[] = [
+  { id: 'library', label: 'App Library', description: 'Use songs already in Stage Heart.' },
+  { id: 'favorites', label: 'My Favorites', description: 'Only your saved favorites.' },
+  { id: 'open', label: 'Open', description: 'Include outside suggestions.' },
+];
+
 interface PerformancePrepToolsProps {
   currentSong?: Song;
   onClose: () => void;
@@ -41,12 +56,13 @@ interface PerformancePrepToolsProps {
 
 export const PerformancePrepTools = ({ currentSong, onClose, songs }: PerformancePrepToolsProps) => {
   const [warmupData, setWarmupData] = useState<WarmupPlan | null>(null);
-  const [setlistData, setSetlistData] = useState<any>(null);
+  const [setlistData, setSetlistData] = useState<SetlistResponse | null>(null);
   const [isLoadingWarmup, setIsLoadingWarmup] = useState(false);
   const [isLoadingSetlist, setIsLoadingSetlist] = useState(false);
   const [setlistSongs, setSetlistSongs] = useState<Song[]>([]);
   const [savedWarmups, setSavedWarmups] = useState<any[]>([]);
   const [songCount, setSongCount] = useState(5);
+  const [setlistSource, setSetlistSource] = useState<SetlistSource>(getStoredSetlistSource());
   const [selectedVibe, setSelectedVibe] = useState<WarmupVibe | null>(null);
   const [voiceType, setVoiceType] = useState<VoiceType>(null);
   const [techniques, setTechniques] = useState<Technique[]>([]);
@@ -107,6 +123,20 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
       return next as Technique[];
     });
     setWarmupData(null);
+  };
+
+  const handleSetlistSourceChange = (source: SetlistSource) => {
+    setSetlistSource(source);
+    storeSetlistSource(source);
+    setSetlistData(null);
+    setSetlistSongs([]);
+  };
+
+  const handleAddExternalToLibrary = (item: SetlistItem) => {
+    toast({
+      title: 'Add to Library',
+      description: `"${item.title}" can be added to your library soon. Stay tuned!`,
+    });
   };
 
   const handleVoiceKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
@@ -264,43 +294,31 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
   };
 
   const generateSetlist = async () => {
-    if (!currentSong) return;
-    
     setIsLoadingSetlist(true);
     try {
-      const { data, error } = await supabase.functions.invoke('feeling-journey', {
-        body: { 
-          mood: currentSong.title,
-          type: 'setlist',
-          songCount: songCount
-        }
-      });
+      setSetlistData(null);
+      setSetlistSongs([]);
 
-      if (error) throw error;
+      const request: SetlistRequest = {
+        count: songCount,
+        source: setlistSource,
+        seedSongId: currentSong?.id ?? null,
+      };
 
-      if (data.error) {
-        toast({
-          title: "AI Service Error",
-          description: data.error,
-          variant: "destructive",
-        });
-        return;
-      }
+      const response = await buildSetlist(request);
+      setSetlistData(response);
 
-      setSetlistData(data);
-      
-      const foundSongs = data.setlist?.map((item: any) => 
-        songs.find(s => s.title.toLowerCase().includes(item.song.toLowerCase()) || 
-                      item.song.toLowerCase().includes(s.title.toLowerCase()))
-      ).filter(Boolean) || [];
-      
-      setSetlistSongs(foundSongs);
+      const mappedSongs = response.items
+        .map(item => songs.find(song => song.id === item.id))
+        .filter((song): song is Song => Boolean(song));
+
+      setSetlistSongs(mappedSongs);
     } catch (error) {
       console.error('Error generating setlist:', error);
       toast({
-        title: "Error",
-        description: "Failed to generate setlist. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to generate setlist. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsLoadingSetlist(false);
@@ -473,11 +491,6 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                           'Generate Warm-up'
                         )}
                       </Button>
-                      {!selectedVibe && (
-                        <p className="text-sm text-card-foreground/60">
-                          Select a vibe above to enable the generator.
-                        </p>
-                      )}
                       <p className="text-sm text-card-foreground/60">
                         {currentSong
                           ? "Blend your song's emotional arc with the selected vibe."
@@ -596,33 +609,64 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                 <h3 className="text-xl font-semibold">Setlist Builder</h3>
                 <div className="space-y-6">
                   {!setlistData ? (
-                    <div className="text-center py-8 space-y-4">
-                      <div className="flex items-center justify-center gap-4">
-                        <label className="text-sm font-medium">Number of songs:</label>
-                        <input
-                          type="number"
-                          min="3"
-                          max="10"
-                          value={songCount}
-                          onChange={(e) =>
-                            setSongCount(Math.max(3, Math.min(10, parseInt(e.target.value) || 5)))
-                          }
-                          className="w-20 rounded-md border border-input bg-background px-3 py-2 text-center"
-                        />
+                    <div className="space-y-6">
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="w-full max-w-xl space-y-2">
+                          <span className="text-sm font-medium text-card-foreground/80">Source</span>
+                          <div className="flex flex-wrap gap-2">
+                            {SETLIST_SOURCE_OPTIONS.map(option => {
+                              const isActive = setlistSource === option.id;
+                              return (
+                                <button
+                                  key={option.id}
+                                  type="button"
+                                  onClick={() => handleSetlistSourceChange(option.id)}
+                                  className={`flex-1 min-w-[140px] rounded-full border px-4 py-2 text-sm font-medium transition ${
+                                    isActive
+                                      ? 'border-primary bg-primary text-primary-foreground shadow'
+                                      : 'border-card-border text-card-foreground/80 hover:border-primary/50'
+                                  }`}
+                                >
+                                  {option.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <div className="mt-1 grid grid-cols-1 gap-1 text-xs text-card-foreground/70 sm:grid-cols-3">
+                            {SETLIST_SOURCE_OPTIONS.map(option => (
+                              <span key={option.id} className="leading-tight text-center">
+                                {option.description}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <label className="text-sm font-medium">Number of songs:</label>
+                          <input
+                            type="number"
+                            min="3"
+                            max="10"
+                            value={songCount}
+                            onChange={(e) =>
+                              setSongCount(Math.max(3, Math.min(10, parseInt(e.target.value) || 5)))
+                            }
+                            className="w-20 rounded-md border border-input bg-background px-3 py-2 text-center"
+                          />
+                        </div>
+                        <Button onClick={generateSetlist} disabled={isLoadingSetlist} size="lg">
+                          {isLoadingSetlist ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Building setlist...
+                            </>
+                          ) : (
+                            'Build Setlist'
+                          )}
+                        </Button>
+                        <p className="text-sm text-card-foreground/60 text-center max-w-xl">
+                          Pick the source pool and we will handle the sequence.
+                        </p>
                       </div>
-                      <Button onClick={generateSetlist} disabled={isLoadingSetlist} size="lg">
-                        {isLoadingSetlist ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Building setlist...
-                          </>
-                        ) : (
-                          `Build ${songCount}-Song Setlist`
-                        )}
-                      </Button>
-                      <p className="text-sm text-card-foreground/60">
-                        Create an emotionally cohesive setlist starting with your selected song
-                      </p>
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -631,23 +675,44 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                         <p className="text-sm text-card-foreground/80">{setlistData.overallArc}</p>
                       </div>
 
+                      {setlistData.note && (
+                        <p className="rounded-md bg-card-accent/20 px-3 py-2 text-sm text-card-foreground/70">
+                          {setlistData.note}
+                        </p>
+                      )}
+
                       <div className="space-y-3">
-                        {setlistData.setlist?.map((item: any, index: number) => {
-                          const song = setlistSongs[index];
+                        {setlistData.items.length === 0 && (
+                          <p className="text-sm text-card-foreground/60">
+                            No songs available for the selected source yet.
+                          </p>
+                        )}
+                        {setlistData.items.map((item, index) => {
+                          const matchingSong = setlistSongs.find(song => song.id === item.id);
+                          const entry = setlistData.setlist[index];
                           return (
                             <div
                               key={index}
                               className="flex items-center gap-4 rounded-lg bg-card-accent/20 p-4"
                             >
                               <div className="w-8 text-2xl font-bold text-primary">
-                                {item.position}
+                                {entry?.position ?? index + 1}
                               </div>
                               <div className="flex-1">
-                                <h4 className="font-medium">{item.song}</h4>
-                                <p className="text-sm text-card-foreground/60">{item.purpose}</p>
-                                {song && (
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-medium">{item.title}</h4>
+                                  {item.external && (
+                                    <Badge variant="outline" className="text-amber-400 border-amber-400">
+                                      Suggested
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="text-sm text-card-foreground/60">
+                                  {entry?.purpose || item.reason || 'Maintains narrative flow'}
+                                </p>
+                                {matchingSong && matchingSong.core_feelings?.length > 0 && (
                                   <div className="mt-1 flex flex-wrap gap-1">
-                                    {song.core_feelings.slice(0, 2).map((feeling, i) => (
+                                    {matchingSong.core_feelings.slice(0, 2).map((feeling, i) => (
                                       <Badge key={i} variant="secondary" className="text-xs">
                                         {feeling}
                                       </Badge>
@@ -655,11 +720,26 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                                   </div>
                                 )}
                               </div>
-                              {song && (
-                                <Button variant="outline" size="sm" onClick={() => addToPersonalSetlist(song)}>
-                                  Add
-                                </Button>
-                              )}
+                              <div className="flex items-center gap-2">
+                                {item.external && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleAddExternalToLibrary(item)}
+                                  >
+                                    + Add to Library
+                                  </Button>
+                                )}
+                                {matchingSong && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => addToPersonalSetlist(matchingSong)}
+                                  >
+                                    Add
+                                  </Button>
+                                )}
+                              </div>
                             </div>
                           );
                         })}
