@@ -320,17 +320,10 @@ const Index = () => {
           {/* Feelings Card */}
           {currentMap && (
             <div className="space-y-4">
-              <FeelingsCard feelingMap={currentMap} />
-              
-              {/* Performance tools button */}
-              <div className="text-center">
-                <button
-                  onClick={() => setShowPrepTools(true)}
-                  className="px-6 py-2 bg-accent hover:bg-button-secondary-hover text-accent-foreground rounded-full transition-colors text-sm font-medium"
-                >
-                  🏋️ Performance Prep Tools
-                </button>
-              </div>
+              <FeelingsCard
+                feelingMap={currentMap}
+                onOpenPrepTools={() => setShowPrepTools(true)}
+              />
             </div>
           )}
 
