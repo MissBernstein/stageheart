@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Zap, MapPin, Loader2 } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { Song } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -179,10 +179,7 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
             {/* Step 2: Energy */}
             {step === 2 && (
               <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <Zap className="w-4 h-4 text-primary" />
-                  <h3 className="font-medium">What's your energy level?</h3>
-                </div>
+                <h3 className="font-medium mb-4">What's your energy level?</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {energyOptions.map((option) => (
                     <button
@@ -219,10 +216,7 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
             {/* Step 3: Context */}
             {step === 3 && (
               <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <MapPin className="w-4 h-4 text-primary" />
-                  <h3 className="font-medium">What's the performance context?</h3>
-                </div>
+                <h3 className="font-medium mb-4">What's the performance context?</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {contextOptions.map((option) => (
                     <button
