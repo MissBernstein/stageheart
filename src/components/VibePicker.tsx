@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Vibe } from '@/types';
 import vibesData from '@/data/vibes.json';
@@ -57,13 +57,13 @@ export const VibePicker = ({ onVibeSelect, songTitle, artist }: VibePickerProps)
             </Select>
           </div>
 
-          <Button
+          <AnimatedButton
             onClick={handleGenerate}
             disabled={!selectedVibeId}
             className="w-full h-12 text-lg font-semibold bg-primary hover:bg-primary-hover text-primary-foreground rounded-2xl transition-all duration-200"
           >
             Generate Vibe-Based Map
-          </Button>
+          </AnimatedButton>
         </div>
 
         <p className="text-xs text-muted-foreground text-center mt-4">

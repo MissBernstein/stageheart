@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import musicalNotesIcon from '@/assets/musicalnotesicon.png';
-import { Button } from '@/components/ui/button';
+import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Input } from '@/components/ui/input';
 import { Song } from '@/types';
 import songsData from '@/data/songs.json';
@@ -200,20 +200,15 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
             </div>
           </div>
           
-          <Button
+          <AnimatedButton
             type="submit"
-            disabled={!title.trim() || isLoading}
+            disabled={!title.trim()}
+            isLoading={isLoading}
+            loadingText={t('search.searching')}
             className="w-full h-12 text-lg font-semibold bg-primary hover:bg-primary-hover text-primary-foreground rounded-2xl transition-all duration-200"
           >
-            {isLoading ? (
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                {t('search.searching')}
-              </div>
-            ) : (
-              t('search.search')
-            )}
-          </Button>
+            {t('search.search')}
+          </AnimatedButton>
         </form>
       </div>
     </div>

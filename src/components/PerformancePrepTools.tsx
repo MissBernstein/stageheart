@@ -1,13 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
-import type { KeyboardEvent } from 'react';
-import { Button } from '@/components/ui/button';
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Loader2, Save, Trash2 } from 'lucide-react';
+import { Clock, Save, Trash2 } from 'lucide-react';
 import { Song } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import prepIcon from '@/assets/prepicon.png';
+import { ChipToggle } from '@/ui/ChipToggle';
+import { AnimatedCard } from '@/ui/AnimatedCard';
+import { AnimatedListItem } from '@/ui/AnimatedListItem';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MotionIfOkay } from '@/ui/MotionIfOkay';
+import { fadeInUp, motionDur, motionEase } from '@/ui/motion';
+import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
 import {
   generateWarmupPlan,
   WARMUP_VIBE_OPTIONS,
@@ -71,7 +78,8 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
   const [techniques, setTechniques] = useState<Technique[]>([]);
   const voiceButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const lastWarmupRequestRef = useRef<WarmupRequest | null>(null);
-  const { toast } = useToast();
+  const { toast, success, error } = useToast();
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     loadSavedWarmups();
@@ -145,10 +153,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
 
   const handleExportWarmupPdf = () => {
     if (!warmupData) {
-      toast({
-        title: 'No warm-up yet',
-        description: 'Generate a warm-up before exporting.',
-      });
+      error('No warm-up yet', 'Generate a warm-up before exporting.');
       return;
     }
 
@@ -203,11 +208,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
 
     const printWindow = window.open('', '', 'width=900,height=650');
     if (!printWindow) {
-      toast({
-        title: 'Popup blocked',
-        description: 'Allow popups or use browser print to save as PDF.',
-        variant: 'destructive',
-      });
+      error('Popup blocked', 'Allow popups or use browser print to save as PDF.');
       return;
     }
 
@@ -217,7 +218,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
     printWindow.print();
   };
 
-  const handleVoiceKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+  const handleVoiceKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>, index: number) => {
     const { key } = event;
     const lastIndex = VOICE_OPTIONS.length - 1;
 
@@ -287,13 +288,10 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
       const plan = generateWarmupPlan(request);
       setWarmupData(plan);
       lastWarmupRequestRef.current = request;
-    } catch (error) {
-      console.error('Error generating warmup:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to generate warm-up. Please try again.',
-        variant: 'destructive',
-      });
+      success('Warm-up generated');
+    } catch (err) {
+      console.error('Error generating warmup:', err);
+      error('Error', 'Failed to generate warm-up. Please try again.');
     } finally {
       setIsLoadingWarmup(false);
     }
@@ -325,19 +323,12 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
 
       if (error) throw error;
 
-      toast({
-        title: "Saved!",
-        description: "Warm-up routine saved to your collection.",
-      });
-      
+      success('Selections saved', 'Warm-up routine saved to your collection.');
+
       loadSavedWarmups();
-    } catch (error) {
-      console.error('Error saving warmup:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save warmup routine. Please try again.",
-        variant: "destructive",
-      });
+    } catch (err) {
+      console.error('Error saving warmup:', err);
+      error('Error', 'Failed to save warmup routine. Please try again.');
     }
   };
 
@@ -350,19 +341,12 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
 
       if (error) throw error;
 
-      toast({
-        title: "Deleted",
-        description: "Warm-up routine removed from your collection.",
-      });
+      success('Warm-up removed', 'Warm-up routine removed from your collection.');
       
       loadSavedWarmups();
-    } catch (error) {
-      console.error('Error deleting warmup:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete warmup routine.",
-        variant: "destructive",
-      });
+    } catch (err) {
+      console.error('Error deleting warmup:', err);
+      error('Error', 'Failed to delete warmup routine.');
     }
   };
 
@@ -389,19 +373,19 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
 
       const response = await buildSetlist(request);
       setSetlistData(response);
+      success('Setlist ready');
+      if (response.note) {
+        toast({ title: response.note });
+      }
 
       const mappedSongs = response.items
         .map(item => songs.find(song => song.id === item.id))
         .filter((song): song is Song => Boolean(song));
 
       setSetlistSongs(mappedSongs);
-    } catch (error) {
-      console.error('Error generating setlist:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to generate setlist. Please try again.',
-        variant: 'destructive',
-      });
+    } catch (err) {
+      console.error('Error generating setlist:', err);
+      error('Error', 'Failed to generate setlist. Please try again.');
     } finally {
       setIsLoadingSetlist(false);
     }
@@ -409,28 +393,34 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
 
   const addToPersonalSetlist = (song: Song) => {
     // This could be enhanced to save to local storage or a user's setlist collection
-    toast({
-      title: "Added to Setlist",
-      description: `"${song.title}" added to your personal setlist.`,
-    });
+    success('Setlist updated', `"${song.title}" added to your personal setlist.`);
   };
 
   return (
-    <div className="fixed inset-0 bg-background z-50 overflow-y-auto">
-      <div className="container mx-auto px-4 py-8">
-        <Card className="max-w-4xl mx-auto">
+    <MotionIfOkay>
+      <motion.div
+        initial={prefersReducedMotion ? false : fadeInUp.initial}
+        animate={prefersReducedMotion ? undefined : fadeInUp.animate}
+        exit={prefersReducedMotion ? undefined : fadeInUp.exit}
+        className="fixed inset-0 bg-background/95 z-50 overflow-y-auto backdrop-blur-sm"
+      >
+        <div className="container mx-auto px-4 py-8">
+          <Card className="max-w-4xl mx-auto">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <img src={prepIcon} alt="Performance prep icon" className="w-12 h-12" />
                 Performance Prep Tools
               </CardTitle>
-              <button
+              <AnimatedButton
+                variant="ghost"
+                size="icon"
                 onClick={onClose}
-                className="text-card-foreground/60 hover:text-card-foreground transition-colors text-2xl"
+                className="h-10 w-10 text-lg text-card-foreground/60 hover:text-card-foreground"
               >
-                ×
-              </button>
+                <span aria-hidden>×</span>
+                <span className="sr-only">Close performance prep tools</span>
+              </AnimatedButton>
             </div>
             {currentSong && (
               <p className="text-sm text-card-foreground/70">
@@ -451,28 +441,37 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                   )}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {WARMUP_VIBE_OPTIONS.map(option => {
-                    const isActive = selectedVibe === option.id;
-                    return (
-                      <button
-                        key={option.id}
-                        type="button"
-                        aria-pressed={isActive}
-                        onClick={() => {
-                          setSelectedVibe(prev => (prev === option.id ? null : option.id));
-                          setWarmupData(null);
-                        }}
-                        className={`rounded-2xl border-2 p-4 text-left transition-all ${
-                          isActive
-                            ? 'border-primary bg-primary/10 shadow-lg'
-                            : 'border-card-border hover:border-primary/50'
-                        }`}
-                      >
-                        <h4 className="text-lg font-semibold mb-1">{option.label}</h4>
-                        <p className="text-sm text-card-foreground/60">{option.subtitle}</p>
-                      </button>
-                    );
-                  })}
+                  <AnimatePresence>
+                    {WARMUP_VIBE_OPTIONS.map((option) => {
+                      const isActive = selectedVibe === option.id;
+                      return (
+                        <motion.button
+                          key={option.id}
+                          type="button"
+                          layout={!prefersReducedMotion}
+                          initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          whileHover={prefersReducedMotion ? undefined : { scale: 1.02, y: -2 }}
+                          whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+                          transition={{ duration: motionDur.base / 1000, ease: motionEase.standard }}
+                          aria-pressed={isActive}
+                          onClick={() => {
+                            setSelectedVibe((prev) => (prev === option.id ? null : option.id));
+                            setWarmupData(null);
+                          }}
+                          className={`motion-safe-only rounded-2xl border-2 p-4 text-left backdrop-blur-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                            isActive
+                              ? 'border-primary bg-primary/15 shadow-lg'
+                              : 'border-card-border/70 bg-card/60 hover:border-primary/50'
+                          }`}
+                        >
+                          <h4 className="text-lg font-semibold mb-1">{option.label}</h4>
+                          <p className="text-sm text-card-foreground/60">{option.subtitle}</p>
+                        </motion.button>
+                      );
+                    })}
+                  </AnimatePresence>
                 </div>
               </section>
 
@@ -486,35 +485,27 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                 <div className="space-y-3">
                   <div>
                     <span className="text-sm font-medium text-card-foreground/80">Voice Type</span>
-                    <div
-                      role="radiogroup"
-                      aria-label="Voice type"
-                      className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2"
-                    >
+                    <div role="radiogroup" aria-label="Voice type" className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {VOICE_OPTIONS.map((option, index) => {
                         const isActive = voiceType === option.id;
                         return (
-                          <button
+                          <ChipToggle
                             key={option.id}
-                            type="button"
-                            role="radio"
-                            aria-checked={isActive}
-                            ref={element => {
+                            ref={(element) => {
                               voiceButtonRefs.current[index] = element;
                             }}
-                            onKeyDown={event => handleVoiceKeyDown(event, index)}
+                            role="radio"
+                            aria-checked={isActive}
+                            isActive={isActive}
+                            onKeyDown={(event) => handleVoiceKeyDown(event, index)}
                             onClick={() => {
-                              setVoiceType(prev => (prev === option.id ? null : option.id));
+                              setVoiceType((prev) => (prev === option.id ? null : option.id));
                               setWarmupData(null);
                             }}
-                            className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
-                              isActive
-                                ? 'border-primary bg-primary text-primary-foreground'
-                                : 'border-card-border text-card-foreground/80 hover:border-primary/50'
-                            }`}
+                            className="justify-center"
                           >
                             {option.label}
-                          </button>
+                          </ChipToggle>
                         );
                       })}
                     </div>
@@ -526,23 +517,18 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                   <div>
                     <span className="text-sm font-medium text-card-foreground/80">Technique Focus</span>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      {TECHNIQUE_OPTIONS.map(option => {
+                      {TECHNIQUE_OPTIONS.map((option) => {
                         const isActive = techniques.includes(option.id);
                         return (
-                          <button
+                          <ChipToggle
                             key={option.id}
-                            type="button"
                             role="checkbox"
                             aria-checked={isActive}
+                            isActive={isActive}
                             onClick={() => toggleTechnique(option.id)}
-                            className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
-                              isActive
-                                ? 'border-primary bg-primary text-primary-foreground'
-                                : 'border-card-border text-card-foreground/80 hover:border-primary/50'
-                            }`}
                           >
                             {option.label}
-                          </button>
+                          </ChipToggle>
                         );
                       })}
                     </div>
@@ -569,20 +555,15 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                 <div className="space-y-6">
                   {!warmupData ? (
                     <div className="text-center py-8 space-y-4">
-                      <Button
+                      <AnimatedButton
                         onClick={generateWarmup}
                         disabled={!selectedVibe || isLoadingWarmup}
                         size="lg"
+                        isLoading={isLoadingWarmup}
+                        loadingText="Generating routine..."
                       >
-                        {isLoadingWarmup ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Generating routine...
-                          </>
-                        ) : (
-                          'Generate Warm-up'
-                        )}
-                      </Button>
+                        Generate Warm-up
+                      </AnimatedButton>
                       <p className="text-sm text-card-foreground/60">
                         {currentSong
                           ? "Blend your song's emotional arc with the selected vibe."
@@ -591,7 +572,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                     </div>
                   ) : (
                     <div className="grid gap-6 md:grid-cols-3">
-                      <Card>
+                      <AnimatedCard>
                         <CardHeader>
                           <CardTitle className="text-lg">Physical</CardTitle>
                         </CardHeader>
@@ -605,8 +586,8 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                             ))}
                           </ul>
                         </CardContent>
-                      </Card>
-                      <Card>
+                      </AnimatedCard>
+                      <AnimatedCard>
                         <CardHeader>
                           <CardTitle className="text-lg">Vocal</CardTitle>
                         </CardHeader>
@@ -620,8 +601,8 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                             ))}
                           </ul>
                         </CardContent>
-                      </Card>
-                      <Card>
+                      </AnimatedCard>
+                      <AnimatedCard>
                         <CardHeader>
                           <CardTitle className="text-lg">Mental</CardTitle>
                         </CardHeader>
@@ -635,7 +616,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                             ))}
                           </ul>
                         </CardContent>
-                      </Card>
+                      </AnimatedCard>
                     </div>
                   )}
 
@@ -648,15 +629,15 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <Button variant="outline" size="sm" onClick={handleExportWarmupPdf}>
+                        <AnimatedButton variant="outline" size="sm" onClick={handleExportWarmupPdf}>
                           Export PDF
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={saveWarmup}>
+                        </AnimatedButton>
+                        <AnimatedButton variant="outline" size="sm" onClick={saveWarmup}>
                           Save
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => setWarmupData(null)}>
+                        </AnimatedButton>
+                        <AnimatedButton variant="outline" size="sm" onClick={() => setWarmupData(null)}>
                           Generate New
-                        </Button>
+                        </AnimatedButton>
                       </div>
                     </div>
                   )}
@@ -669,34 +650,36 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                     <Save className="w-5 h-5 text-primary" />
                     Saved Warm-ups
                   </h3>
-                  <div className="space-y-2">
-                    {savedWarmups.map((warmup) => (
-                      <div
-                        key={warmup.id}
-                        className="flex items-center justify-between rounded-lg bg-card-accent/20 p-4"
-                      >
-                        <div className="flex-1">
-                          <h4 className="font-medium">
-                            {warmup.vibe || `${warmup.song_title}${warmup.song_artist ? ` by ${warmup.song_artist}` : ''}`}
-                          </h4>
-                          {warmup.song_artist && !warmup.vibe && (
+                  <ul className="space-y-2">
+                    <AnimatePresence>
+                      {savedWarmups.map((warmup) => (
+                        <AnimatedListItem
+                          key={warmup.id}
+                          className="flex items-center justify-between rounded-lg bg-card-accent/20 p-4"
+                        >
+                          <div className="flex-1">
+                            <h4 className="font-medium">
+                              {warmup.vibe || `${warmup.song_title}${warmup.song_artist ? ` by ${warmup.song_artist}` : ''}`}
+                            </h4>
+                            {warmup.song_artist && !warmup.vibe && (
                             <p className="text-sm text-card-foreground/60">{warmup.song_artist}</p>
                           )}
                           <p className="text-xs text-card-foreground/50 mt-1">
                             {warmup.duration} min • {new Date(warmup.created_at).toLocaleDateString()}
                           </p>
                         </div>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" onClick={() => loadSavedWarmup(warmup)}>
-                            Load
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={() => deleteSavedWarmup(warmup.id)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                          <div className="flex gap-2">
+                            <AnimatedButton variant="outline" size="sm" onClick={() => loadSavedWarmup(warmup)}>
+                              Load
+                            </AnimatedButton>
+                            <AnimatedButton variant="outline" size="sm" onClick={() => deleteSavedWarmup(warmup.id)}>
+                              <Trash2 className="w-4 h-4" />
+                            </AnimatedButton>
+                          </div>
+                        </AnimatedListItem>
+                      ))}
+                    </AnimatePresence>
+                  </ul>
                 </section>
               )}
 
@@ -709,21 +692,17 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                         <div className="w-full max-w-xl space-y-2">
                           <span className="text-sm font-medium text-card-foreground/80">Source</span>
                           <div className="flex flex-wrap gap-2">
-                            {SETLIST_SOURCE_OPTIONS.map(option => {
+                            {SETLIST_SOURCE_OPTIONS.map((option) => {
                               const isActive = setlistSource === option.id;
                               return (
-                                <button
+                                <ChipToggle
                                   key={option.id}
-                                  type="button"
+                                  isActive={isActive}
                                   onClick={() => handleSetlistSourceChange(option.id)}
-                                  className={`flex-1 min-w-[140px] rounded-full border px-4 py-2 text-sm font-medium transition ${
-                                    isActive
-                                      ? 'border-primary bg-primary text-primary-foreground shadow'
-                                      : 'border-card-border text-card-foreground/80 hover:border-primary/50'
-                                  }`}
+                                  className="flex-1 min-w-[140px] justify-center"
                                 >
                                   {option.label}
-                                </button>
+                                </ChipToggle>
                               );
                             })}
                           </div>
@@ -748,16 +727,15 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                             className="w-20 rounded-md border border-input bg-background px-3 py-2 text-center"
                           />
                         </div>
-                        <Button onClick={generateSetlist} disabled={isLoadingSetlist} size="lg">
-                          {isLoadingSetlist ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Building setlist...
-                            </>
-                          ) : (
-                            'Build Setlist'
-                          )}
-                        </Button>
+                        <AnimatedButton
+                          onClick={generateSetlist}
+                          disabled={isLoadingSetlist}
+                          size="lg"
+                          isLoading={isLoadingSetlist}
+                          loadingText="Building setlist..."
+                        >
+                          Build Setlist
+                        </AnimatedButton>
                         <p className="text-sm text-card-foreground/60 text-center max-w-xl">
                           Pick the source pool and we will handle the sequence.
                         </p>
@@ -776,18 +754,19 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                         </p>
                       )}
 
-                      <div className="space-y-3">
-                        {setlistData.items.length === 0 && (
-                          <p className="text-sm text-card-foreground/60">
-                            No songs available for the selected source yet.
-                          </p>
-                        )}
+                      <ul className="space-y-3">
+                        <AnimatePresence>
+                          {setlistData.items.length === 0 && (
+                            <AnimatedListItem className="rounded-lg bg-card-accent/10 p-3 text-sm text-card-foreground/60">
+                              No songs available for the selected source yet.
+                            </AnimatedListItem>
+                          )}
                         {setlistData.items.map((item, index) => {
                           const matchingSong = setlistSongs.find(song => song.id === item.id);
                           const entry = setlistData.setlist[index];
                           return (
-                            <div
-                              key={index}
+                            <AnimatedListItem
+                              key={`${item.id}-${index}`}
                               className="flex items-center gap-4 rounded-lg bg-card-accent/20 p-4"
                             >
                               <div className="w-8 text-2xl font-bold text-primary">
@@ -817,28 +796,29 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                               </div>
                               <div className="flex items-center gap-2">
                                 {item.external && (
-                                  <Button
+                                  <AnimatedButton
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleAddExternalToLibrary(item)}
                                   >
                                     + Add to Library
-                                  </Button>
+                                  </AnimatedButton>
                                 )}
                                 {matchingSong && (
-                                  <Button
+                                  <AnimatedButton
                                     variant="outline"
                                     size="sm"
                                     onClick={() => addToPersonalSetlist(matchingSong)}
                                   >
                                     Add
-                                  </Button>
+                                  </AnimatedButton>
                                 )}
                               </div>
-                            </div>
+                            </AnimatedListItem>
                           );
                         })}
-                      </div>
+                        </AnimatePresence>
+                      </ul>
 
                       <div className="mt-6 rounded-lg bg-tip-bg p-4">
                         <h4 className="font-medium mb-2">Transition Tips:</h4>
@@ -855,16 +835,17 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                   )}
 
                   {setlistData && (
-                    <Button variant="outline" onClick={() => setSetlistData(null)} className="w-full">
+                    <AnimatedButton variant="outline" onClick={() => setSetlistData(null)} className="w-full">
                       Generate New Setlist
-                    </Button>
+                    </AnimatedButton>
                   )}
                 </div>
               </section>
             </div>
           </CardContent>
-        </Card>
-      </div>
-    </div>
+          </Card>
+        </div>
+      </motion.div>
+    </MotionIfOkay>
   );
 };

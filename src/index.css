@@ -92,3 +92,10 @@
     @apply font-heading;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-safe-only {
+    transition: none !important;
+    animation: none !important;
+  }
+}

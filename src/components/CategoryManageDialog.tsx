@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCategories } from '@/hooks/useCategories';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
 interface CategoryManageDialogProps {
   mode: 'rename' | 'delete';
@@ -27,6 +27,7 @@ export function CategoryManageDialog({
 }: CategoryManageDialogProps) {
   const { renameCategory, categories } = useCategories();
   const [newName, setNewName] = useState('');
+  const { error, success } = useToast();
 
   useEffect(() => {
     if (open && mode === 'rename') {
@@ -38,17 +39,17 @@ export function CategoryManageDialog({
     const trimmedName = newName.trim();
     
     if (!trimmedName) {
-      toast.error('Category name cannot be empty');
+      error('Category name cannot be empty');
       return;
     }
 
     if (categories.some(cat => cat.id !== categoryId && cat.name.toLowerCase() === trimmedName.toLowerCase())) {
-      toast.error('Category name already exists');
+      error('Category name already exists');
       return;
     }
 
     renameCategory(categoryId, trimmedName);
-    toast.success('Category renamed');
+    success('Category renamed');
     onOpenChange(false);
   };
 

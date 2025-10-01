@@ -5,7 +5,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
 import { Heart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { AutocompleteSearch } from '@/components/AutocompleteSearch';
 import { SongLibrary } from '@/components/SongLibrary';
 import { FeelingJourney } from '@/components/FeelingJourney';
@@ -18,6 +17,11 @@ import { FeelingMap, Song, Vibe } from '@/types';
 import songsData from '@/data/songs.json';
 import logo from '@/assets/logo.png';
 import { useFavorites } from '@/hooks/useFavorites';
+import { motion } from 'framer-motion';
+import { AnimatedButton } from '@/ui/AnimatedButton';
+import { fadeInUp } from '@/ui/motion';
+import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
+import { MotionIfOkay } from '@/ui/MotionIfOkay';
 
 const Index = () => {
   const { t } = useTranslation();
@@ -33,6 +37,7 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState({ title: '', artist: '' });
   const [isLoading, setIsLoading] = useState(false);
   const { favorites } = useFavorites();
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   const songs: Song[] = songsData;
 
@@ -64,7 +69,7 @@ const Index = () => {
       toast({
         title: 'Error',
         description: 'Failed to log out. Please try again.',
-        variant: 'destructive',
+        variant: 'error',
       });
     } else {
       toast({
@@ -186,18 +191,24 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen relative">
-      {/* Solid background */}
-      <div className="fixed inset-0 bg-background" />
-      
-      {/* Main content */}
-      <div className="relative z-10 container mx-auto px-4 py-12">
+    <MotionIfOkay>
+      <motion.div
+        initial={prefersReducedMotion ? false : fadeInUp.initial}
+        animate={prefersReducedMotion ? undefined : fadeInUp.animate}
+        exit={prefersReducedMotion ? undefined : fadeInUp.exit}
+        className="min-h-screen relative"
+      >
+        {/* Solid background */}
+        <div className="fixed inset-0 bg-background" />
+        
+        {/* Main content */}
+        <div className="relative z-10 container mx-auto px-4 py-12">
         <div className="space-y-8">
           {/* Header */}
           <div className="text-center mb-12">
             <div className="flex justify-between items-start mb-6">
               <div className="flex-1 flex justify-start">
-                <Button
+                <AnimatedButton
                   variant="secondary"
                   className="relative h-12 w-12 flex items-center justify-center bg-card hover:bg-muted border border-card-border rounded-2xl shadow-card p-0"
                   onClick={() => navigate('/favorites')}
@@ -209,7 +220,7 @@ const Index = () => {
                       {favorites.length}
                     </span>
                   )}
-                </Button>
+                </AnimatedButton>
               </div>
               <div className="flex-1 text-center">
                 <div className="flex flex-col items-center justify-center gap-4 py-6">
@@ -236,30 +247,30 @@ const Index = () => {
             {/* Navigation buttons */}
             {!currentMap && !showVibePicker && !showLibrary && !showJourney && !showPrepTools && (
               <div className="flex flex-wrap justify-center gap-3">
-                <button
+                <AnimatedButton
                   onClick={() => setShowLibrary(true)}
                   className="px-6 py-2 bg-accent hover:bg-button-secondary-hover text-accent-foreground rounded-full transition-colors text-sm font-medium"
                 >
                   {t('navigation.browseLibrary')} ({songs.length} songs)
-                </button>
-                <button
+                </AnimatedButton>
+                <AnimatedButton
                   onClick={() => setShowJourney(true)}
-                  className="px-6 py-2 bg-primary-soft hover:bg-button-primary-hover text-primary rounded-full transition-colors text-sm font-medium"
+                  className="px-6 py-2 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-sm font-medium"
                 >
                   {t('navigation.feelingJourney')}
-                </button>
-                <button
+                </AnimatedButton>
+                <AnimatedButton
                   onClick={() => setShowPrepTools(true)}
-                  className="px-6 py-2 bg-primary-soft hover:bg-button-primary-hover text-primary rounded-full transition-colors text-sm font-medium"
+                  className="px-6 py-2 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-sm font-medium"
                 >
                   Performance Prep
-                </button>
-                <button
+                </AnimatedButton>
+                <AnimatedButton
                   onClick={handleRandomSong}
                   className="px-6 py-2 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-sm font-medium"
                 >
                   {t('navigation.surpriseMe')}
-                </button>
+                </AnimatedButton>
               </div>
             )}
           </div>
@@ -339,8 +350,9 @@ const Index = () => {
             </div>
           )}
         </div>
-      </div>
-    </div>
+        </div>
+      </motion.div>
+    </MotionIfOkay>
   );
 };
 

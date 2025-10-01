@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useCategories } from '@/hooks/useCategories';
 import { useFavorites } from '@/hooks/useFavorites';
 import { FeelingMap } from '@/types';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
 interface FavoriteCategoryModalProps {
   song: FeelingMap;
@@ -20,6 +20,7 @@ interface FavoriteCategoryModalProps {
 export function FavoriteCategoryModal({ song, open, onOpenChange, onSave }: FavoriteCategoryModalProps) {
   const { categories, createCategory, setSongCategories, getSongCategories } = useCategories();
   const { addFavorite } = useFavorites();
+  const { success, error } = useToast();
   
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -45,12 +46,12 @@ export function FavoriteCategoryModal({ song, open, onOpenChange, onSave }: Favo
   const handleCreateCategory = () => {
     const trimmedName = newCategoryName.trim();
     if (!trimmedName) {
-      toast.error('Category name cannot be empty');
+      error('Category name cannot be empty');
       return;
     }
 
     if (categories.some(cat => cat.name.toLowerCase() === trimmedName.toLowerCase())) {
-      toast.error('Category already exists');
+      error('Category already exists');
       return;
     }
 
@@ -58,13 +59,13 @@ export function FavoriteCategoryModal({ song, open, onOpenChange, onSave }: Favo
     setSelectedCategories(prev => [...prev, newCategory.id]);
     setNewCategoryName('');
     setIsCreating(false);
-    toast.success(`Created "${trimmedName}"`);
+    success(`Added to ${trimmedName}`);
   };
 
   const handleSave = () => {
     addFavorite(song);
     setSongCategories(song.id, selectedCategories);
-    toast.success('Saved to favorites');
+    success('Added to Favorites');
     onSave?.();
     onOpenChange(false);
   };
