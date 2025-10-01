@@ -1,7 +1,7 @@
 import { Heart, CheckCircle2, Pencil, Trash2, Plus } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
+import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import themeIcon from '@/assets/themeicon.png';
@@ -16,6 +16,9 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { usePersonalNotes } from '@/hooks/usePersonalNotes';
 import { FavoriteCategoryModal } from '@/components/FavoriteCategoryModal';
 import { useToast } from '@/hooks/use-toast';
+import { motion } from 'framer-motion';
+import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
+import { motionDur, motionEase } from '@/ui/motion';
 
 interface EditableItem {
   id: string;
@@ -40,6 +43,8 @@ export const FeelingsCard = ({ feelingMap, onOpenPrepTools }: FeelingsCardProps)
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
   const { getNote, saveNote } = usePersonalNotes();
   const { toast } = useToast();
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const hoverLift = prefersReducedMotion ? undefined : { y: -2, scale: 1.02 };
   const [justCopied, setJustCopied] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const [personalNote, setPersonalNote] = useState('');
@@ -392,7 +397,13 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
           </h3>
           <div className="flex flex-wrap gap-3">
             {coreFeelings.map((item, index) => (
-              <div key={item.id} className="group">
+              <motion.div
+                key={item.id}
+                className="group"
+                whileHover={editingCoreId === item.id ? undefined : hoverLift}
+                whileTap={editingCoreId === item.id || prefersReducedMotion ? undefined : { scale: 0.98 }}
+                transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
+              >
                 {editingCoreId === item.id ? (
                   <div className="flex items-center gap-2">
                     <Input
@@ -401,14 +412,14 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                       className="h-9 w-44 sm:w-52"
                       autoFocus
                     />
-                    <Button
+                    <AnimatedButton
                       size="sm"
                       onClick={handleSaveCoreFeeling}
                       disabled={!editingCoreValue.trim()}
                     >
                       Save
-                    </Button>
-                    <Button
+                    </AnimatedButton>
+                    <AnimatedButton
                       size="sm"
                       variant="ghost"
                       onClick={() => {
@@ -417,7 +428,7 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                       }}
                     >
                       Cancel
-                    </Button>
+                    </AnimatedButton>
                   </div>
                 ) : (
                   <div
@@ -448,7 +459,7 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                     )}
                   </div>
                 )}
-              </div>
+              </motion.div>
             ))}
           </div>
           {isAddingCoreFeeling ? (
@@ -460,14 +471,14 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                 className="h-9 w-44 sm:w-52"
                 autoFocus
               />
-              <Button
+              <AnimatedButton
                 size="sm"
                 onClick={handleAddCoreFeeling}
                 disabled={!newCoreFeeling.trim()}
               >
                 Add
-              </Button>
-              <Button
+              </AnimatedButton>
+              <AnimatedButton
                 size="sm"
                 variant="ghost"
                 onClick={() => {
@@ -476,10 +487,10 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                 }}
               >
                 Cancel
-              </Button>
+              </AnimatedButton>
             </div>
           ) : (
-            <Button
+            <AnimatedButton
               variant="outline"
               size="sm"
               onClick={() => setIsAddingCoreFeeling(true)}
@@ -487,7 +498,7 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
             >
               <Plus className="w-4 h-4" />
               <span className="sr-only">Add custom feeling</span>
-            </Button>
+            </AnimatedButton>
           )}
         </div>
 
@@ -499,7 +510,13 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
           </h3>
           <div className="space-y-3">
             {emotionalAccess.map((item, index) => (
-              <div key={item.id} className="group">
+              <motion.div
+                key={item.id}
+                className="group"
+                whileHover={editingAccessId === item.id ? undefined : hoverLift}
+                whileTap={editingAccessId === item.id || prefersReducedMotion ? undefined : { scale: 0.98 }}
+                transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
+              >
                 {editingAccessId === item.id ? (
                   <div className="p-4 bg-tip-bg rounded-2xl flex flex-col gap-2">
                     <Textarea
@@ -509,14 +526,14 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                       autoFocus
                     />
                     <div className="flex gap-2 justify-end">
-                      <Button
+                      <AnimatedButton
                         size="sm"
                         onClick={handleSaveAccessIdea}
                         disabled={!editingAccessValue.trim()}
                       >
                         Save
-                      </Button>
-                      <Button
+                      </AnimatedButton>
+                      <AnimatedButton
                         size="sm"
                         variant="ghost"
                         onClick={() => {
@@ -525,7 +542,7 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                         }}
                       >
                         Cancel
-                      </Button>
+                      </AnimatedButton>
                     </div>
                   </div>
                 ) : (
@@ -564,7 +581,7 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                     </div>
                   </div>
                 )}
-              </div>
+              </motion.div>
             ))}
           </div>
           {isAddingAccessIdea ? (
@@ -577,14 +594,14 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                 autoFocus
               />
               <div className="flex gap-2 justify-end">
-                <Button
+                <AnimatedButton
                   size="sm"
                   onClick={handleAddAccessIdea}
                   disabled={!newAccessIdea.trim()}
                 >
                   Add
-                </Button>
-                <Button
+                </AnimatedButton>
+                <AnimatedButton
                   size="sm"
                   variant="ghost"
                   onClick={() => {
@@ -593,11 +610,11 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                   }}
                 >
                   Cancel
-                </Button>
+                </AnimatedButton>
               </div>
             </div>
           ) : (
-            <Button
+            <AnimatedButton
               variant="outline"
               size="sm"
               onClick={() => setIsAddingAccessIdea(true)}
@@ -605,7 +622,7 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
             >
               <Plus className="w-4 h-4" />
               <span className="sr-only">Add custom idea</span>
-            </Button>
+            </AnimatedButton>
           )}
         </div>
 
@@ -618,7 +635,13 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
           {visualCues.length > 0 ? (
             <div className="space-y-3">
               {visualCues.map((item, index) => (
-                <div key={item.id} className="group">
+                <motion.div
+                  key={item.id}
+                  className="group"
+                  whileHover={editingVisualId === item.id ? undefined : hoverLift}
+                  whileTap={editingVisualId === item.id || prefersReducedMotion ? undefined : { scale: 0.98 }}
+                  transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
+                >
                   {editingVisualId === item.id ? (
                     <div className="p-4 bg-muted rounded-2xl space-y-3">
                       <Textarea
@@ -628,14 +651,14 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                         autoFocus
                       />
                       <div className="flex gap-2 justify-end">
-                        <Button
+                        <AnimatedButton
                           size="sm"
                           onClick={handleSaveVisualCue}
                           disabled={!editingVisualValue.trim()}
                         >
                           Save
-                        </Button>
-                        <Button
+                        </AnimatedButton>
+                        <AnimatedButton
                           size="sm"
                           variant="ghost"
                           onClick={() => {
@@ -644,7 +667,7 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                           }}
                         >
                           Cancel
-                        </Button>
+                        </AnimatedButton>
                       </div>
                     </div>
                   ) : (
@@ -680,7 +703,7 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                       </div>
                     </div>
                   )}
-                </div>
+                </motion.div>
               ))}
             </div>
           ) : (
@@ -698,14 +721,14 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                 autoFocus
               />
               <div className="flex gap-2 justify-end">
-                <Button
+                <AnimatedButton
                   size="sm"
                   onClick={handleAddVisualCue}
                   disabled={!newVisualCue.trim()}
                 >
                   Add
-                </Button>
-                <Button
+                </AnimatedButton>
+                <AnimatedButton
                   size="sm"
                   variant="ghost"
                   onClick={() => {
@@ -714,11 +737,11 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                   }}
                 >
                   Cancel
-                </Button>
+                </AnimatedButton>
               </div>
             </div>
           ) : (
-            <Button
+            <AnimatedButton
               variant="outline"
               size="sm"
               onClick={() => setIsAddingVisualCue(true)}
@@ -726,7 +749,7 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
             >
               <Plus className="w-4 h-4" />
               <span className="sr-only">Add custom visual cue</span>
-            </Button>
+            </AnimatedButton>
           )}
         </div>
 
@@ -737,30 +760,39 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
             Listen & Learn
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <a
+            <motion.a
               href={`https://listen.tidal.com/search?q=${encodeURIComponent(`${feelingMap.title} ${feelingMap.artist || ''}`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 p-4 bg-primary-soft hover:bg-button-primary-hover text-primary border-2 border-card-border rounded-2xl transition-all duration-200 font-semibold"
+              whileHover={prefersReducedMotion ? undefined : hoverLift}
+              whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+              transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
             >
               Listen on Tidal
-            </a>
-            <a
+            </motion.a>
+            <motion.a
               href={`https://genius.com/search?q=${encodeURIComponent(`${feelingMap.title} ${feelingMap.artist || ''}`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 p-4 bg-primary-soft hover:bg-button-primary-hover text-primary border-2 border-card-border rounded-2xl transition-all duration-200 font-semibold"
+              whileHover={prefersReducedMotion ? undefined : hoverLift}
+              whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+              transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
             >
               View Lyrics on Genius
-            </a>
-            <a
+            </motion.a>
+            <motion.a
               href={`https://www.sheetmusicplus.com/search?Ntt=${encodeURIComponent(`${feelingMap.title} ${feelingMap.artist || ''}`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 p-4 bg-primary-soft hover:bg-button-primary-hover text-primary border-2 border-card-border rounded-2xl transition-all duration-200 font-semibold"
+              whileHover={prefersReducedMotion ? undefined : hoverLift}
+              whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+              transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
             >
               Find Sheet Music
-            </a>
+            </motion.a>
           </div>
         </div>
 
@@ -793,7 +825,7 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
 
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-3 sm:flex-nowrap">
-          <Button
+          <AnimatedButton
             onClick={handleCopy}
             variant="secondary"
             className="flex-1 h-12 text-base font-semibold bg-button-secondary hover:bg-button-secondary-hover rounded-2xl transition-all duration-200"
@@ -806,18 +838,18 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
             ) : (
               t('feelingMap.copyMap')
             )}
-          </Button>
+          </AnimatedButton>
           
           {onOpenPrepTools && (
-            <Button
+            <AnimatedButton
               onClick={onOpenPrepTools}
               variant="secondary"
               className="flex-1 h-12 text-base font-semibold bg-button-secondary hover:bg-button-secondary-hover rounded-2xl transition-all duration-200"
             >
               Performance Prep Tools
-            </Button>
+            </AnimatedButton>
           )}
-          <Button
+          <AnimatedButton
             onClick={handleToggleFavorite}
             variant="secondary"
             className={`flex-1 h-12 px-6 font-semibold rounded-2xl transition-all duration-200 ${
@@ -840,7 +872,7 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                 {isFavorite(feelingMap) ? t('feelingMap.saved') : t('feelingMap.save')}
               </div>
             )}
-          </Button>
+          </AnimatedButton>
         </div>
       </div>
 

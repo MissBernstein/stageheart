@@ -12,7 +12,7 @@ import { FavoriteCategoryModal } from '@/components/FavoriteCategoryModal';
 import generalHeartIcon from '@/assets/generalhearticon.png';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fadeInUp } from '@/ui/motion';
+import { fadeInUp, motionDur, motionEase } from '@/ui/motion';
 import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
 import { MotionIfOkay } from '@/ui/MotionIfOkay';
 
@@ -22,6 +22,7 @@ export default function Favorites() {
   const { favorites, removeFavorite } = useFavorites();
   const { success } = useToast();
   const prefersReducedMotion = usePrefersReducedMotion();
+  const hoverLift = prefersReducedMotion ? undefined : { y: -2, scale: 1.02 };
   
   const [renameDialog, setRenameDialog] = useState<{ open: boolean; categoryId: string; currentName: string }>({
     open: false,
@@ -84,14 +85,22 @@ export default function Favorites() {
     <ul className="space-y-2">
       <AnimatePresence>
         {songs.map((song) => (
-          <AnimatedListItem key={song.id} className="group rounded-lg border border-card-border/70 bg-card/60 p-3 transition-colors hover:bg-card/80">
-            <div className="flex items-center justify-between">
+          <AnimatedListItem
+            key={song.id}
+            className="group overflow-hidden rounded-2xl border border-card-border/60 bg-card/60"
+          >
+            <motion.div
+              className="flex items-center justify-between px-5 py-4 hover:bg-card/75"
+              whileHover={hoverLift}
+              whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+              transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
+            >
               <div className="flex-1 min-w-0">
                 <p className="font-medium truncate">{song.title}</p>
                 <p className="text-sm text-muted-foreground truncate">{song.artist}</p>
               </div>
               {renderSongActions(song)}
-            </div>
+            </motion.div>
           </AnimatedListItem>
         ))}
       </AnimatePresence>
@@ -111,7 +120,7 @@ export default function Favorites() {
             <span className="text-sm text-muted-foreground">({songs.length})</span>
           </div>
         ),
-        description: category.isPreset ? <span className="text-xs uppercase tracking-wide text-muted-foreground">Preset</span> : undefined,
+        description: category.isPreset ? 'Preset' : undefined,
         content: (
           <div className="space-y-3">
             <div className="flex items-center justify-between">

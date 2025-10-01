@@ -23,6 +23,7 @@ interface AnimatedAccordionProps {
 export const AnimatedAccordion = ({ items, type = 'single', defaultOpenIds = [], className }: AnimatedAccordionProps) => {
   const prefersReducedMotion = usePrefersReducedMotion();
   const [openIds, setOpenIds] = useState<string[]>(defaultOpenIds);
+  const hoverLift = prefersReducedMotion ? undefined : { y: -2, scale: 1.01 };
 
   const isOpen = (id: string) => openIds.includes(id);
 
@@ -40,17 +41,30 @@ export const AnimatedAccordion = ({ items, type = 'single', defaultOpenIds = [],
       {items.map(({ id, title, content, description }) => {
         const open = isOpen(id);
         return (
-          <div key={id} className="rounded-2xl border border-card-border bg-card/80 backdrop-blur-sm">
-            <button
+          <div
+            key={id}
+            className={cn(
+              'overflow-hidden rounded-3xl border bg-card/80 backdrop-blur-sm transition-colors',
+              open ? 'border-primary/50' : 'border-card-border/60',
+            )}
+          >
+            <motion.button
               type="button"
-              className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+              className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               aria-expanded={open}
               aria-controls={`${id}-content`}
               onClick={() => toggleItem(id)}
+              whileHover={hoverLift}
+              whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+              transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
             >
-              <div className="flex flex-col gap-1">
-                <div className="font-semibold text-card-foreground">{title}</div>
-                {description && <p className="text-sm text-muted-foreground">{description}</p>}
+              <div className="flex-1">
+                <div className="font-semibold text-card-foreground text-lg">{title}</div>
+                {description && (
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mt-2">
+                    {description}
+                  </div>
+                )}
               </div>
               <motion.span
                 className="motion-safe-only"
@@ -59,7 +73,7 @@ export const AnimatedAccordion = ({ items, type = 'single', defaultOpenIds = [],
               >
                 <ChevronDown className="h-4 w-4" />
               </motion.span>
-            </button>
+            </motion.button>
             <AnimatePresence initial={false}>
               {open && (
                 <motion.div
@@ -71,7 +85,7 @@ export const AnimatedAccordion = ({ items, type = 'single', defaultOpenIds = [],
                   transition={prefersReducedMotion ? { duration: 0 } : { duration: motionDur.slow / 1000, ease: motionEase.standard }}
                   className="overflow-hidden"
                 >
-                  <div className="px-5 pb-5 pt-1 text-sm text-card-foreground/90">{content}</div>
+                  <div className="px-6 pb-6 pt-2 text-sm text-card-foreground/90">{content}</div>
                 </motion.div>
               )}
             </AnimatePresence>
