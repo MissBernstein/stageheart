@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, Music } from 'lucide-react';
 import musicalNotesIcon from '@/assets/musicalnotesicon.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -212,10 +211,7 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
                 {t('search.searching')}
               </div>
             ) : (
-              <div className="flex items-center gap-2">
-                <Search className="w-5 h-5" />
-                {t('search.search')}
-              </div>
+              t('search.search')
             )}
           </Button>
         </form>

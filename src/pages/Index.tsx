@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, Star } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AutocompleteSearch } from '@/components/AutocompleteSearch';
 import { SongLibrary } from '@/components/SongLibrary';
@@ -197,19 +197,19 @@ const Index = () => {
           <div className="text-center mb-12">
             <div className="flex justify-between items-start mb-6">
               <div className="flex-1 flex justify-start">
-          <Button
-            variant="secondary"
-            className="h-12 px-4 bg-card hover:bg-muted border border-card-border rounded-2xl shadow-card"
-            onClick={() => navigate('/favorites')}
-          >
-            <Star className="w-5 h-5 mr-2 text-star" />
-            <span className="hidden sm:inline">Favorites</span>
-            {favorites.length > 0 && (
-              <span className="ml-2 bg-star text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {favorites.length}
-              </span>
-            )}
-          </Button>
+                <Button
+                  variant="secondary"
+                  className="relative h-12 w-12 flex items-center justify-center bg-card hover:bg-muted border border-card-border rounded-2xl shadow-card p-0"
+                  onClick={() => navigate('/favorites')}
+                >
+                  <Heart className="w-5 h-5 text-star" />
+                  <span className="sr-only">Favorites</span>
+                  {favorites.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-star text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {favorites.length}
+                    </span>
+                  )}
+                </Button>
               </div>
               <div className="flex-1 text-center">
                 <div className="flex flex-col items-center justify-center gap-4 py-6">
@@ -223,15 +223,6 @@ const Index = () => {
                 </div>
               </div>
               <div className="flex-1 flex justify-end items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate('/favorites')}
-                  className="gap-2"
-                >
-                  <Heart className="h-4 w-4" />
-                  Favorites
-                </Button>
                 <LanguageToggle />
                 <button
                   onClick={handleLogout}
