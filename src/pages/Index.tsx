@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
-import { Heart } from 'lucide-react';
+import { Heart, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AutocompleteSearch } from '@/components/AutocompleteSearch';
 import { SongLibrary } from '@/components/SongLibrary';
@@ -12,11 +12,12 @@ import { FeelingJourney } from '@/components/FeelingJourney';
 import { PerformancePrepTools } from '@/components/PerformancePrepTools';
 import { FeelingsCard } from '@/components/FeelingsCard';
 import { VibePicker } from '@/components/VibePicker';
-import { FavoritesDrawer } from '@/components/FavoritesDrawer';
+
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { FeelingMap, Song, Vibe } from '@/types';
 import songsData from '@/data/songs.json';
 import logo from '@/assets/logo.png';
+import { useFavorites } from '@/hooks/useFavorites';
 
 const Index = () => {
   const { t } = useTranslation();
@@ -31,6 +32,7 @@ const Index = () => {
   const [showPrepTools, setShowPrepTools] = useState(false);
   const [searchQuery, setSearchQuery] = useState({ title: '', artist: '' });
   const [isLoading, setIsLoading] = useState(false);
+  const { favorites } = useFavorites();
 
   const songs: Song[] = songsData;
 
@@ -195,7 +197,19 @@ const Index = () => {
           <div className="text-center mb-12">
             <div className="flex justify-between items-start mb-6">
               <div className="flex-1 flex justify-start">
-                <FavoritesDrawer onSelectFavorite={handleSelectFavorite} />
+          <Button
+            variant="secondary"
+            className="h-12 px-4 bg-card hover:bg-muted border border-card-border rounded-2xl shadow-card"
+            onClick={() => navigate('/favorites')}
+          >
+            <Star className="w-5 h-5 mr-2 text-star" />
+            <span className="hidden sm:inline">Favorites</span>
+            {favorites.length > 0 && (
+              <span className="ml-2 bg-star text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {favorites.length}
+              </span>
+            )}
+          </Button>
               </div>
               <div className="flex-1 text-center">
                 <div className="flex flex-col items-center justify-center gap-4 py-6">
