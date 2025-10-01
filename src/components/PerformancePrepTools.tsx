@@ -11,11 +11,13 @@ import prepIcon from '@/assets/prepicon.png';
 import {
   generateWarmupPlan,
   WARMUP_VIBE_OPTIONS,
+  WARMUP_VIBE_LABELS,
   WarmupVibe,
   VoiceType,
   Technique,
   WarmupRequest,
   WarmupPlan,
+  TECHNIQUE_LABELS,
 } from '@/lib/warmupGenerator';
 import {
   buildSetlist,
@@ -68,6 +70,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
   const [voiceType, setVoiceType] = useState<VoiceType>(null);
   const [techniques, setTechniques] = useState<Technique[]>([]);
   const voiceButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const lastWarmupRequestRef = useRef<WarmupRequest | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -140,6 +143,80 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
     });
   };
 
+  const handleExportWarmupPdf = () => {
+    if (!warmupData) {
+      toast({
+        title: 'No warm-up yet',
+        description: 'Generate a warm-up before exporting.',
+      });
+      return;
+    }
+
+    const request = lastWarmupRequestRef.current;
+
+    const techniqueSummary = (req?: WarmupRequest) =>
+      req && req.techniques.length
+        ? req.techniques.map(tech => TECHNIQUE_LABELS[tech]).join(', ')
+        : 'None';
+
+    const requestSection = request
+      ? `
+        <section style="margin-bottom:16px;">
+          <h2 style="font-size:16px;margin-bottom:6px;">Criteria</h2>
+          <ul style="padding-left:18px;margin:0;">
+            <li><strong>Vibe:</strong> ${WARMUP_VIBE_LABELS[request.vibe]}</li>
+            <li><strong>Voice Type:</strong> ${request.voiceType ? request.voiceType : 'Unspecified'}</li>
+            <li><strong>Techniques:</strong> ${techniqueSummary(request)}</li>
+          </ul>
+        </section>
+      `
+      : '';
+
+    const buildList = (title: string, items: string[]) => `
+      <section style="margin-bottom:16px;">
+        <h2 style="font-size:16px;margin-bottom:4px;">${title}</h2>
+        <ol style="padding-left:18px;margin:0;">
+          ${items.map(item => `<li style="margin-bottom:6px;">${item}</li>`).join('')}
+        </ol>
+      </section>
+    `;
+
+    const html = `
+      <html>
+        <head>
+          <title>Warm-up Routine Export</title>
+          <style>
+            body { font-family: 'Inter', system-ui, sans-serif; padding: 24px; color: #111; }
+            h1 { font-size: 22px; margin-bottom: 8px; }
+          </style>
+        </head>
+        <body>
+          <h1>AI Warm-up Routine</h1>
+          ${requestSection}
+          ${buildList('Physical Warm-ups', warmupData.physicalWarmups)}
+          ${buildList('Vocal Warm-ups', warmupData.vocalWarmups)}
+          ${buildList('Mental Focus', warmupData.emotionalPrep)}
+          <p><strong>Total Duration:</strong> ${warmupData.duration} minutes</p>
+        </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '', 'width=900,height=650');
+    if (!printWindow) {
+      toast({
+        title: 'Popup blocked',
+        description: 'Allow popups or use browser print to save as PDF.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+  };
+
   const handleVoiceKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
     const { key } = event;
     const lastIndex = VOICE_OPTIONS.length - 1;
@@ -209,6 +286,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
 
       const plan = generateWarmupPlan(request);
       setWarmupData(plan);
+      lastWarmupRequestRef.current = request;
     } catch (error) {
       console.error('Error generating warmup:', error);
       toast({
@@ -344,7 +422,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
-                <img src={prepIcon} alt="Performance prep icon" className="w-6 h-6" />
+                <img src={prepIcon} alt="Performance prep icon" className="w-12 h-12" />
                 Performance Prep Tools
               </CardTitle>
               <button
@@ -569,7 +647,10 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                           Total Duration: {warmupData.duration} minutes
                         </span>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
+                        <Button variant="outline" size="sm" onClick={handleExportWarmupPdf}>
+                          Export PDF
+                        </Button>
                         <Button variant="outline" size="sm" onClick={saveWarmup}>
                           Save
                         </Button>
