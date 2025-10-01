@@ -736,7 +736,7 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
             <img src={headphonesIcon} alt="Listen and learn icon" className="w-6 h-6 object-contain" />
             Listen & Learn
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <a
               href={`https://listen.tidal.com/search?q=${encodeURIComponent(`${feelingMap.title} ${feelingMap.artist || ''}`)}`}
               target="_blank"
@@ -752,6 +752,14 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
               className="flex items-center justify-center gap-2 p-4 bg-primary-soft hover:bg-button-primary-hover text-primary border-2 border-card-border rounded-2xl transition-all duration-200 font-semibold"
             >
               View Lyrics on Genius
+            </a>
+            <a
+              href={`https://www.sheetmusicplus.com/search?Ntt=${encodeURIComponent(`${feelingMap.title} ${feelingMap.artist || ''}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 p-4 bg-primary-soft hover:bg-button-primary-hover text-primary border-2 border-card-border rounded-2xl transition-all duration-200 font-semibold"
+            >
+              Find Sheet Music
             </a>
           </div>
         </div>

@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Heart, Zap, MapPin, Loader2 } from 'lucide-react';
+import { ArrowRight, Zap, MapPin, Loader2 } from 'lucide-react';
 import { Song } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import feelingJourneyIcon from '@/assets/feelingjourneyicon.png';
 
 interface FeelingJourneyProps {
   onSelectSong: (song: Song) => void;
@@ -110,8 +111,12 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Heart className="w-5 h-5 text-primary" />
+              <CardTitle className="flex items-center gap-3">
+                <img
+                  src={feelingJourneyIcon}
+                  alt="Feeling journey icon"
+                  className="w-10 h-10 object-contain"
+                />
                 Feeling Journey
               </CardTitle>
               <button
@@ -142,10 +147,7 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
             {/* Step 1: Mood */}
             {step === 1 && (
               <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <Heart className="w-4 h-4 text-primary" />
-                  <h3 className="font-medium">How are you feeling right now?</h3>
-                </div>
+                <h3 className="font-medium mb-4">How are you feeling right now?</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {moodOptions.map((option) => (
                     <button
