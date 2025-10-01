@@ -206,3 +206,47 @@ export const generateWarmupPlan = ({ vibe, voiceType, techniques }: WarmupReques
     duration,
   };
 };
+
+export const WARMUP_VIBE_LABELS: Record<WarmupVibe, string> = {
+  bright_playful: 'Bright / Playful',
+  warm_emotional: 'Warm / Emotional',
+  strong_powerful: 'Strong / Powerful',
+  grounded_spiritual: 'Grounded / Spiritual',
+};
+
+export const TECHNIQUE_LABELS: Record<Technique, string> = {
+  belting: 'Belting',
+  head_voice: 'Head Voice',
+};
+
+const TECHNIQUE_PROMPT_MAP: Record<Technique, string> = {
+  belting: 'belting (safe chest/mix patterns, 4th/5th leaps, belt-safe vowels, medium-high dynamics)',
+  head_voice: 'head voice (light onset, sirens/glides, legato, soft dynamics)',
+};
+
+const VIBE_PROMPT_MAP: Record<WarmupVibe, string> = {
+  bright_playful: 'bright/playful (light tempo, crisp articulation, i/e vowels)',
+  warm_emotional: 'warm/emotional (legato, round vowels, gentle cresc/dim)',
+  strong_powerful: 'strong/powerful (breath power, interval leaps, sustained tones)',
+  grounded_spiritual: 'grounded/spiritual (grounding breath, hums/oo onsets, calm dynamics)',
+};
+
+export const buildWarmupPrompt = (req: WarmupRequest) => {
+  const voice = req.voiceType ? req.voiceType : 'unspecified';
+  const tech = req.techniques.length
+    ? req.techniques.map(t => TECHNIQUE_PROMPT_MAP[t]).join('; ')
+    : 'no specific technique focus';
+
+  const vibeDescription = VIBE_PROMPT_MAP[req.vibe];
+
+  return `
+Generate a ${req.vibe.replace('_', ' ')} warm-up routine.
+
+Constraints:
+- Vibe: ${vibeDescription}.
+- Voice type: ${voice}. Choose comfortable starting keys/ranges.
+- Technique focus: ${tech}.
+
+Output 5–7 concise exercises with: name, pattern/scale, counts, tempo cue, and one safety note.
+`.trim();
+};

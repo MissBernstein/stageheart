@@ -26,6 +26,7 @@ import {
   getStoredSetlistSource,
   storeSetlistSource,
 } from '@/lib/setlistBuilder';
+import { WarmupCriteriaPreview } from '@/components/WarmupCriteriaPreview';
 
 const WARMUP_PREF_KEY = 'warmup-preferences';
 type NonNullVoiceType = Exclude<VoiceType, null>;
@@ -202,6 +203,9 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
         voiceType,
         techniques,
       };
+
+      const prompt = buildWarmupPrompt(request);
+      console.log('Warmup prompt', prompt);
 
       const plan = generateWarmupPlan(request);
       setWarmupData(plan);
@@ -469,9 +473,19 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
               </section>
 
               <section className="space-y-6">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-xl font-semibold">AI Warm-up Generator</h3>
-                  {selectedVibeLabel && <Badge variant="secondary">{selectedVibeLabel}</Badge>}
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-semibold">AI Warm-up Generator</h3>
+                  </div>
+                  {selectedVibe && (
+                    <WarmupCriteriaPreview
+                      request={{
+                        vibe: selectedVibe,
+                        voiceType,
+                        techniques,
+                      }}
+                    />
+                  )}
                 </div>
 
                 <div className="space-y-6">
