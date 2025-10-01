@@ -8,6 +8,7 @@ import { useCategories } from '@/hooks/useCategories';
 import { useFavorites } from '@/hooks/useFavorites';
 import { CategoryManageDialog } from '@/components/CategoryManageDialog';
 import { FavoriteCategoryModal } from '@/components/FavoriteCategoryModal';
+import generalHeartIcon from '@/assets/generalhearticon.png';
 import { toast } from 'sonner';
 
 export default function Favorites() {
@@ -58,7 +59,14 @@ export default function Favorites() {
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-2xl font-bold">My Favorites</h1>
+          <div className="flex items-center gap-3">
+            <img
+              src={generalHeartIcon}
+              alt="Heart icon"
+              className="w-8 h-8 object-contain"
+            />
+            <h1 className="text-2xl font-bold">My Favorites</h1>
+          </div>
         </div>
       </header>
 

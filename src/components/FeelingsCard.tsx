@@ -1,5 +1,5 @@
-import { Copy, Star, CheckCircle2, ExternalLink, Save } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Heart, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -28,15 +28,85 @@ export const FeelingsCard = ({ feelingMap }: FeelingsCardProps) => {
   const [justCopied, setJustCopied] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
   const [personalNote, setPersonalNote] = useState('');
-  const [noteSaved, setNoteSaved] = useState(false);
+  const [noteSaved, setNoteSaved] = useState(true);
+  const [isSavingNote, setIsSavingNote] = useState(false);
+  const [lastSavedNote, setLastSavedNote] = useState('');
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const noteInitRef = useRef(true);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const enableAutoSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    setPersonalNote(getNote(feelingMap));
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (enableAutoSaveRef.current) {
+      clearTimeout(enableAutoSaveRef.current);
+      enableAutoSaveRef.current = null;
+    }
+
+    noteInitRef.current = true;
+    const existingNote = getNote(feelingMap);
+    setPersonalNote(existingNote);
+    setLastSavedNote(existingNote);
+    setNoteSaved(true);
+    setIsSavingNote(false);
+
+    enableAutoSaveRef.current = setTimeout(() => {
+      noteInitRef.current = false;
+    }, 0);
+
+    return () => {
+      noteInitRef.current = true;
+      if (enableAutoSaveRef.current) {
+        clearTimeout(enableAutoSaveRef.current);
+        enableAutoSaveRef.current = null;
+      }
+    };
   }, [feelingMap, getNote]);
+
+  useEffect(() => {
+    if (noteInitRef.current) {
+      return;
+    }
+
+    if (personalNote === lastSavedNote) {
+      setIsSavingNote(false);
+      setNoteSaved(true);
+      return;
+    }
+
+    setIsSavingNote(true);
+
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    saveTimeoutRef.current = setTimeout(() => {
+      saveNote(feelingMap, personalNote);
+      setLastSavedNote(personalNote);
+      setIsSavingNote(false);
+      setNoteSaved(true);
+      saveTimeoutRef.current = null;
+    }, 600);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [personalNote, lastSavedNote, feelingMap, saveNote]);
 
   const handleCopy = async () => {
     const themeDetail = feelingMap.theme_detail ?? feelingMap.theme ?? '';
+    const personalNotesSection = personalNote.trim()
+      ? `\n\nPersonal notes:\n${personalNote.trim()}`
+      : '';
     const text = `${feelingMap.title}${feelingMap.artist ? ` — ${feelingMap.artist}` : ''}
 
 ${feelingMap.summary}
@@ -47,7 +117,7 @@ Core feeling arc: ${feelingMap.core_feelings?.join(', ') || feelingMap.emotions?
 Performance tips:
 ${(feelingMap.access_ideas || feelingMap.tips)?.map(tip => `• ${tip}`).join('\n')}
 
-Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Generated from vibe-based mapping)' : ''}`;
+Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Generated from vibe-based mapping)' : ''}${personalNotesSection}`;
 
     try {
       await navigator.clipboard.writeText(text);
@@ -76,16 +146,6 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
     } else {
       setShowCategoryModal(true);
     }
-  };
-
-  const handleSaveNote = () => {
-    saveNote(feelingMap, personalNote);
-    setNoteSaved(true);
-    setTimeout(() => setNoteSaved(false), 2000);
-    toast({
-      title: "Note saved!",
-      description: "Your personal note has been saved.",
-    });
   };
 
   return (
@@ -208,7 +268,6 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 p-4 bg-primary-soft hover:bg-button-primary-hover text-primary border-2 border-card-border rounded-2xl transition-all duration-200 font-semibold"
             >
-              <img src={headphonesIcon} alt="" aria-hidden="true" className="w-5 h-5 object-contain" />
               Listen on Tidal
             </a>
             <a
@@ -217,7 +276,6 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 p-4 bg-primary-soft hover:bg-button-primary-hover text-primary border-2 border-card-border rounded-2xl transition-all duration-200 font-semibold"
             >
-              <ExternalLink className="w-5 h-5" />
               View Lyrics on Genius
             </a>
           </div>
@@ -229,29 +287,25 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
             <img src={personalNotesIcon} alt="Personal notes icon" className="w-6 h-6 object-contain" />
             Personal Notes
           </h3>
-          <Textarea
-            value={personalNote}
-            onChange={(e) => setPersonalNote(e.target.value)}
-            placeholder="Add your personal notes about this song..."
-            className="min-h-[100px] mb-3 rounded-2xl resize-none"
-          />
-          <Button
-            onClick={handleSaveNote}
-            variant="secondary"
-            className="w-full h-12 text-base font-semibold bg-button-secondary hover:bg-button-secondary-hover rounded-2xl transition-all duration-200"
-          >
-            {noteSaved ? (
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
-                Note Saved
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Save className="w-5 h-5" />
-                Save Note
-              </div>
-            )}
-          </Button>
+          <div className="relative mb-3">
+            <Textarea
+              value={personalNote}
+              onChange={(e) => {
+                setPersonalNote(e.target.value);
+                setNoteSaved(false);
+                setIsSavingNote(true);
+              }}
+              placeholder="Add your personal notes about this song..."
+              className="min-h-[100px] rounded-2xl resize-none pr-10"
+            />
+            <div className="pointer-events-none absolute bottom-3 right-3">
+              {isSavingNote ? (
+                <div className="h-4 w-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin" />
+              ) : noteSaved ? (
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+              ) : null}
+            </div>
+          </div>
         </div>
 
         {/* Action Buttons */}
@@ -267,10 +321,7 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
                 {t('feelingMap.copied')}
               </div>
             ) : (
-              <div className="flex items-center gap-2">
-                <Copy className="w-5 h-5" />
-                {t('feelingMap.copyMap')}
-              </div>
+              t('feelingMap.copyMap')
             )}
           </Button>
           
@@ -278,8 +329,8 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
             onClick={handleToggleFavorite}
             variant="secondary"
             className={`h-12 px-6 font-semibold rounded-2xl transition-all duration-200 ${
-              isFavorite(feelingMap) 
-                ? 'bg-star hover:bg-star-hover text-white' 
+              isFavorite(feelingMap)
+                ? 'bg-star hover:bg-star-hover text-white'
                 : 'bg-button-secondary hover:bg-button-secondary-hover'
             }`}
           >
@@ -290,7 +341,10 @@ Visual cue: ${feelingMap.visual || ''}${feelingMap.isVibeBasedMap ? '\n\n(Genera
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Star className={`w-5 h-5 ${isFavorite(feelingMap) ? 'fill-current' : ''}`} />
+                <Heart
+                  className="w-5 h-5"
+                  fill={isFavorite(feelingMap) ? 'currentColor' : 'none'}
+                />
                 {isFavorite(feelingMap) ? t('feelingMap.saved') : t('feelingMap.save')}
               </div>
             )}

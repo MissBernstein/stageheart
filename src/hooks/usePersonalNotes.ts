@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { FeelingMap } from '@/types';
 
 const NOTES_KEY = 'song-personal-notes';
@@ -22,25 +22,25 @@ export const usePersonalNotes = () => {
     }
   }, []);
 
-  const saveNotes = (newNotes: PersonalNote[]) => {
+  const saveNotes = useCallback((newNotes: PersonalNote[]) => {
     setNotes(newNotes);
     localStorage.setItem(NOTES_KEY, JSON.stringify(newNotes));
-  };
+  }, []);
 
   const getSongKey = (feelingMap: FeelingMap) => {
     return `${feelingMap.title}-${feelingMap.artist || 'unknown'}`;
   };
 
-  const getNote = (feelingMap: FeelingMap): string => {
+  const getNote = useCallback((feelingMap: FeelingMap): string => {
     const songKey = getSongKey(feelingMap);
     const existingNote = notes.find(n => n.songKey === songKey);
     return existingNote?.note || '';
-  };
+  }, [notes]);
 
-  const saveNote = (feelingMap: FeelingMap, note: string) => {
+  const saveNote = useCallback((feelingMap: FeelingMap, note: string) => {
     const songKey = getSongKey(feelingMap);
     const existingIndex = notes.findIndex(n => n.songKey === songKey);
-    
+
     let newNotes: PersonalNote[];
     if (existingIndex >= 0) {
       newNotes = [...notes];
@@ -55,9 +55,9 @@ export const usePersonalNotes = () => {
     } else {
       return; // Nothing to save
     }
-    
+
     saveNotes(newNotes);
-  };
+  }, [notes, saveNotes]);
 
   return {
     getNote,
