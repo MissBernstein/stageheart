@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Search, Shuffle, Grid, List } from 'lucide-react';
 import jukeboxIcon from '@/assets/jukeboxicon.png';
@@ -56,13 +57,20 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
     exit: { opacity: 0, y: -8, transition: { duration: motionDur.fast / 1000, ease: motionEase.exit } },
   };
 
-  return (
+  // Lock background scroll while modal open
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
+  return createPortal(
     <MotionIfOkay>
       <motion.div
         initial={prefersReducedMotion ? false : fadeInUp.initial}
         animate={prefersReducedMotion ? undefined : fadeInUp.animate}
         exit={prefersReducedMotion ? undefined : fadeInUp.exit}
-        className="fixed inset-0 bg-background z-50 overflow-y-auto min-h-screen w-full"
+        className="fixed inset-0 z-[999] overflow-y-auto min-h-screen w-screen bg-background/95 backdrop-blur-sm"
       >
         <div className="container mx-auto px-4 py-8">
           <div className="bg-card/95 rounded-3xl shadow-card border border-card-border/70 max-w-6xl mx-auto">
@@ -244,6 +252,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
         </div>
       </div>
       </motion.div>
-    </MotionIfOkay>
+    </MotionIfOkay>,
+    document.body
   );
 };

@@ -317,17 +317,7 @@ export default function PitchDetectorCard({ className, defaultRange = "voice", d
   }, [testData?.mad]);
 
   return (
-    <Card className={cn("w-full max-w-3xl mx-auto", className)}>
-      <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <CardTitle className="text-lg">Pitch Detector</CardTitle>
-        <div className="flex gap-2">
-          {!state.running ? (
-            <AnimatedButton onClick={api.start}>Enable Microphone</AnimatedButton>
-          ) : (
-            <AnimatedButton variant="secondary" onClick={api.stop}>Disable</AnimatedButton>
-          )}
-        </div>
-        </CardHeader>
+    <Card className={cn("w-full max-w-3xl mx-auto border-0", className)}>
         <CardContent>
           <div className="grid gap-6 md:grid-cols-2">
             {/* Dial */}
@@ -464,6 +454,13 @@ export default function PitchDetectorCard({ className, defaultRange = "voice", d
                   <p>• Microphone access requires HTTPS in production.</p>
                 </div>
               )}
+              <div className="mt-4 flex justify-center">
+                {!state.running ? (
+                  <AnimatedButton onClick={api.start}>Enable Microphone</AnimatedButton>
+                ) : (
+                  <AnimatedButton variant="secondary" onClick={api.stop}>Disable</AnimatedButton>
+                )}
+              </div>
             </div>
           </div>
           <div className="mt-4 text-xs text-muted-foreground">A4 ref affects note & cents math only (not detection). Detection runs locally; no audio leaves the device.</div>
@@ -720,11 +717,9 @@ export function MetronomeCard({ className }: { className?: string }) {
   }, [volume]);
 
   return (
-    <Card className={cn("w-full max-w-3xl mx-auto", className)}>
-      <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <CardTitle className="text-lg">Metronome</CardTitle>
+    <Card className={cn("w-full max-w-3xl mx-auto border-0", className)}>
+      <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-start">
         <div className="flex gap-2 items-center">
-          <span className="text-sm text-muted-foreground hidden sm:inline">{tempoLabel}</span>
           {!running ? (
             <AnimatedButton onClick={start}>Start</AnimatedButton>
           ) : (
@@ -736,7 +731,9 @@ export function MetronomeCard({ className }: { className?: string }) {
       <CardContent>
         <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
           {/* Visuals */}
-          <motion.div
+          <div className="space-y-4">
+            <div className="text-center text-lg font-medium text-muted-foreground">{tempoLabel}</div>
+            <motion.div
             {...tileLift}
             className={cn(
               "rounded-2xl border bg-gradient-to-b from-slate-900 to-slate-950 p-6 relative",
@@ -804,6 +801,7 @@ export function MetronomeCard({ className }: { className?: string }) {
 
             <div className="mt-4 text-center text-xs text-muted-foreground">Accents follow grouping: {grouping}. Count-in: {countInBars} bar(s).</div>
           </motion.div>
+          </div>
 
           {/* Controls */}
           <div className="rounded-3xl border bg-card/95 p-6 space-y-8">

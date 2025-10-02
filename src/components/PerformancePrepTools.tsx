@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -535,13 +536,20 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
     success('Setlist updated', `"${song.title}" added to your personal setlist.`);
   };
 
-  return (
+  // Lock background scroll when modal is open
+  useEffect(() => {
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = original; };
+  }, []);
+
+  return createPortal(
     <MotionIfOkay>
       <motion.div
         initial={prefersReducedMotion ? false : fadeInUp.initial}
         animate={prefersReducedMotion ? undefined : fadeInUp.animate}
         exit={prefersReducedMotion ? undefined : fadeInUp.exit}
-        className="fixed inset-0 bg-background z-50 overflow-y-auto min-h-screen w-full"
+        className="fixed inset-0 z-[999] overflow-y-auto min-h-screen w-screen bg-background/95 backdrop-blur-sm"
       >
         <div className="container mx-auto px-4 py-8 md:py-6">
           <Card className="max-w-4xl mx-auto">
@@ -645,7 +653,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                                 alt={`${category.title} icon`}
                                 className="w-10 h-10 object-contain"
                               />
-                              <h2 className="text-xl font-semibold">AI Warm Up Generator</h2>
+                              <h2 className="text-xl font-semibold">{category.title}</h2>
                             </>
                           );
                         }
@@ -948,14 +956,6 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                   {currentTool === 'setlist' && (
                     <div className="space-y-6">
                       <section className="space-y-4">
-                        <motion.h3 
-                          initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: motionDur.base / 1000, ease: motionEase.standard, delay: 0.4 }}
-                          className="text-xl font-semibold"
-                        >
-                          Setlist Builder
-                        </motion.h3>
                         <motion.div 
                           initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -1137,7 +1137,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: motionDur.base / 1000, ease: motionEase.standard }}
                     >
-                      <PitchDetectorCard className="border bg-card/95" defaultRange="voice" defaultA4={440} />
+                      <PitchDetectorCard className="bg-card/95" defaultRange="voice" defaultA4={440} />
                     </motion.div>
                   )}
                   
@@ -1147,7 +1147,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: motionDur.base / 1000, ease: motionEase.standard }}
                     >
-                      <MetronomeCard className="border bg-card/95" />
+                      <MetronomeCard className="bg-card/95" />
                     </motion.div>
                   )}
                   
@@ -1170,6 +1170,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
           </Card>
         </div>
       </motion.div>
-    </MotionIfOkay>
+    </MotionIfOkay>,
+    document.body
   );
 };

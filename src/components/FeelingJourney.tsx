@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,7 +73,7 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
         toast({
           title: "AI Service Error",
           description: data.error,
-          variant: "destructive",
+          variant: "error",
         });
         return;
       }
@@ -84,7 +85,7 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
       toast({
         title: "Error",
         description: "Failed to get song recommendation. Please try again.",
-        variant: "destructive",
+        variant: "error",
       });
     } finally {
       setIsLoading(false);
@@ -99,7 +100,7 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
       toast({
         title: "Song not found",
         description: "The recommended song is not in our library.",
-        variant: "destructive",
+        variant: "error",
       });
     }
   };
@@ -112,8 +113,15 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
     setRecommendation(null);
   };
 
-  return (
-    <div className="fixed inset-0 bg-background z-50 overflow-y-auto min-h-screen w-full">
+  // lock background scroll while open
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
+  return createPortal(
+    <div className="fixed inset-0 z-[999] overflow-y-auto min-h-screen w-screen bg-background/95 backdrop-blur-sm">
       <div className="container mx-auto px-4 py-8">
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
@@ -330,6 +338,7 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
           </CardContent>
         </Card>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
