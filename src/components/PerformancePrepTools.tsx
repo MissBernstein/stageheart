@@ -37,6 +37,7 @@ import {
   storeSetlistSource,
 } from '@/lib/setlistBuilder';
 import { WarmupCriteriaPreview } from '@/components/WarmupCriteriaPreview';
+import PitchDetectorCard, { MetronomeCard } from '@/components/PitchDetector';
 import { Input } from '@/components/ui/input';
 
 const WARMUP_PREF_KEY = 'warmup-preferences';
@@ -54,6 +55,20 @@ const TECHNIQUE_OPTIONS: { id: Technique; label: string }[] = [
   { id: 'belting', label: 'Belting' },
   { id: 'head_voice', label: 'Head Voice' },
 ];
+
+interface WarmupRecord {
+  id: string;
+  created_at: string;
+  duration: number;
+  song_title: string | null;
+  song_artist: string | null;
+  vibe: string | null;
+  physical_warmups: string[];
+  vocal_warmups: string[];
+  emotional_prep: string[];
+  custom_label?: string | null;
+  [key: string]: any;
+}
 
 const SETLIST_SOURCE_OPTIONS: { id: SetlistSource; label: string; description: string }[] = [
   { id: 'library', label: 'App Library', description: 'Use songs already in Stage Heart.' },
@@ -92,7 +107,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
   const [isLoadingWarmup, setIsLoadingWarmup] = useState(false);
   const [isLoadingSetlist, setIsLoadingSetlist] = useState(false);
   const [setlistSongs, setSetlistSongs] = useState<Song[]>([]);
-  const [savedWarmups, setSavedWarmups] = useState<any[]>([]);
+  const [savedWarmups, setSavedWarmups] = useState<WarmupRecord[]>([]);
   const [songCount, setSongCount] = useState(5);
   const [setlistSource, setSetlistSource] = useState<SetlistSource>(getStoredSetlistSource());
   const [selectedVibe, setSelectedVibe] = useState<WarmupVibe | null>(null);
@@ -285,10 +300,10 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
 
       if (error) throw error;
       const labels = getStoredWarmupLabels();
-      const mapped = (data || []).map((warmup) => ({
+      const mapped: WarmupRecord[] = (data as WarmupRecord[] | null)?.map((warmup) => ({
         ...warmup,
         custom_label: labels[warmup.id] ?? warmup.custom_label ?? null,
-      }));
+      })) ?? [];
       setSavedWarmups(mapped);
     } catch (error) {
       console.error('Error loading saved warmups:', error);
@@ -312,9 +327,6 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
         voiceType,
         techniques,
       };
-
-      const prompt = buildWarmupPrompt(request);
-      console.log('Warmup prompt', prompt);
 
       const plan = generateWarmupPlan(request);
       setWarmupData(plan);
@@ -409,7 +421,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
     setRenameValue('');
   };
 
-  const loadSavedWarmup = (warmup: any) => {
+  const loadSavedWarmup = (warmup: WarmupRecord) => {
     setWarmupData({
       physicalWarmups: warmup.physical_warmups,
       vocalWarmups: warmup.vocal_warmups,
@@ -418,7 +430,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
     });
   };
 
-  const beginRenameWarmup = (warmup: any) => {
+  const beginRenameWarmup = (warmup: WarmupRecord) => {
     setRenamingWarmupId(warmup.id);
     setRenameValue(
       warmup.custom_label ||
@@ -623,9 +635,21 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
               </section>
 
               <section className="space-y-6">
-                <div className="flex flex-col gap-3">
+                <motion.div 
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: motionDur.base / 1000, ease: motionEase.standard, delay: 0.1 }}
+                  className="flex flex-col gap-3"
+                >
                   <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-semibold">AI Warm-up Generator</h3>
+                    <motion.h3 
+                      initial={prefersReducedMotion ? false : { opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: motionDur.base / 1000, ease: motionEase.standard, delay: 0.15 }}
+                      className="text-xl font-semibold"
+                    >
+                      AI Warm-up Generator
+                    </motion.h3>
                   </div>
                   {selectedVibe && (
                     <WarmupCriteriaPreview
@@ -636,7 +660,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                       }}
                     />
                   )}
-                </div>
+                </motion.div>
 
                 <div className="space-y-6">
                   {!warmupData ? (
@@ -826,8 +850,20 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
               )}
 
               <section className="space-y-4">
-                <h3 className="text-xl font-semibold">Setlist Builder</h3>
-                <div className="space-y-6">
+                <motion.h3 
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: motionDur.base / 1000, ease: motionEase.standard, delay: 0.4 }}
+                  className="text-xl font-semibold"
+                >
+                  Setlist Builder
+                </motion.h3>
+                <motion.div 
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: motionDur.base / 1000, ease: motionEase.standard, delay: 0.5 }}
+                  className="space-y-6"
+                >
                   {!setlistData ? (
                     <div className="space-y-6">
                       <div className="flex flex-col items-center gap-4">
@@ -856,9 +892,14 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                             ))}
                           </div>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <motion.div 
+                          initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: motionDur.base / 1000, ease: motionEase.standard, delay: 0.1 }}
+                          className="flex items-center gap-4"
+                        >
                           <label className="text-sm font-medium">Number of songs:</label>
-                          <input
+                          <motion.input
                             type="number"
                             min="3"
                             max="10"
@@ -866,9 +907,11 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                             onChange={(e) =>
                               setSongCount(Math.max(3, Math.min(10, parseInt(e.target.value) || 5)))
                             }
-                            className="w-20 rounded-md border border-input bg-background px-3 py-2 text-center"
+                            whileFocus={prefersReducedMotion ? {} : { scale: 1.05, borderColor: '#3b82f6' }}
+                            transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
+                            className="w-20 rounded-md border border-input bg-background px-3 py-2 text-center focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                           />
-                        </div>
+                        </motion.div>
                         <AnimatedButton
                           onClick={generateSetlist}
                           disabled={isLoadingSetlist}
@@ -985,7 +1028,37 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                       Generate New Setlist
                     </AnimatedButton>
                   )}
-                </div>
+                </motion.div>
+              </section>
+
+              <section className="space-y-6">
+                <motion.h3 
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: motionDur.base / 1000, ease: motionEase.standard, delay: 0.2 }}
+                  className="text-xl font-semibold"
+                >
+                  Pitch & Rhythm Tools
+                </motion.h3>
+                <motion.div 
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: motionDur.base / 1000, ease: motionEase.standard, delay: 0.3 }}
+                  className="grid gap-6"
+                >
+                  <motion.div
+                    whileHover={prefersReducedMotion ? {} : { y: -4, scale: 1.01 }}
+                    transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
+                  >
+                    <PitchDetectorCard className="border bg-card/95" defaultRange="voice" defaultA4={440} />
+                  </motion.div>
+                  <motion.div
+                    whileHover={prefersReducedMotion ? {} : { y: -4, scale: 1.01 }}
+                    transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
+                  >
+                    <MetronomeCard className="border bg-card/95" />
+                  </motion.div>
+                </motion.div>
               </section>
             </div>
           </CardContent>
