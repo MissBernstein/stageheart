@@ -69,7 +69,7 @@ const TOOL_CATEGORIES: ToolCategoryCard[] = [
   },
   {
     id: 'setlist',
-    title: 'Set List Builder',
+    title: 'Setlist Builder',
     description: 'Build cohesive setlists based on emotional arcs and song transitions',
     icon: personalNotesIcon,
     color: 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-500/30'
@@ -572,634 +572,601 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                   Preparing for "{currentSong.title}" by {currentSong.artist}
                 </p>
               )}
-            </CardHeader>          <CardContent>
-            {currentTool === 'menu' ? (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {TOOL_CATEGORIES.map((category) => {
-                    const isComingSoon = category.id === 'backing';
-                    
-                    return (
-                      <motion.div
-                        key={category.id}
-                        initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ 
-                          duration: motionDur.base / 1000, 
-                          ease: motionEase.standard,
-                          delay: TOOL_CATEGORIES.indexOf(category) * 0.1
-                        }}
-                        whileHover={prefersReducedMotion ? {} : { y: -4, scale: 1.02 }}
-                        className="cursor-pointer"
-                        onClick={() => !isComingSoon && setCurrentTool(category.id)}
-                      >
-                        <Card className={`${category.color} border-2 h-full transition-all duration-200 ${isComingSoon ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-lg'}`}>
-                          <CardContent className="p-6">
-                            <div className="flex items-start gap-4">
-                              <div className="flex-shrink-0">
-                                <img
-                                  src={category.icon}
-                                  alt={`${category.title} icon`}
-                                  className="w-16 h-16 object-contain"
-                                />
+            </CardHeader>
+            <CardContent>
+              {currentTool === 'menu' ? (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {TOOL_CATEGORIES.map((category) => {
+                      const isComingSoon = category.id === 'backing';
+                      return (
+                        <motion.div
+                          key={category.id}
+                          initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ 
+                            duration: motionDur.base / 1000, 
+                            ease: motionEase.standard,
+                            delay: TOOL_CATEGORIES.indexOf(category) * 0.1
+                          }}
+                          whileHover={prefersReducedMotion ? {} : { y: -4, scale: 1.02 }}
+                          className="cursor-pointer"
+                          onClick={() => !isComingSoon && setCurrentTool(category.id)}
+                        >
+                          <Card className={`${category.color} border-2 h-full transition-all duration-200 ${isComingSoon ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-lg'}`}>
+                            <CardContent className="p-6">
+                              <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0">
+                                  <img
+                                    src={category.icon}
+                                    alt={`${category.title} icon`}
+                                    className="w-16 h-16 object-contain"
+                                  />
+                                </div>
+                                <div className="flex-1">
+                                  <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                                    {category.title}
+                                    {isComingSoon && (
+                                      <Badge variant="secondary" className="text-xs">
+                                        Coming Soon
+                                      </Badge>
+                                    )}
+                                  </h3>
+                                  <p className="text-sm text-muted-foreground">
+                                    {category.description}
+                                  </p>
+                                </div>
                               </div>
-                              <div className="flex-1">
-                                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-                                  {category.title}
-                                  {isComingSoon && (
-                                    <Badge variant="secondary" className="text-xs">
-                                      Coming Soon
-                                    </Badge>
-                                  )}
-                                </h3>
-                                <p className="text-sm text-muted-foreground">
-                                  {category.description}
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="text-center pb-4 space-y-4">
+                    <AnimatedButton
+                      variant="ghost"
+                      onClick={() => setCurrentTool('menu')}
+                      className="flex items-center gap-2 mx-auto"
+                    >
+                      ← Back to Tools
+                    </AnimatedButton>
+                    <div className="flex items-center gap-3">
+                      {(() => {
+                        const category = TOOL_CATEGORIES.find(c => c.id === currentTool);
+                        if (category) {
+                          return (
+                            <>
+                              <img
+                                src={category.icon}
+                                alt={`${category.title} icon`}
+                                className="w-10 h-10 object-contain"
+                              />
+                              <h2 className="text-xl font-semibold">AI Warm Up Generator</h2>
+                            </>
+                          );
+                        }
+                        return null;
+                      })()} 
+                    </div>
+                  </div>
+
+                  {currentTool === 'warmup' && (
+                    <div className="space-y-10">
+                      <section className="space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                          <p className="text-card-foreground/60">
+                            Select a vibe category to generate a warm-up routine.
+                          </p>
+                          {selectedVibeLabel && (
+                            <Badge variant="secondary">{selectedVibeLabel}</Badge>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <AnimatePresence>
+                            {WARMUP_VIBE_OPTIONS.map((option) => {
+                              const isActive = selectedVibe === option.id;
+                              return (
+                                <motion.button
+                                  key={option.id}
+                                  type="button"
+                                  layout={!prefersReducedMotion}
+                                  initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -8 }}
+                                  whileHover={prefersReducedMotion ? undefined : { scale: 1.02, y: -2 }}
+                                  whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+                                  transition={{ duration: motionDur.base / 1000, ease: motionEase.standard }}
+                                  aria-pressed={isActive}
+                                  onClick={() => {
+                                    setSelectedVibe((prev) => (prev === option.id ? null : option.id));
+                                    setWarmupData(null);
+                                  }}
+                                  className={`motion-safe-only rounded-2xl border-2 p-4 text-left backdrop-blur-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                                    isActive
+                                      ? 'border-primary bg-primary/15 shadow-lg'
+                                      : 'border-card-border/70 bg-card/60 hover:border-primary/50'
+                                  }`}
+                                >
+                                  <h4 className="text-lg font-semibold mb-1">{option.label}</h4>
+                                  <p className="text-sm text-card-foreground/60">{option.subtitle}</p>
+                                </motion.button>
+                              );
+                            })}
+                          </AnimatePresence>
+                        </div>
+                      </section>
+
+                      <section className="space-y-4">
+                        <div className="space-y-3">
+                          <div>
+                            <span className="text-sm font-medium text-card-foreground/80">Voice Type</span>
+                            <div role="radiogroup" aria-label="Voice type" className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                              {VOICE_OPTIONS.map((option, index) => {
+                                const isActive = voiceType === option.id;
+                                return (
+                                  <ChipToggle
+                                    key={option.id}
+                                    ref={(element) => {
+                                      voiceButtonRefs.current[index] = element;
+                                    }}
+                                    role="radio"
+                                    aria-checked={isActive}
+                                    isActive={isActive}
+                                    onKeyDown={(event) => handleVoiceKeyDown(event, index)}
+                                    onClick={() => {
+                                      setVoiceType((prev) => (prev === option.id ? null : option.id));
+                                      setWarmupData(null);
+                                    }}
+                                    className="justify-center"
+                                  >
+                                    {option.label}
+                                  </ChipToggle>
+                                );
+                              })}
+                            </div>
+                            {!voiceType && (
+                              <p className="mt-1 text-xs text-card-foreground/60">Choose voice type</p>
+                            )}
+                          </div>
+
+                          <div>
+                            <span className="text-sm font-medium text-card-foreground/80">Technique Focus</span>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {TECHNIQUE_OPTIONS.map((option) => {
+                                const isActive = techniques.includes(option.id);
+                                return (
+                                  <ChipToggle
+                                    key={option.id}
+                                    role="checkbox"
+                                    aria-checked={isActive}
+                                    isActive={isActive}
+                                    onClick={() => toggleTechnique(option.id)}
+                                  >
+                                    {option.label}
+                                  </ChipToggle>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </section>
+
+                      <section className="space-y-6">
+                        <div className="space-y-6">
+                          {!warmupData ? (
+                            <div className="text-center py-8 space-y-4">
+                              <AnimatedButton
+                                onClick={generateWarmup}
+                                disabled={!selectedVibe || isLoadingWarmup}
+                                size="lg"
+                                isLoading={isLoadingWarmup}
+                                loadingText="Generating routine..."
+                              >
+                                Generate Warm-up
+                              </AnimatedButton>
+                              <p className="text-sm text-card-foreground/60">
+                                {currentSong
+                                  ? "Blend your song's emotional arc with the selected vibe."
+                                  : 'Choose a vibe and styles to craft a routine that matches your set.'}
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="grid gap-6 md:grid-cols-3">
+                              <AnimatedCard>
+                                <CardHeader>
+                                  <CardTitle className="text-lg">Physical</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                  <ul className="space-y-2">
+                                    {warmupData.physicalWarmups?.map((exercise: string, index: number) => (
+                                      <li key={index} className="text-sm flex items-start gap-2">
+                                        <span className="text-primary font-bold">{index + 1}.</span>
+                                        {exercise}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </CardContent>
+                              </AnimatedCard>
+                              <AnimatedCard>
+                                <CardHeader>
+                                  <CardTitle className="text-lg">Vocal</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                  <ul className="space-y-2">
+                                    {warmupData.vocalWarmups?.map((exercise: string, index: number) => (
+                                      <li key={index} className="text-sm flex items-start gap-2">
+                                        <span className="text-primary font-bold">{index + 1}.</span>
+                                        {exercise}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </CardContent>
+                              </AnimatedCard>
+                              <AnimatedCard>
+                                <CardHeader>
+                                  <CardTitle className="text-lg">Mental</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                  <ul className="space-y-2">
+                                    {warmupData.emotionalPrep?.map((prep: string, index: number) => (
+                                      <li key={index} className="text-sm flex items-start gap-2">
+                                        <span className="text-primary font-bold">{index + 1}.</span>
+                                        {prep}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </CardContent>
+                              </AnimatedCard>
+                            </div>
+                          )}
+
+                          {warmupData && (
+                            <div className="flex flex-col gap-3 rounded-lg bg-card-accent/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-4 h-4 text-primary" />
+                                <span className="text-sm font-medium">
+                                  Total Duration: {warmupData.duration} minutes
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                <AnimatedButton variant="outline" size="sm" onClick={handleExportWarmupPdf}>
+                                  Export PDF
+                                </AnimatedButton>
+                                <AnimatedButton variant="outline" size="sm" onClick={saveWarmup}>
+                                  Save
+                                </AnimatedButton>
+                                <AnimatedButton variant="outline" size="sm" onClick={() => setWarmupData(null)}>
+                                  Generate New
+                                </AnimatedButton>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </section>
+
+                      {savedWarmups.length > 0 && (
+                        <section className="space-y-4">
+                          <h3 className="text-xl font-semibold">Saved Warm-ups</h3>
+                          <ul className="space-y-2">
+                            <AnimatePresence>
+                              {savedWarmups.map((warmup) => (
+                                <AnimatedListItem key={warmup.id} className="rounded-xl border border-card-border/40 bg-card/60">
+                                  <motion.div
+                                    className="flex items-center justify-between gap-4 px-5 py-4"
+                                    whileHover={hoverLift}
+                                    whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+                                    transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
+                                  >
+                                    <div className="flex-1 min-w-0">
+                                      {renamingWarmupId === warmup.id ? (
+                                        <div className="space-y-2">
+                                          <Input
+                                            value={renameValue}
+                                            onChange={(e) => setRenameValue(e.target.value)}
+                                            placeholder="Warm-up name"
+                                            className="h-9"
+                                            autoFocus
+                                          />
+                                          <div className="flex flex-wrap gap-2">
+                                            <AnimatedButton
+                                              size="sm"
+                                              onClick={renameSavedWarmup}
+                                              className="px-3 justify-center"
+                                            >
+                                              Save Name
+                                            </AnimatedButton>
+                                            <AnimatedButton
+                                              size="sm"
+                                              variant="ghost"
+                                              onClick={cancelRenameWarmup}
+                                              className="px-3 justify-center"
+                                            >
+                                              Cancel
+                                            </AnimatedButton>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <>
+                                          <h4 className="font-medium truncate">
+                                            {warmup.custom_label ||
+                                              warmup.vibe ||
+                                              `${warmup.song_title}${
+                                                warmup.song_artist ? ` by ${warmup.song_artist}` : ''
+                                              }`}
+                                          </h4>
+                                          {warmup.song_artist && !warmup.vibe && (
+                                            <p className="text-sm text-card-foreground/60 truncate">{warmup.song_artist}</p>
+                                          )}
+                                          <p className="mt-1 text-xs text-card-foreground/50">
+                                            {warmup.duration} min • {new Date(warmup.created_at).toLocaleDateString()}
+                                          </p>
+                                        </>
+                                      )}
+                                    </div>
+                                    <div className="flex shrink-0 gap-2">
+                                      {renamingWarmupId !== warmup.id && (
+                                        <AnimatedButton
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => beginRenameWarmup(warmup)}
+                                          className="px-3 justify-center"
+                                        >
+                                          Rename
+                                        </AnimatedButton>
+                                      )}
+                                      <AnimatedButton
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => loadSavedWarmup(warmup)}
+                                        className="px-3 justify-center"
+                                      >
+                                        Load
+                                      </AnimatedButton>
+                                      <AnimatedButton
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => deleteSavedWarmup(warmup.id)}
+                                        className="px-3 justify-center"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </AnimatedButton>
+                                    </div>
+                                  </motion.div>
+                                </AnimatedListItem>
+                              ))}
+                            </AnimatePresence>
+                          </ul>
+                        </section>
+                      )}
+                    </div>
+                  )}
+
+                  {currentTool === 'setlist' && (
+                    <div className="space-y-6">
+                      <section className="space-y-4">
+                        <motion.h3 
+                          initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: motionDur.base / 1000, ease: motionEase.standard, delay: 0.4 }}
+                          className="text-xl font-semibold"
+                        >
+                          Setlist Builder
+                        </motion.h3>
+                        <motion.div 
+                          initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: motionDur.base / 1000, ease: motionEase.standard, delay: 0.5 }}
+                          className="space-y-6"
+                        >
+                          {!setlistData ? (
+                            <div className="space-y-6">
+                              <div className="flex flex-col items-center gap-4">
+                                <div className="w-full max-w-xl space-y-2">
+                                  <span className="text-sm font-medium text-card-foreground/80">Source</span>
+                                  <div className="flex flex-wrap gap-2">
+                                    {SETLIST_SOURCE_OPTIONS.map((option) => {
+                                      const isActive = setlistSource === option.id;
+                                      return (
+                                        <ChipToggle
+                                          key={option.id}
+                                          isActive={isActive}
+                                          onClick={() => handleSetlistSourceChange(option.id)}
+                                          className="flex-1 min-w-[140px] justify-center"
+                                        >
+                                          {option.label}
+                                        </ChipToggle>
+                                      );
+                                    })}
+                                  </div>
+                                  <div className="mt-1 grid grid-cols-1 gap-1 text-xs text-card-foreground/70 sm:grid-cols-3">
+                                    {SETLIST_SOURCE_OPTIONS.map(option => (
+                                      <span key={option.id} className="leading-tight text-center">
+                                        {option.description}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                                <motion.div 
+                                  initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.95 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ duration: motionDur.base / 1000, ease: motionEase.standard, delay: 0.1 }}
+                                  className="flex items-center gap-4"
+                                >
+                                  <label className="text-sm font-medium">Number of songs:</label>
+                                  <motion.input
+                                    type="number"
+                                    min="3"
+                                    max="10"
+                                    value={songCount}
+                                    onChange={(e) =>
+                                      setSongCount(Math.max(3, Math.min(10, parseInt(e.target.value) || 5)))
+                                    }
+                                    whileFocus={prefersReducedMotion ? {} : { scale: 1.05, borderColor: '#3b82f6' }}
+                                    transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
+                                    className="w-20 rounded-md border border-input bg-background px-3 py-2 text-center focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                  />
+                                </motion.div>
+                                <AnimatedButton
+                                  onClick={generateSetlist}
+                                  disabled={isLoadingSetlist}
+                                  size="lg"
+                                  isLoading={isLoadingSetlist}
+                                  loadingText="Building setlist..."
+                                >
+                                  Build Setlist
+                                </AnimatedButton>
+                                <p className="text-sm text-card-foreground/60 text-center max-w-xl">
+                                  Pick the source pool and we will handle the sequence.
                                 </p>
                               </div>
                             </div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="text-center pb-4 border-b space-y-4">
-                  <AnimatedButton
-                    variant="ghost"
-                    onClick={() => setCurrentTool('menu')}
-                    className="flex items-center gap-2 mx-auto"
-                  >
-                    ← Back to Tools
-                  </AnimatedButton>
-                  <div className="flex items-center gap-3">
-                    {(() => {
-                      const category = TOOL_CATEGORIES.find(c => c.id === currentTool);
-                      if (category) {
-                        return (
-                          <>
-                            <img
-                              src={category.icon}
-                              alt={`${category.title} icon`}
-                              className="w-10 h-10 object-contain"
-                            />
-                            <h2 className="text-xl font-semibold">{category.title}</h2>
-                          </>
-                        );
-                      }
-                      return null;
-                    })()} 
-                  </div>
-                </div>
+                          ) : (
+                            <div className="space-y-4">
+                              <div className="mb-4">
+                                <h3 className="font-semibold mb-2">Emotional Arc:</h3>
+                                <p className="text-sm text-card-foreground/80">{setlistData.overallArc}</p>
+                              </div>
 
-                {currentTool === 'warmup' && (
-                  <div className="space-y-10">
-              <section className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <p className="text-card-foreground/60">
-                    Select a vibe category to generate a warm-up routine.
-                  </p>
-                  {selectedVibeLabel && (
-                    <Badge variant="secondary">{selectedVibeLabel}</Badge>
+                              {setlistData.note && (
+                                <p className="rounded-md bg-card-accent/20 px-3 py-2 text-sm text-card-foreground/70">
+                                  {setlistData.note}
+                                </p>
+                              )}
+
+                              <ul className="space-y-3">
+                                <AnimatePresence>
+                                  {setlistData.items.length === 0 && (
+                                    <AnimatedListItem className="rounded-xl border border-card-border/40 bg-card/60 px-5 py-3 text-sm text-card-foreground/60">
+                                      No songs available for the selected source yet.
+                                    </AnimatedListItem>
+                                  )}
+                                  {setlistData.items.map((item, index) => {
+                                    const matchingSong = setlistSongs.find(song => song.id === item.id);
+                                    const entry = setlistData.setlist[index];
+                                    return (
+                                      <AnimatedListItem key={`${item.id}-${index}`} className="rounded-xl border border-card-border/40 bg-card/60">
+                                        <motion.div
+                                          className="flex items-center gap-4 px-5 py-4"
+                                          whileHover={hoverLift}
+                                          whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+                                          transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
+                                        >
+                                          <div className="w-8 text-2xl font-bold text-primary">
+                                            {entry?.position ?? index + 1}
+                                          </div>
+                                          <div className="flex-1 min-w-0 space-y-1">
+                                            <div className="flex items-center gap-2">
+                                              <h4 className="font-medium">{item.title}</h4>
+                                              {item.external && (
+                                                <Badge variant="outline" className="border-amber-400 text-amber-400">
+                                                  Suggested
+                                                </Badge>
+                                              )}
+                                            </div>
+                                            <p className="text-sm text-card-foreground/60">
+                                              {entry?.purpose || item.reason || 'Maintains narrative flow'}
+                                            </p>
+                                            {matchingSong && matchingSong.core_feelings?.length > 0 && (
+                                              <div className="flex flex-wrap gap-1">
+                                                {matchingSong.core_feelings.slice(0, 2).map((feeling, i) => (
+                                                  <Badge key={i} variant="secondary" className="text-xs">
+                                                    {feeling}
+                                                  </Badge>
+                                                ))}
+                                              </div>
+                                            )}
+                                          </div>
+                                          <div className="flex shrink-0 items-center gap-2">
+                                            {item.external && (
+                                              <AnimatedButton
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleAddExternalToLibrary(item)}
+                                              >
+                                                + Add to Library
+                                              </AnimatedButton>
+                                            )}
+                                            {matchingSong && (
+                                              <AnimatedButton
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => addToPersonalSetlist(matchingSong)}
+                                              >
+                                                Add
+                                              </AnimatedButton>
+                                            )}
+                                          </div>
+                                        </motion.div>
+                                      </AnimatedListItem>
+                                    );
+                                  })}
+                                </AnimatePresence>
+                              </ul>
+
+                              <div className="mt-6 rounded-lg bg-tip-bg p-4">
+                                <h4 className="font-medium mb-2">Transition Tips:</h4>
+                                <ul className="space-y-1">
+                                  {setlistData.transitionTips?.map((tip: string, index: number) => (
+                                    <li key={index} className="text-sm text-tip-foreground flex items-start gap-2">
+                                      <span className="text-primary">•</span>
+                                      {tip}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+                          )}
+
+                          {setlistData && (
+                            <AnimatedButton variant="outline" onClick={() => setSetlistData(null)} className="w-full">
+                              Generate New Setlist
+                            </AnimatedButton>
+                          )}
+                        </motion.div>
+                      </section>
+                    </div>
                   )}
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <AnimatePresence>
-                    {WARMUP_VIBE_OPTIONS.map((option) => {
-                      const isActive = selectedVibe === option.id;
-                      return (
-                        <motion.button
-                          key={option.id}
-                          type="button"
-                          layout={!prefersReducedMotion}
-                          initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -8 }}
-                          whileHover={prefersReducedMotion ? undefined : { scale: 1.02, y: -2 }}
-                          whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
-                          transition={{ duration: motionDur.base / 1000, ease: motionEase.standard }}
-                          aria-pressed={isActive}
-                          onClick={() => {
-                            setSelectedVibe((prev) => (prev === option.id ? null : option.id));
-                            setWarmupData(null);
-                          }}
-                          className={`motion-safe-only rounded-2xl border-2 p-4 text-left backdrop-blur-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                            isActive
-                              ? 'border-primary bg-primary/15 shadow-lg'
-                              : 'border-card-border/70 bg-card/60 hover:border-primary/50'
-                          }`}
-                        >
-                          <h4 className="text-lg font-semibold mb-1">{option.label}</h4>
-                          <p className="text-sm text-card-foreground/60">{option.subtitle}</p>
-                        </motion.button>
-                      );
-                    })}
-                  </AnimatePresence>
-                </div>
-              </section>
-
-              <section className="space-y-4">
-                <div className="space-y-1">
-                  <h4 className="text-lg font-semibold text-card-foreground">Warm-up Styles</h4>
-                  <p className="text-sm text-card-foreground/60">
-                    Choose your voice type and technique focus (optional).
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-sm font-medium text-card-foreground/80">Voice Type</span>
-                    <div role="radiogroup" aria-label="Voice type" className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {VOICE_OPTIONS.map((option, index) => {
-                        const isActive = voiceType === option.id;
-                        return (
-                          <ChipToggle
-                            key={option.id}
-                            ref={(element) => {
-                              voiceButtonRefs.current[index] = element;
-                            }}
-                            role="radio"
-                            aria-checked={isActive}
-                            isActive={isActive}
-                            onKeyDown={(event) => handleVoiceKeyDown(event, index)}
-                            onClick={() => {
-                              setVoiceType((prev) => (prev === option.id ? null : option.id));
-                              setWarmupData(null);
-                            }}
-                            className="justify-center"
-                          >
-                            {option.label}
-                          </ChipToggle>
-                        );
-                      })}
-                    </div>
-                    {!voiceType && (
-                      <p className="mt-1 text-xs text-card-foreground/60">Choose voice type</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <span className="text-sm font-medium text-card-foreground/80">Technique Focus</span>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {TECHNIQUE_OPTIONS.map((option) => {
-                        const isActive = techniques.includes(option.id);
-                        return (
-                          <ChipToggle
-                            key={option.id}
-                            role="checkbox"
-                            aria-checked={isActive}
-                            isActive={isActive}
-                            onClick={() => toggleTechnique(option.id)}
-                          >
-                            {option.label}
-                          </ChipToggle>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <section className="space-y-6">
-                <motion.div 
-                  initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: motionDur.base / 1000, ease: motionEase.standard, delay: 0.1 }}
-                  className="flex flex-col gap-3"
-                >
-                  <div className="flex items-center gap-2">
-                    <motion.h3 
-                      initial={prefersReducedMotion ? false : { opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: motionDur.base / 1000, ease: motionEase.standard, delay: 0.15 }}
-                      className="text-xl font-semibold"
+                  
+                  {currentTool === 'pitch' && (
+                    <motion.div
+                      initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: motionDur.base / 1000, ease: motionEase.standard }}
                     >
-                      AI Warm-up Generator
-                    </motion.h3>
-                  </div>
-                  {selectedVibe && (
-                    <WarmupCriteriaPreview
-                      request={{
-                        vibe: selectedVibe,
-                        voiceType,
-                        techniques,
-                      }}
-                    />
+                      <PitchDetectorCard className="border bg-card/95" defaultRange="voice" defaultA4={440} />
+                    </motion.div>
                   )}
-                </motion.div>
-
-                <div className="space-y-6">
-                  {!warmupData ? (
-                    <div className="text-center py-8 space-y-4">
-                      <AnimatedButton
-                        onClick={generateWarmup}
-                        disabled={!selectedVibe || isLoadingWarmup}
-                        size="lg"
-                        isLoading={isLoadingWarmup}
-                        loadingText="Generating routine..."
-                      >
-                        Generate Warm-up
-                      </AnimatedButton>
-                      <p className="text-sm text-card-foreground/60">
-                        {currentSong
-                          ? "Blend your song's emotional arc with the selected vibe."
-                          : 'Choose a vibe and styles to craft a routine that matches your set.'}
+                  
+                  {currentTool === 'metronome' && (
+                    <motion.div
+                      initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: motionDur.base / 1000, ease: motionEase.standard }}
+                    >
+                      <MetronomeCard className="border bg-card/95" />
+                    </motion.div>
+                  )}
+                  
+                  {currentTool === 'backing' && (
+                    <div className="text-center py-12">
+                      <img
+                        src={backingTrackIcon}
+                        alt="Backing tracks icon"
+                        className="w-16 h-16 mx-auto mb-4 object-contain opacity-60"
+                      />
+                      <h3 className="text-xl font-semibold mb-2">Backing Tracks</h3>
+                      <p className="text-muted-foreground">
+                        Backing tracks functionality is coming soon! Practice with accompaniment tracks and adjust tempo.
                       </p>
                     </div>
-                  ) : (
-                    <div className="grid gap-6 md:grid-cols-3">
-                      <AnimatedCard>
-                        <CardHeader>
-                          <CardTitle className="text-lg">Physical</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <ul className="space-y-2">
-                            {warmupData.physicalWarmups?.map((exercise: string, index: number) => (
-                              <li key={index} className="text-sm flex items-start gap-2">
-                                <span className="text-primary font-bold">{index + 1}.</span>
-                                {exercise}
-                              </li>
-                            ))}
-                          </ul>
-                        </CardContent>
-                      </AnimatedCard>
-                      <AnimatedCard>
-                        <CardHeader>
-                          <CardTitle className="text-lg">Vocal</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <ul className="space-y-2">
-                            {warmupData.vocalWarmups?.map((exercise: string, index: number) => (
-                              <li key={index} className="text-sm flex items-start gap-2">
-                                <span className="text-primary font-bold">{index + 1}.</span>
-                                {exercise}
-                              </li>
-                            ))}
-                          </ul>
-                        </CardContent>
-                      </AnimatedCard>
-                      <AnimatedCard>
-                        <CardHeader>
-                          <CardTitle className="text-lg">Mental</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <ul className="space-y-2">
-                            {warmupData.emotionalPrep?.map((prep: string, index: number) => (
-                              <li key={index} className="text-sm flex items-start gap-2">
-                                <span className="text-primary font-bold">{index + 1}.</span>
-                                {prep}
-                              </li>
-                            ))}
-                          </ul>
-                        </CardContent>
-                      </AnimatedCard>
-                    </div>
-                  )}
-
-                  {warmupData && (
-                    <div className="flex flex-col gap-3 rounded-lg bg-card-accent/20 p-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-primary" />
-                        <span className="text-sm font-medium">
-                          Total Duration: {warmupData.duration} minutes
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <AnimatedButton variant="outline" size="sm" onClick={handleExportWarmupPdf}>
-                          Export PDF
-                        </AnimatedButton>
-                        <AnimatedButton variant="outline" size="sm" onClick={saveWarmup}>
-                          Save
-                        </AnimatedButton>
-                        <AnimatedButton variant="outline" size="sm" onClick={() => setWarmupData(null)}>
-                          Generate New
-                        </AnimatedButton>
-                      </div>
-                    </div>
                   )}
                 </div>
-              </section>
-
-              {savedWarmups.length > 0 && (
-                <section className="space-y-4">
-                  <h3 className="text-xl font-semibold">Saved Warm-ups</h3>
-                  <ul className="space-y-2">
-                    <AnimatePresence>
-                      {savedWarmups.map((warmup) => (
-                        <AnimatedListItem key={warmup.id} className="rounded-xl border border-card-border/40 bg-card/60">
-                          <motion.div
-                            className="flex items-center justify-between gap-4 px-5 py-4"
-                            whileHover={hoverLift}
-                            whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
-                            transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
-                          >
-                            <div className="flex-1 min-w-0">
-                              {renamingWarmupId === warmup.id ? (
-                                <div className="space-y-2">
-                                  <Input
-                                    value={renameValue}
-                                    onChange={(e) => setRenameValue(e.target.value)}
-                                    placeholder="Warm-up name"
-                                    className="h-9"
-                                    autoFocus
-                                  />
-                                  <div className="flex flex-wrap gap-2">
-                                    <AnimatedButton
-                                      size="sm"
-                                      onClick={renameSavedWarmup}
-                                      className="px-3 justify-center"
-                                    >
-                                      Save Name
-                                    </AnimatedButton>
-                                    <AnimatedButton
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={cancelRenameWarmup}
-                                      className="px-3 justify-center"
-                                    >
-                                      Cancel
-                                    </AnimatedButton>
-                                  </div>
-                                </div>
-                              ) : (
-                                <>
-                                  <h4 className="font-medium truncate">
-                                    {warmup.custom_label ||
-                                      warmup.vibe ||
-                                      `${warmup.song_title}${
-                                        warmup.song_artist ? ` by ${warmup.song_artist}` : ''
-                                      }`}
-                                  </h4>
-                                  {warmup.song_artist && !warmup.vibe && (
-                                    <p className="text-sm text-card-foreground/60 truncate">{warmup.song_artist}</p>
-                                  )}
-                                  <p className="mt-1 text-xs text-card-foreground/50">
-                                    {warmup.duration} min • {new Date(warmup.created_at).toLocaleDateString()}
-                                  </p>
-                                </>
-                              )}
-                            </div>
-                            <div className="flex shrink-0 gap-2">
-                              {renamingWarmupId !== warmup.id && (
-                                <AnimatedButton
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => beginRenameWarmup(warmup)}
-                                  className="px-3 justify-center"
-                                >
-                                  Rename
-                                </AnimatedButton>
-                              )}
-                              <AnimatedButton
-                                variant="outline"
-                                size="sm"
-                                onClick={() => loadSavedWarmup(warmup)}
-                                className="px-3 justify-center"
-                              >
-                                Load
-                              </AnimatedButton>
-                              <AnimatedButton
-                                variant="outline"
-                                size="sm"
-                                onClick={() => deleteSavedWarmup(warmup.id)}
-                                className="px-3 justify-center"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </AnimatedButton>
-                            </div>
-                          </motion.div>
-                        </AnimatedListItem>
-                      ))}
-                    </AnimatePresence>
-                  </ul>
-                </section>
               )}
-                  </div>
-                )}
-
-                {currentTool === 'setlist' && (
-                  <div className="space-y-6">
-                    <section className="space-y-4">
-                      <motion.h3 
-                        initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: motionDur.base / 1000, ease: motionEase.standard, delay: 0.4 }}
-                        className="text-xl font-semibold"
-                      >
-                        Setlist Builder
-                      </motion.h3>
-                <motion.div 
-                  initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: motionDur.base / 1000, ease: motionEase.standard, delay: 0.5 }}
-                  className="space-y-6"
-                >
-                  {!setlistData ? (
-                    <div className="space-y-6">
-                      <div className="flex flex-col items-center gap-4">
-                        <div className="w-full max-w-xl space-y-2">
-                          <span className="text-sm font-medium text-card-foreground/80">Source</span>
-                          <div className="flex flex-wrap gap-2">
-                            {SETLIST_SOURCE_OPTIONS.map((option) => {
-                              const isActive = setlistSource === option.id;
-                              return (
-                                <ChipToggle
-                                  key={option.id}
-                                  isActive={isActive}
-                                  onClick={() => handleSetlistSourceChange(option.id)}
-                                  className="flex-1 min-w-[140px] justify-center"
-                                >
-                                  {option.label}
-                                </ChipToggle>
-                              );
-                            })}
-                          </div>
-                          <div className="mt-1 grid grid-cols-1 gap-1 text-xs text-card-foreground/70 sm:grid-cols-3">
-                            {SETLIST_SOURCE_OPTIONS.map(option => (
-                              <span key={option.id} className="leading-tight text-center">
-                                {option.description}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                        <motion.div 
-                          initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: motionDur.base / 1000, ease: motionEase.standard, delay: 0.1 }}
-                          className="flex items-center gap-4"
-                        >
-                          <label className="text-sm font-medium">Number of songs:</label>
-                          <motion.input
-                            type="number"
-                            min="3"
-                            max="10"
-                            value={songCount}
-                            onChange={(e) =>
-                              setSongCount(Math.max(3, Math.min(10, parseInt(e.target.value) || 5)))
-                            }
-                            whileFocus={prefersReducedMotion ? {} : { scale: 1.05, borderColor: '#3b82f6' }}
-                            transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
-                            className="w-20 rounded-md border border-input bg-background px-3 py-2 text-center focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                          />
-                        </motion.div>
-                        <AnimatedButton
-                          onClick={generateSetlist}
-                          disabled={isLoadingSetlist}
-                          size="lg"
-                          isLoading={isLoadingSetlist}
-                          loadingText="Building setlist..."
-                        >
-                          Build Setlist
-                        </AnimatedButton>
-                        <p className="text-sm text-card-foreground/60 text-center max-w-xl">
-                          Pick the source pool and we will handle the sequence.
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="mb-4">
-                        <h3 className="font-semibold mb-2">Emotional Arc:</h3>
-                        <p className="text-sm text-card-foreground/80">{setlistData.overallArc}</p>
-                      </div>
-
-                      {setlistData.note && (
-                        <p className="rounded-md bg-card-accent/20 px-3 py-2 text-sm text-card-foreground/70">
-                          {setlistData.note}
-                        </p>
-                      )}
-
-                      <ul className="space-y-3">
-                        <AnimatePresence>
-                          {setlistData.items.length === 0 && (
-                            <AnimatedListItem className="rounded-xl border border-card-border/40 bg-card/60 px-5 py-3 text-sm text-card-foreground/60">
-                              No songs available for the selected source yet.
-                            </AnimatedListItem>
-                          )}
-                          {setlistData.items.map((item, index) => {
-                            const matchingSong = setlistSongs.find(song => song.id === item.id);
-                            const entry = setlistData.setlist[index];
-                            return (
-                              <AnimatedListItem key={`${item.id}-${index}`} className="rounded-xl border border-card-border/40 bg-card/60">
-                                <motion.div
-                                  className="flex items-center gap-4 px-5 py-4"
-                                  whileHover={hoverLift}
-                                  whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
-                                  transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
-                                >
-                                  <div className="w-8 text-2xl font-bold text-primary">
-                                    {entry?.position ?? index + 1}
-                                  </div>
-                                  <div className="flex-1 min-w-0 space-y-1">
-                                    <div className="flex items-center gap-2">
-                                      <h4 className="font-medium">{item.title}</h4>
-                                      {item.external && (
-                                        <Badge variant="outline" className="border-amber-400 text-amber-400">
-                                          Suggested
-                                        </Badge>
-                                      )}
-                                    </div>
-                                    <p className="text-sm text-card-foreground/60">
-                                      {entry?.purpose || item.reason || 'Maintains narrative flow'}
-                                    </p>
-                                    {matchingSong && matchingSong.core_feelings?.length > 0 && (
-                                      <div className="flex flex-wrap gap-1">
-                                        {matchingSong.core_feelings.slice(0, 2).map((feeling, i) => (
-                                          <Badge key={i} variant="secondary" className="text-xs">
-                                            {feeling}
-                                          </Badge>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="flex shrink-0 items-center gap-2">
-                                    {item.external && (
-                                      <AnimatedButton
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => handleAddExternalToLibrary(item)}
-                                      >
-                                        + Add to Library
-                                      </AnimatedButton>
-                                    )}
-                                    {matchingSong && (
-                                      <AnimatedButton
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => addToPersonalSetlist(matchingSong)}
-                                      >
-                                        Add
-                                      </AnimatedButton>
-                                    )}
-                                  </div>
-                                </motion.div>
-                              </AnimatedListItem>
-                            );
-                          })}
-                        </AnimatePresence>
-                      </ul>
-
-                      <div className="mt-6 rounded-lg bg-tip-bg p-4">
-                        <h4 className="font-medium mb-2">Transition Tips:</h4>
-                        <ul className="space-y-1">
-                          {setlistData.transitionTips?.map((tip: string, index: number) => (
-                            <li key={index} className="text-sm text-tip-foreground flex items-start gap-2">
-                              <span className="text-primary">•</span>
-                              {tip}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  )}
-
-                  {setlistData && (
-                    <AnimatedButton variant="outline" onClick={() => setSetlistData(null)} className="w-full">
-                      Generate New Setlist
-                    </AnimatedButton>
-                  )}
-                      </motion.div>
-                    </section>
-                  </div>
-                )}
-                
-                {currentTool === 'pitch' && (
-                  <motion.div
-                    initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: motionDur.base / 1000, ease: motionEase.standard }}
-                  >
-                    <PitchDetectorCard className="border bg-card/95" defaultRange="voice" defaultA4={440} />
-                  </motion.div>
-                )}
-                
-                {currentTool === 'metronome' && (
-                  <motion.div
-                    initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: motionDur.base / 1000, ease: motionEase.standard }}
-                  >
-                    <MetronomeCard className="border bg-card/95" />
-                  </motion.div>
-                )}
-                
-                {currentTool === 'backing' && (
-                  <div className="text-center py-12">
-                    <img
-                      src={backingTrackIcon}
-                      alt="Backing tracks icon"
-                      className="w-16 h-16 mx-auto mb-4 object-contain opacity-60"
-                    />
-                    <h3 className="text-xl font-semibold mb-2">Backing Tracks</h3>
-                    <p className="text-muted-foreground">
-                      Backing tracks functionality is coming soon! Practice with accompaniment tracks and adjust tempo.
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-          </CardContent>
+            </CardContent>
           </Card>
         </div>
       </motion.div>
