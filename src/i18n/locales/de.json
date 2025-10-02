@@ -86,6 +86,57 @@
   "prep": {
     "title": "Aufführungs-Vorbereitung",
     "preparingFor": "Vorbereitung für",
+    "tips": {
+      "tempo": "Ziehe, um BPM einzustellen. Tippe, um ein Tempo zu übernehmen.",
+      "beats": "Wähle, wie viele Schläge ein Takt hat.",
+      "subdiv": "Bestimme die Unterteilung: Viertel, Achtel usw.",
+      "swing": "Füge Swing hinzu, indem der zweite Achtel verzögert wird.",
+      "sound": "Wähle den Klick-Sound deiner Wahl.",
+      "countIn": "Füge Auftakt-Takte hinzu, bevor die Wiedergabe startet.",
+      "grouping": "Verwende +, um Schläge zu gruppieren, z. B. 2+2+3.",
+      "volume": "Passe die Lautstärke des Klicks an.",
+      "start": "Metronom starten.",
+      "stop": "Metronom stoppen.",
+      "tap": "Zum Einstellen des BPM mitklopfen.",
+      "a4": "Setzt die Stimmreferenz. 440 Hz ist Standard.",
+      "range": "Begrenzt die Erkennung auf einen Instrumentenbereich für stabilere Ergebnisse.",
+      "hold": "Erfasst 8 s die Cents und bewertet die Tonstabilität.",
+      "enableMic": "Aktiviere das Mikrofon für die Echtzeit-Tonerkennung."
+    },
+    "tour": {
+      "title": [
+        "Willkommen bei den Vorbereitungs-Tools",
+        "Grundlagen Tonerkennung",
+        "Langton-Test",
+        "Metronom-Grundlagen",
+        "Tipps & Neustart"
+      ],
+      "step0": [
+        "Nutze diese Tools zum Aufwärmen, Setlists erstellen, Ton überprüfen und mit Metronom üben.",
+        "Du kannst diese Tour jederzeit über den Hilfe-/Tutorial-Button starten."
+      ],
+      "step1": [
+        "Aktiviere dein Mikrofon für die Echtzeit-Tonerkennung. A4 setzt die Stimmung (Standard 440 Hz).",
+        "Wähle deinen Stimmumfang für klareres Feedback. Bei Problemen: HTTPS und Berechtigungen prüfen."
+      ],
+      "step2": [
+        "Halte einen Ton und beobachte, wie sich die Anzeige stabilisiert. Ziel: Zeiger zentrieren; leichtes Vibrato ist normal.",
+        "Ideal zum Kalibrieren vor Proben oder Auftritten."
+      ],
+      "step3": [
+        "Stelle Tempo (BPM), Unterteilungen und optional Swing ein. Start/Stopp zum Üben konstanter Zeit.",
+        "Nutze Auftakt-Takte und Akzent-Gruppierung (z. B. 2+2+3) für komplexe Rhythmen."
+      ],
+      "step4": [
+        "Tipp: Anzeige im Blick behalten, aber mehr hören als schauen. Konstanz schlägt Tempo.",
+        "Du kannst diese Tour jederzeit über den Hilfe-/Tutorial-Button zurücksetzen."
+      ],
+      "next": "Weiter",
+      "back": "Zurück",
+      "skip": "Überspringen",
+      "finish": "Fertig",
+      "help": "Hilfe / Tutorial"
+    },
     "desc": {
       "warmup": "KI-generierte Aufwärm-Routinen mit Vibe-Auswahl, Stimmtypen und Techniken",
       "setlist": "Stimmige Setlists basierend auf emotionalen Bögen und Song-Übergängen erstellen",

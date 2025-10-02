@@ -581,7 +581,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                     }}
                     className="h-9 px-3"
                   >
-                    Help / Tutorial
+                    {t('prep.tour.help')}
                   </AnimatedButton>
                   <AnimatedButton
                     variant="ghost"
@@ -1200,48 +1200,39 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
               <Card role="dialog" aria-modal="true" className="w-full max-w-2xl mx-4">
                 <CardHeader>
                   <CardTitle>
-                    {(() => {
-                      const titles = [
-                        'Welcome to Performance Prep Tools',
-                        'Pitch Detector Basics',
-                        'Hold Note Test',
-                        'Metronome Essentials',
-                        'Tips & Restart'
-                      ];
-                      return titles[tutorialStep] ?? titles[0];
-                    })()}
+                    {t(`prep.tour.title.${tutorialStep}`)}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="text-sm text-card-foreground/80 space-y-3">
                     {tutorialStep === 0 && (
                       <>
-                        <p>Use these tools to warm up, build setlists, check your pitch, and practice with a metronome.</p>
-                        <p>You can relaunch this tour anytime via the Help / Tutorial button.</p>
+                        <p>{t('prep.tour.step0.0')}</p>
+                        <p>{t('prep.tour.step0.1')}</p>
                       </>
                     )}
                     {tutorialStep === 1 && (
                       <>
-                        <p>Enable your microphone to detect your pitch in real time. The A4 reference sets tuning (440 Hz by default).</p>
-                        <p>Choose your vocal range for clearer feedback. If mic access fails, ensure HTTPS and allow permissions.</p>
+                        <p>{t('prep.tour.step1.0')}</p>
+                        <p>{t('prep.tour.step1.1')}</p>
                       </>
                     )}
                     {tutorialStep === 2 && (
                       <>
-                        <p>Hold a note and watch the display stabilize. Aim to center the needle; small vibrato is normal.</p>
-                        <p>Use this to calibrate before rehearsals or performances.</p>
+                        <p>{t('prep.tour.step2.0')}</p>
+                        <p>{t('prep.tour.step2.1')}</p>
                       </>
                     )}
                     {tutorialStep === 3 && (
                       <>
-                        <p>Set Tempo (BPM), Subdivisions, and optional Swing. Start/Stop to practice steady time.</p>
-                        <p>Use Count-in Bars and Accent Grouping (e.g., 2+2+3) to match complex rhythms.</p>
+                        <p>{t('prep.tour.step3.0')}</p>
+                        <p>{t('prep.tour.step3.1')}</p>
                       </>
                     )}
                     {tutorialStep === 4 && (
                       <>
-                        <p>Pro tip: keep the display visible but listen more than you watch. Consistency beats speed.</p>
-                        <p>You can reset this tour anytime from the Help / Tutorial button.</p>
+                        <p>{t('prep.tour.step4.0')}</p>
+                        <p>{t('prep.tour.step4.1')}</p>
                       </>
                     )}
                   </div>
@@ -1264,19 +1255,19 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                           setShowTutorial(false);
                         }}
                       >
-                        Skip
+                        {t('prep.tour.skip')}
                       </AnimatedButton>
                       {tutorialStep > 0 && (
                         <AnimatedButton
                           variant="outline"
                           onClick={() => setTutorialStep((s) => Math.max(0, s - 1))}
                         >
-                          Back
+                          {t('prep.tour.back')}
                         </AnimatedButton>
                       )}
                       {tutorialStep < 4 ? (
                         <AnimatedButton onClick={() => setTutorialStep((s) => Math.min(4, s + 1))}>
-                          Next
+                          {t('prep.tour.next')}
                         </AnimatedButton>
                       ) : (
                         <AnimatedButton
@@ -1285,7 +1276,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                             setShowTutorial(false);
                           }}
                         >
-                          Finish
+                          {t('prep.tour.finish')}
                         </AnimatedButton>
                       )}
                     </div>

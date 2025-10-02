@@ -86,6 +86,57 @@
   "prep": {
     "title": "Performance Prep Tools",
     "preparingFor": "Preparing for",
+    "tips": {
+      "tempo": "Drag to set BPM. Tap to match a tempo.",
+      "beats": "Choose how many beats are in a measure.",
+      "subdiv": "Pick how the beat is divided: quarters, eighths, etc.",
+      "swing": "Add swing by delaying the second eighth.",
+      "sound": "Choose the click sound you prefer.",
+      "countIn": "Add lead-in bars before playback starts.",
+      "grouping": "Use + to group beats, e.g., 2+2+3.",
+      "volume": "Adjust click loudness.",
+      "start": "Start the metronome.",
+      "stop": "Stop the metronome.",
+      "tap": "Tap along to set the BPM.",
+      "a4": "Sets tuning reference. 440 Hz is standard.",
+      "range": "Limits detection to an instrument range for steadier results.",
+      "hold": "Records cents for 8s and rates pitch stability.",
+      "enableMic": "Enable mic to detect your pitch in real time."
+    },
+    "tour": {
+      "title": [
+        "Welcome to Performance Prep Tools",
+        "Pitch Detector Basics",
+        "Hold Note Test",
+        "Metronome Essentials",
+        "Tips & Restart"
+      ],
+      "step0": [
+        "Use these tools to warm up, build setlists, check your pitch, and practice with a metronome.",
+        "You can relaunch this tour anytime via the Help / Tutorial button."
+      ],
+      "step1": [
+        "Enable your microphone to detect your pitch in real time. The A4 reference sets tuning (440 Hz by default).",
+        "Choose your vocal range for clearer feedback. If mic access fails, ensure HTTPS and allow permissions."
+      ],
+      "step2": [
+        "Hold a note and watch the display stabilize. Aim to center the needle; small vibrato is normal.",
+        "Use this to calibrate before rehearsals or performances."
+      ],
+      "step3": [
+        "Set Tempo (BPM), Subdivisions, and optional Swing. Start/Stop to practice steady time.",
+        "Use Count-in Bars and Accent Grouping (e.g., 2+2+3) to match complex rhythms."
+      ],
+      "step4": [
+        "Pro tip: keep the display visible but listen more than you watch. Consistency beats speed.",
+        "You can reset this tour anytime from the Help / Tutorial button."
+      ],
+      "next": "Next",
+      "back": "Back",
+      "skip": "Skip",
+      "finish": "Finish",
+      "help": "Help / Tutorial"
+    },
     "desc": {
       "warmup": "AI-generated warm-up routines with vibe selection, voice types, and techniques",
       "setlist": "Build cohesive setlists based on emotional arcs and song transitions",
