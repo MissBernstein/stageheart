@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedButton } from "@/ui/AnimatedButton";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { motionDur, motionEase } from "@/ui/motion";
@@ -319,6 +320,7 @@ export default function PitchDetectorCard({ className, defaultRange = "voice", d
   return (
     <Card className={cn("w-full max-w-3xl mx-auto border-0", className)}>
         <CardContent>
+          <TooltipProvider>
           <div className="grid gap-6 md:grid-cols-2">
             {/* Dial */}
             <motion.div
@@ -364,14 +366,24 @@ export default function PitchDetectorCard({ className, defaultRange = "voice", d
             {/* Controls + 8s test */}
             <div className="rounded-2xl border bg-card p-6 space-y-6">
               <motion.div {...liftSubtle} className="space-y-2">
-                <div className="text-sm text-muted-foreground">A4 Reference</div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="text-sm text-muted-foreground cursor-help">A4 Reference</div>
+                  </TooltipTrigger>
+                  <TooltipContent>Sets tuning reference. 440 Hz is standard.</TooltipContent>
+                </Tooltip>
                 <div className="flex items-center gap-3">
                   <Slider value={[a4]} min={415} max={466} step={0.5} onValueChange={(v) => setA4Val(v[0])} className="w-full" />
                   <div className="w-24 text-right tabular-nums font-medium">{a4.toFixed(1)} Hz</div>
                 </div>
               </motion.div>
               <motion.div {...liftSubtle} className="space-y-3">
-                <div className="text-sm text-muted-foreground">Range</div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="text-sm text-muted-foreground cursor-help">Range</div>
+                  </TooltipTrigger>
+                  <TooltipContent>Limits detection to an instrument range for steadier results.</TooltipContent>
+                </Tooltip>
                 <Tabs value={range} onValueChange={(v) => setRangeKey(v as DetectorRangeKey)}>
                   <TabsList className="grid grid-cols-3 gap-1 rounded-xl bg-slate-900/60 p-1 [&>button]:h-8 [&>button]:text-sm">
                     {["voice", "guitar", "bass"].map((key) => (
@@ -408,7 +420,12 @@ export default function PitchDetectorCard({ className, defaultRange = "voice", d
               </motion.div>
               <div className="mt-6 flex gap-2">
                 {!testing ? (
-                  <AnimatedButton onClick={startTest} disabled={!state.running}>Hold Note Test (8s)</AnimatedButton>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AnimatedButton onClick={startTest} disabled={!state.running}>Hold Note Test (8s)</AnimatedButton>
+                    </TooltipTrigger>
+                    <TooltipContent>Records cents for 8s and rates pitch stability.</TooltipContent>
+                  </Tooltip>
                 ) : (
                   <AnimatedButton variant="secondary" onClick={resetTest}>Cancel</AnimatedButton>
                 )}
@@ -456,7 +473,12 @@ export default function PitchDetectorCard({ className, defaultRange = "voice", d
               )}
               <div className="mt-4 flex justify-center">
                 {!state.running ? (
-                  <AnimatedButton onClick={api.start}>Enable Microphone</AnimatedButton>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AnimatedButton onClick={api.start}>Enable Microphone</AnimatedButton>
+                    </TooltipTrigger>
+                    <TooltipContent>Enable mic to detect your pitch in real time.</TooltipContent>
+                  </Tooltip>
                 ) : (
                   <AnimatedButton variant="secondary" onClick={api.stop}>Disable</AnimatedButton>
                 )}
@@ -464,6 +486,7 @@ export default function PitchDetectorCard({ className, defaultRange = "voice", d
             </div>
           </div>
           <div className="mt-4 text-xs text-muted-foreground">A4 ref affects note & cents math only (not detection). Detection runs locally; no audio leaves the device.</div>
+          </TooltipProvider>
         </CardContent>
       </Card>
     );
@@ -720,15 +743,33 @@ export function MetronomeCard({ className }: { className?: string }) {
     <Card className={cn("w-full max-w-3xl mx-auto border-0", className)}>
       <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-start">
         <div className="flex gap-2 items-center">
-          {!running ? (
-            <AnimatedButton onClick={start}>Start</AnimatedButton>
-          ) : (
-            <AnimatedButton variant="secondary" onClick={stop}>Stop</AnimatedButton>
-          )}
-          <AnimatedButton variant="outline" onClick={onTap}>Tap</AnimatedButton>
+          <TooltipProvider>
+            {!running ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AnimatedButton onClick={start}>Start</AnimatedButton>
+                </TooltipTrigger>
+                <TooltipContent>Start the metronome.</TooltipContent>
+              </Tooltip>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AnimatedButton variant="secondary" onClick={stop}>Stop</AnimatedButton>
+                </TooltipTrigger>
+                <TooltipContent>Stop the metronome.</TooltipContent>
+              </Tooltip>
+            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AnimatedButton variant="outline" onClick={onTap}>Tap</AnimatedButton>
+              </TooltipTrigger>
+              <TooltipContent>Tap along to set the BPM.</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </CardHeader>
       <CardContent>
+        <TooltipProvider>
         <div className="grid gap-8">
           {/* Visuals */}
           <div className="space-y-4">
@@ -806,7 +847,12 @@ export function MetronomeCard({ className }: { className?: string }) {
           {/* Controls (stacked below visuals) */}
           <div className="rounded-3xl border bg-card/95 p-6 space-y-8">
             <div className="space-y-3">
-              <div className="text-sm text-muted-foreground">Tempo</div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="text-sm text-muted-foreground cursor-help">Tempo</div>
+                </TooltipTrigger>
+                <TooltipContent>Drag to set BPM. Tap to match a tempo.</TooltipContent>
+              </Tooltip>
               <div className="mt-2 flex items-center gap-3">
                 <Slider value={[bpm]} min={40} max={240} step={1} onValueChange={(v) => setBpm(v[0])} className="w-full" />
                 <div className="w-32 text-right tabular-nums font-medium leading-tight">
@@ -819,7 +865,12 @@ export function MetronomeCard({ className }: { className?: string }) {
             <div className="grid gap-6">
               <div className="grid gap-6 lg:grid-cols-2">
                 <div className="space-y-3">
-                  <div className="text-sm text-muted-foreground">Beats per Bar</div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="text-sm text-muted-foreground cursor-help">Beats per Bar</div>
+                    </TooltipTrigger>
+                    <TooltipContent>Choose how many beats are in a measure.</TooltipContent>
+                  </Tooltip>
                   <Tabs value={String(beats)} onValueChange={(v) => setBeats(parseInt(v))}>
                     <TabsList
                       className="grid grid-cols-4 sm:grid-cols-8 gap-1 w-full rounded-xl bg-slate-900/60 p-1 [&>button]:h-8 [&>button]:px-2 [&>button]:text-xs"
@@ -831,9 +882,14 @@ export function MetronomeCard({ className }: { className?: string }) {
                   </Tabs>
                 </div>
                 <div className="space-y-3">
-                  <div className="text-sm text-muted-foreground">Subdivisions</div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="text-sm text-muted-foreground cursor-help">Subdivisions</div>
+                    </TooltipTrigger>
+                    <TooltipContent>Pick how the beat is divided: quarters, eighths, etc.</TooltipContent>
+                  </Tooltip>
                   <Tabs value={String(subdiv)} onValueChange={(v) => setSubdiv(parseInt(v) as 1|2|3|4)}>
-                    <TabsList className="grid grid-cols-2 gap-1 md:grid-cols-4">
+                    <TabsList className="grid grid-cols-2 gap-1 md:grid-cols-4 [&>button]:px-3">
                       <TabsTrigger value="1">Quarter</TabsTrigger>
                       <TabsTrigger value="2">Eighths</TabsTrigger>
                       <TabsTrigger value="3">Triplets</TabsTrigger>
@@ -845,7 +901,12 @@ export function MetronomeCard({ className }: { className?: string }) {
 
               {subdiv === 2 && (
                 <div className="space-y-3">
-                  <div className="text-sm text-muted-foreground">Swing (8ths)</div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="text-sm text-muted-foreground cursor-help">Swing (8ths)</div>
+                    </TooltipTrigger>
+                    <TooltipContent>Add swing by delaying the second eighth.</TooltipContent>
+                  </Tooltip>
                   <div className="flex items-center gap-3">
                     <Slider value={[swing]} min={0} max={0.6} step={0.02} onValueChange={(v) => setSwing(v[0])} className="w-full" />
                     <div className="w-20 text-right tabular-nums font-medium">{Math.round(swing * 100)}%</div>
@@ -855,7 +916,12 @@ export function MetronomeCard({ className }: { className?: string }) {
 
               <div className="grid gap-6 lg:grid-cols-2">
                 <div className="space-y-3">
-                  <div className="text-sm text-muted-foreground">Sound</div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="text-sm text-muted-foreground cursor-help">Sound</div>
+                    </TooltipTrigger>
+                    <TooltipContent>Choose the click sound you prefer.</TooltipContent>
+                  </Tooltip>
                   <Tabs value={sound} onValueChange={(v) => setSound(v as any)}>
                     <TabsList className="grid grid-cols-2 gap-1 md:grid-cols-4">
                       <TabsTrigger value="blip">Blip</TabsTrigger>
@@ -866,7 +932,12 @@ export function MetronomeCard({ className }: { className?: string }) {
                   </Tabs>
                 </div>
                 <div className="space-y-3">
-                  <div className="text-sm text-muted-foreground">Count-in Bars</div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="text-sm text-muted-foreground cursor-help">Count-in Bars</div>
+                    </TooltipTrigger>
+                    <TooltipContent>Add lead-in bars before playback starts.</TooltipContent>
+                  </Tooltip>
                   <Tabs value={String(countInBars)} onValueChange={(v) => setCountInBars(parseInt(v))}>
                     <TabsList className="grid grid-cols-4 gap-1">
                       {[0,1,2,4].map(n => (
@@ -879,7 +950,12 @@ export function MetronomeCard({ className }: { className?: string }) {
 
               <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] items-end">
                 <div className="space-y-3">
-                  <div className="text-sm text-muted-foreground">Accent Grouping (beats)</div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="text-sm text-muted-foreground cursor-help">Accent Grouping (beats)</div>
+                    </TooltipTrigger>
+                    <TooltipContent>Use + to group beats, e.g., 2+2+3.</TooltipContent>
+                  </Tooltip>
                   <input
                     value={grouping}
                     onChange={(e) => setGrouping(e.target.value)}
@@ -888,7 +964,12 @@ export function MetronomeCard({ className }: { className?: string }) {
                   />
                 </div>
                 <div className="space-y-3">
-                  <div className="text-sm text-muted-foreground">Volume</div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="text-sm text-muted-foreground cursor-help">Volume</div>
+                    </TooltipTrigger>
+                    <TooltipContent>Adjust click loudness.</TooltipContent>
+                  </Tooltip>
                   <div className="flex items-center gap-3">
                     <Slider value={[volume]} min={0} max={1} step={0.01} onValueChange={(v) => setVolume(v[0])} className="w-full" />
                     <div className="w-16 text-right tabular-nums font-medium">{Math.round(volume * 100)}%</div>
@@ -921,6 +1002,7 @@ export function MetronomeCard({ className }: { className?: string }) {
             <div className="text-xs text-muted-foreground">Audio runs locally. For mobile reliability, keep the tab active and device unmuted.</div>
           </div>
         </div>
+        </TooltipProvider>
       </CardContent>
     </Card>
   );

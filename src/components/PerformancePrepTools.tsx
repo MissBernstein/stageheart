@@ -159,6 +159,9 @@ interface PerformancePrepToolsProps {
 export const PerformancePrepTools = ({ currentSong, onClose, songs }: PerformancePrepToolsProps) => {
   const { t } = useTranslation();
   const [currentTool, setCurrentTool] = useState<ToolCategory>('menu');
+  const TUTORIAL_KEY = 'prep-tools-tutorial-complete';
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
   const [warmupData, setWarmupData] = useState<WarmupPlan | null>(null);
   const [setlistData, setSetlistData] = useState<SetlistResponse | null>(null);
   const [isLoadingWarmup, setIsLoadingWarmup] = useState(false);
@@ -208,6 +211,17 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
     } catch (error) {
       console.error('Error loading warm-up preferences:', error);
     }
+  }, []);
+
+  // Show tutorial on first open
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const seen = localStorage.getItem(TUTORIAL_KEY);
+      if (!seen) {
+        setShowTutorial(true);
+      }
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -557,7 +571,18 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
           <Card className="max-w-4xl mx-auto">
             <CardHeader className="pt-6 md:pt-4">
               <div className="relative mb-4">
-                <div className="absolute top-0 right-0">
+                <div className="absolute top-0 right-0 flex items-center gap-2">
+                  <AnimatedButton
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setTutorialStep(0);
+                      setShowTutorial(true);
+                    }}
+                    className="h-9 px-3"
+                  >
+                    Help / Tutorial
+                  </AnimatedButton>
                   <AnimatedButton
                     variant="ghost"
                     size="icon"
@@ -1170,6 +1195,105 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
               )}
             </CardContent>
           </Card>
+          {showTutorial && (
+            <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-background/80 backdrop-blur-sm">
+              <Card role="dialog" aria-modal="true" className="w-full max-w-2xl mx-4">
+                <CardHeader>
+                  <CardTitle>
+                    {(() => {
+                      const titles = [
+                        'Welcome to Performance Prep Tools',
+                        'Pitch Detector Basics',
+                        'Hold Note Test',
+                        'Metronome Essentials',
+                        'Tips & Restart'
+                      ];
+                      return titles[tutorialStep] ?? titles[0];
+                    })()}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="text-sm text-card-foreground/80 space-y-3">
+                    {tutorialStep === 0 && (
+                      <>
+                        <p>Use these tools to warm up, build setlists, check your pitch, and practice with a metronome.</p>
+                        <p>You can relaunch this tour anytime via the Help / Tutorial button.</p>
+                      </>
+                    )}
+                    {tutorialStep === 1 && (
+                      <>
+                        <p>Enable your microphone to detect your pitch in real time. The A4 reference sets tuning (440 Hz by default).</p>
+                        <p>Choose your vocal range for clearer feedback. If mic access fails, ensure HTTPS and allow permissions.</p>
+                      </>
+                    )}
+                    {tutorialStep === 2 && (
+                      <>
+                        <p>Hold a note and watch the display stabilize. Aim to center the needle; small vibrato is normal.</p>
+                        <p>Use this to calibrate before rehearsals or performances.</p>
+                      </>
+                    )}
+                    {tutorialStep === 3 && (
+                      <>
+                        <p>Set Tempo (BPM), Subdivisions, and optional Swing. Start/Stop to practice steady time.</p>
+                        <p>Use Count-in Bars and Accent Grouping (e.g., 2+2+3) to match complex rhythms.</p>
+                      </>
+                    )}
+                    {tutorialStep === 4 && (
+                      <>
+                        <p>Pro tip: keep the display visible but listen more than you watch. Consistency beats speed.</p>
+                        <p>You can reset this tour anytime from the Help / Tutorial button.</p>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2">
+                    <div className="flex items-center gap-1">
+                      {[0,1,2,3,4].map((i) => (
+                        <span
+                          key={i}
+                          aria-hidden
+                          className={`h-1.5 w-6 rounded-full ${i <= tutorialStep ? 'bg-primary' : 'bg-card-border/60'}`}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <AnimatedButton
+                        variant="ghost"
+                        onClick={() => {
+                          try { localStorage.setItem(TUTORIAL_KEY, 'true'); } catch {}
+                          setShowTutorial(false);
+                        }}
+                      >
+                        Skip
+                      </AnimatedButton>
+                      {tutorialStep > 0 && (
+                        <AnimatedButton
+                          variant="outline"
+                          onClick={() => setTutorialStep((s) => Math.max(0, s - 1))}
+                        >
+                          Back
+                        </AnimatedButton>
+                      )}
+                      {tutorialStep < 4 ? (
+                        <AnimatedButton onClick={() => setTutorialStep((s) => Math.min(4, s + 1))}>
+                          Next
+                        </AnimatedButton>
+                      ) : (
+                        <AnimatedButton
+                          onClick={() => {
+                            try { localStorage.setItem(TUTORIAL_KEY, 'true'); } catch {}
+                            setShowTutorial(false);
+                          }}
+                        >
+                          Finish
+                        </AnimatedButton>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </motion.div>
     </MotionIfOkay>,
