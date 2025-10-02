@@ -511,6 +511,7 @@ export function MetronomeCard({ className }: { className?: string }) {
   const [volume, setVolume] = useState(0.8);
   const flashTimersRef = useRef<number[]>([]);
   const [flash, setFlash] = useState<null | "bar" | "beat" | "sub">(null);
+  const [currentBeat, setCurrentBeat] = useState(0); // 0-based beat index within the bar
   const prefersReducedMotion = usePrefersReducedMotion();
   const tileLift = prefersReducedMotion
     ? {}
@@ -623,6 +624,11 @@ export function MetronomeCard({ className }: { className?: string }) {
       const beatInBar = Math.floor(tickInBar / subdiv); // 0..beats-1
       const isBeat = tickInBar % subdiv === 0;
 
+      // update current beat for UI BEFORE scheduling audio (so visual matches audio)
+      if (isBeat) {
+        setCurrentBeat(beatInBar);
+      }
+
       let accent: "bar" | "beat" | "sub" = "sub";
       const groupedStrong = groupBeats.includes(beatInBar);
       if (isBeat && beatInBar === 0) accent = "bar"; // first beat strongest
@@ -665,6 +671,7 @@ export function MetronomeCard({ className }: { className?: string }) {
     masterGainRef.current = master;
     nextTickTimeRef.current = audio.currentTime + 0.05;
     tickIndexRef.current = 0;
+    setCurrentBeat(0);
     countInRemainingRef.current = countInBars;
     flashTimersRef.current.forEach((id) => window.clearTimeout(id));
     flashTimersRef.current = [];
@@ -680,6 +687,7 @@ export function MetronomeCard({ className }: { className?: string }) {
     flashTimersRef.current.forEach((id) => window.clearTimeout(id));
     flashTimersRef.current = [];
     setFlash(null);
+    setCurrentBeat(0);
     masterGainRef.current?.disconnect();
     masterGainRef.current = null;
     audioRef.current?.close();
@@ -703,20 +711,7 @@ export function MetronomeCard({ className }: { className?: string }) {
     });
   };
 
-  // Visuals: pendulum + bar dots
-  const pendulumAngle = useMemo(() => {
-    if (!running || !audioRef.current) return 0;
-    const t = audioRef.current.currentTime;
-    const bar = secondsPerBeat * beats;
-    const phase = ((t % bar) / bar) * Math.PI * 2; // 0..2π
-    return Math.sin(phase) * 30; // ±30°
-  }, [running, secondsPerBeat, beats]);
-
-  const currentBeat = useMemo(() => {
-    const ticksPerBar = beats * subdiv;
-    const tickInBar = tickIndexRef.current % (ticksPerBar || 1);
-    return Math.floor(tickInBar / subdiv); // 0..beats-1
-  }, [beats, subdiv, running]);
+  // Visuals: LED indicators + numeric counter
 
   useEffect(() => {
     if (masterGainRef.current) {
@@ -744,35 +739,70 @@ export function MetronomeCard({ className }: { className?: string }) {
           <motion.div
             {...tileLift}
             className={cn(
-              "rounded-3xl border bg-gradient-to-b from-slate-900 to-slate-950 p-6",
-              flash === "bar" && "ring-2 ring-blue-300",
-              flash === "beat" && "ring-2 ring-cyan-300/70",
-              flash === "sub" && "ring-2 ring-purple-300/60"
+              "rounded-2xl border bg-gradient-to-b from-slate-900 to-slate-950 p-6 relative",
+              flash === "bar" && "ring-2 ring-blue-300 shadow-[0_0_20px_rgba(147,197,253,0.4)]",
+              flash === "beat" && "ring-2 ring-cyan-300/70 shadow-[0_0_16px_rgba(103,232,249,0.3)]",
+              flash === "sub" && "ring-2 ring-purple-300/60 shadow-[0_0_12px_rgba(196,181,253,0.25)]"
             )}
           >
-            <div className="aspect-square w-full rounded-2xl border bg-slate-950 grid place-items-center">
-              <svg viewBox="0 0 100 100" className="w-3/4">
-                {/* arm */}
-                <g transform={`rotate(${pendulumAngle} 50 70)`}>
-                  <rect x="49" y="25" width="2" height="50" fill="#9cf" />
-                </g>
-                <circle cx="50" cy="70" r="3.5" fill="#9cf" />
-              </svg>
+            {/* Accessibility announcer */}
+            <div aria-live="polite" className="sr-only">
+              Beat {currentBeat + 1} of {beats}
+            </div>
+            
+            {/* LED Row */}
+            <div className="flex items-center justify-center mb-6">
+              {Array.from({ length: beats }).map((_, i) => {
+                const isActive = i === currentBeat;
+                const isFirstBeat = i === 0;
+                return (
+                  <div key={i} className="flex items-center justify-center w-8 sm:w-10">
+                    <motion.div
+                      className={cn(
+                        "h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full border transition-transform duration-100",
+                        isActive
+                          ? isFirstBeat
+                            ? "bg-blue-400 border-blue-300 scale-110 shadow-[0_0_0_4px_rgba(59,130,246,0.35)]" // stronger accent for beat 1
+                            : "bg-blue-300 border-blue-200 scale-110 shadow-[0_0_0_3px_rgba(147,197,253,0.25)]"
+                          : "bg-slate-800 border-slate-600"
+                      )}
+                      animate={isActive ? { scale: 1.1 } : { scale: 1 }}
+                      transition={{ duration: 0.1, ease: "easeOut" }}
+                    />
+                  </div>
+                );
+              })}
             </div>
 
-            {/* Bar counter */}
-            <div className="mt-4 flex items-center justify-center gap-2">
-              {Array.from({ length: beats }).map((_, i) => (
-                <div
-                  key={i}
-                  className={cn(
-                    "h-3 w-3 rounded-full border",
-                    i === currentBeat ? "bg-blue-300 border-blue-200" : "bg-slate-800 border-slate-600"
-                  )}
-                />
-              ))}
-            </div>
-            <div className="mt-2 text-center text-xs text-muted-foreground">Accents follow grouping: {grouping}. Count-in: {countInBars} bar(s).</div>
+            {/* Numeric Counter - hide when beats > 8 */}
+            {beats <= 8 && (
+              <div className="mt-2 flex justify-center text-sm sm:text-base font-medium">
+                {Array.from({ length: beats }).map((_, i) => {
+                  const isActive = i === currentBeat;
+                  const isFirstBeat = i === 0;
+                  return (
+                    <div key={i} className="flex items-center justify-center w-8 sm:w-10">
+                      <motion.span
+                        className={cn(
+                          "transition-all duration-100 text-center",
+                          isActive
+                            ? isFirstBeat
+                              ? "text-blue-400 font-extrabold scale-110" // stronger accent for beat 1
+                              : "text-blue-300 font-extrabold scale-110"
+                            : "text-slate-400"
+                        )}
+                        animate={isActive ? { scale: 1.1 } : { scale: 1 }}
+                        transition={{ duration: 0.1, ease: "easeOut" }}
+                      >
+                        {i + 1}
+                      </motion.span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="mt-4 text-center text-xs text-muted-foreground">Accents follow grouping: {grouping}. Count-in: {countInBars} bar(s).</div>
           </motion.div>
 
           {/* Controls */}
@@ -893,7 +923,6 @@ export function MetronomeCard({ className }: { className?: string }) {
             <div className="text-xs text-muted-foreground">Audio runs locally. For mobile reliability, keep the tab active and device unmuted.</div>
           </div>
         </div>
-        <div className="mt-4 text-xs text-muted-foreground">A4 ref affects note & cents math only (not detection). Detection runs locally; no audio leaves the device.</div>
       </CardContent>
     </Card>
   );

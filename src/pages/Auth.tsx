@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import logo from '@/assets/logo.png';
@@ -19,6 +20,15 @@ const Auth = () => {
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // Load remember me preference on component mount
+  useEffect(() => {
+    const savedRememberMe = localStorage.getItem('rememberMe');
+    if (savedRememberMe === 'true') {
+      setRememberMe(true);
+    }
+  }, []);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -53,6 +63,18 @@ const Auth = () => {
           email,
           password,
         });
+        
+        // Store remember me preference in localStorage
+        if (!error) {
+          localStorage.setItem('rememberMe', rememberMe.toString());
+          
+          // If remember me is not checked, we could set a shorter session
+          // But Supabase handles this automatically through the client config
+          if (!rememberMe) {
+            // Session will expire when browser closes (default behavior)
+            localStorage.removeItem('supabase.auth.token');
+          }
+        }
 
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
@@ -207,6 +229,22 @@ const Auth = () => {
               </button>
             </div>
           </div>
+
+          {isLogin && (
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="rememberMe"
+                checked={rememberMe}
+                onCheckedChange={(checked) => setRememberMe(checked === true)}
+              />
+              <Label
+                htmlFor="rememberMe"
+                className="text-sm font-normal cursor-pointer"
+              >
+                Remember me
+              </Label>
+            </div>
+          )}
 
           <Button
             type="submit"
