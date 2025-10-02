@@ -304,8 +304,8 @@ const Index = () => {
 
           {/* Empty state */}
           {!currentMap && !showVibePicker && !showLibrary && !showJourney && !showPrepTools && !isLoading && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground text-lg md:text-xl">
+            <div className="text-center pt-6 pb-12">
+              <p className="text-muted-foreground text-sm md:text-base">
                 Enter a song and I'll map its feelings.
               </p>
             </div>

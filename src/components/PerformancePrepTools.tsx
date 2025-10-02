@@ -543,22 +543,11 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
         exit={prefersReducedMotion ? undefined : fadeInUp.exit}
         className="fixed inset-0 bg-background/95 z-50 overflow-y-auto backdrop-blur-sm"
       >
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-12 md:py-8">
           <Card className="max-w-4xl mx-auto">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex-1"></div>
-                <div className="flex-1 flex justify-center">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={prepIcon}
-                      alt="Performance prep icon"
-                      className="w-10 h-10 transition-transform duration-200"
-                    />
-                    <h1 className="text-2xl font-bold whitespace-nowrap">Performance Prep Tools</h1>
-                  </div>
-                </div>
-                <div className="flex-1 flex justify-end">
+            <CardHeader className="pt-8 md:pt-6">
+              <div className="relative mb-4">
+                <div className="absolute top-0 right-0">
                   <AnimatedButton
                     variant="ghost"
                     size="icon"
@@ -568,6 +557,14 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                     <span aria-hidden>×</span>
                     <span className="sr-only">Close performance prep tools</span>
                   </AnimatedButton>
+                </div>
+                <div className="flex flex-col items-center gap-3">
+                  <img
+                    src={prepIcon}
+                    alt="Performance prep icon"
+                    className="w-12 h-12 transition-transform duration-200"
+                  />
+                  <h1 className="text-2xl font-bold whitespace-nowrap">Performance Prep Tools</h1>
                 </div>
               </div>
               {currentSong && (
@@ -635,15 +632,15 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
               </div>
             ) : (
               <div className="space-y-6">
-                <div className="flex items-center gap-4 pb-4 border-b">
+                <div className="text-center pb-4 border-b space-y-4">
                   <AnimatedButton
                     variant="ghost"
                     onClick={() => setCurrentTool('menu')}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 mx-auto"
                   >
                     ← Back to Tools
                   </AnimatedButton>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     {(() => {
                       const category = TOOL_CATEGORIES.find(c => c.id === currentTool);
                       if (category) {

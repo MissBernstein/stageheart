@@ -99,7 +99,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
               <select
                 value={selectedTheme}
                 onChange={(e) => setSelectedTheme(e.target.value)}
-                className="px-3 py-2 bg-input border border-input-border rounded-md text-card-foreground"
+                className="pl-3 pr-8 py-2 bg-input border border-input-border rounded-md text-card-foreground appearance-none"
               >
                 <option value="">All Themes</option>
                 {themes.map(theme => (
