@@ -77,7 +77,7 @@ export const PerformancePrepToolsNew = ({ currentSong, onClose, songs }: Perform
         initial={prefersReducedMotion ? false : fadeInUp.initial}
         animate={prefersReducedMotion ? undefined : fadeInUp.animate}
         exit={prefersReducedMotion ? undefined : fadeInUp.exit}
-        className="fixed inset-0 bg-background/95 z-50 overflow-y-auto backdrop-blur-sm"
+        className="fixed inset-0 bg-background z-50 overflow-y-auto min-h-screen w-full"
       >
         <div className="container mx-auto px-4 py-8">
           <Card className="max-w-4xl mx-auto">

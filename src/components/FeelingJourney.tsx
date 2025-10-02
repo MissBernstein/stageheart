@@ -113,7 +113,7 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
   };
 
   return (
-    <div className="fixed inset-0 bg-background z-50 overflow-y-auto">
+    <div className="fixed inset-0 bg-background z-50 overflow-y-auto min-h-screen w-full">
       <div className="container mx-auto px-4 py-8">
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
