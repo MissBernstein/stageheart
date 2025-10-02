@@ -565,9 +565,6 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                     className="w-24 h-24 transition-transform duration-200"
                   />
                   <h1 className="text-2xl font-bold whitespace-nowrap">Performance Prep Tools</h1>
-                  <p className="text-muted-foreground text-sm md:text-base text-center">
-                    Choose a tool to enhance your performance preparation
-                  </p>
                 </div>
               </div>
               {currentSong && (
@@ -578,12 +575,6 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
             </CardHeader>          <CardContent>
             {currentTool === 'menu' ? (
               <div className="space-y-6">
-                <div className="text-center mb-8">
-                  <p className="text-muted-foreground">
-                    Choose a tool to enhance your performance preparation
-                  </p>
-                </div>
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {TOOL_CATEGORIES.map((category) => {
                     const isComingSoon = category.id === 'backing';

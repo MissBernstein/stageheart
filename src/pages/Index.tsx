@@ -213,7 +213,36 @@ const Index = () => {
         {/* Main content */}
         <div className="relative z-10 container mx-auto px-4 py-4 md:py-8">
         <div className="space-y-8 md:space-y-12">
-          {/* Header */}
+          {/* Navigation */}
+          <div className="flex justify-between items-start mb-4 md:mb-6">
+            <div className="flex-1 flex justify-start items-start pt-2">
+              <AnimatedButton
+                variant="secondary"
+                className="relative h-10 w-10 md:h-12 md:w-12 flex items-center justify-center bg-card hover:bg-muted border border-card-border rounded-2xl shadow-card p-0"
+                onClick={() => navigate('/favorites')}
+              >
+                <Heart className="w-4 h-4 md:w-5 md:h-5 text-star" />
+                <span className="sr-only">Favorites</span>
+                {favorites.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-star text-white text-xs rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center text-[10px] md:text-xs">
+                    {favorites.length}
+                  </span>
+                )}
+              </AnimatedButton>
+            </div>
+            <div className="flex-1 flex justify-end items-start gap-2 md:gap-3 pt-2">
+              <LanguageToggle />
+              <AnimatedButton
+                size="sm"
+                onClick={handleLogout}
+                className="rounded-full border border-card-border/60 bg-card/70 px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-medium text-card-foreground hover:bg-card/80 justify-center"
+              >
+                Logout
+              </AnimatedButton>
+            </div>
+          </div>
+
+          {/* Header Section */}
           <div className="text-center mt-12 md:mt-16">
             <div className="flex flex-col items-center gap-4">
               <img
