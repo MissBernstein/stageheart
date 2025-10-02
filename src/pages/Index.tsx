@@ -211,12 +211,12 @@ const Index = () => {
         <div className="fixed inset-0 bg-background" />
         
         {/* Main content */}
-        <div className="relative z-10 container mx-auto px-4 py-6 md:py-12">
-        <div className="space-y-6 md:space-y-8">
+        <div className="relative z-10 container mx-auto px-4 py-4 md:py-8">
+        <div className="space-y-8 md:space-y-12">
           {/* Header */}
-          <div className="text-center mb-6 md:mb-12">
-            <div className="flex justify-between items-start mb-4 md:mb-6">
-              <div className="flex-1 flex justify-start">
+          <div className="text-center">
+            <div className="flex justify-between items-start mb-8 md:mb-12">
+              <div className="flex-1 flex justify-start items-start pt-2">
                 <AnimatedButton
                   variant="secondary"
                   className="relative h-10 w-10 md:h-12 md:w-12 flex items-center justify-center bg-card hover:bg-muted border border-card-border rounded-2xl shadow-card p-0"
@@ -231,26 +231,26 @@ const Index = () => {
                   )}
                 </AnimatedButton>
               </div>
-              <div className="flex-1 text-center">
+              <div className="flex-1 flex flex-col items-center">
                 <button
                   type="button"
                   onClick={handleBrandClick}
-                  className="flex flex-col items-center justify-center gap-2 md:gap-4 py-3 md:py-6 group"
+                  className="flex flex-col items-center justify-center gap-2 md:gap-3 py-2 md:py-4 group"
                 >
                   <img
                     src={logo}
                     alt="Stage Heart Logo"
-                    className="w-16 h-16 md:w-28 md:h-28 lg:w-36 lg:h-36 object-contain mx-auto transition-transform duration-200 group-hover:scale-105"
+                    className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain mx-auto transition-transform duration-200 group-hover:scale-105"
                   />
-                  <h1 className="text-2xl md:text-3xl lg:text-5xl font-bold text-foreground text-center">
+                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground text-center">
                     Stage Heart
                   </h1>
-                  <p className="text-sm md:text-base lg:text-lg text-foreground max-w-2xl mx-auto text-center">
+                  <p className="text-sm md:text-base text-foreground max-w-2xl mx-auto text-center">
                     {t('app.subtitle') || 'Discover the emotional journey of music'}
                   </p>
                 </button>
               </div>
-              <div className="flex-1 flex justify-end items-center gap-2 md:gap-3">
+              <div className="flex-1 flex justify-end items-start gap-2 md:gap-3 pt-2">
                 <LanguageToggle />
                 <AnimatedButton
                   size="sm"
@@ -264,28 +264,28 @@ const Index = () => {
             
             {/* Navigation buttons */}
             {!currentMap && !showVibePicker && !showLibrary && !showJourney && !showPrepTools && (
-              <div className="flex flex-wrap justify-center gap-2 md:gap-3 px-2">
+              <div className="flex flex-wrap justify-center gap-3 md:gap-4 px-4 mt-8">
                 <AnimatedButton
                   onClick={() => setShowLibrary(true)}
-                  className="px-4 py-1.5 md:px-6 md:py-2 bg-accent hover:bg-button-secondary-hover text-accent-foreground rounded-full transition-colors text-xs md:text-sm font-medium"
+                  className="px-4 py-2 md:px-6 md:py-2.5 bg-accent hover:bg-button-secondary-hover text-accent-foreground rounded-full transition-colors text-sm md:text-base font-medium"
                 >
                   {t('navigation.browseLibrary')} ({songs.length} songs)
                 </AnimatedButton>
                 <AnimatedButton
                   onClick={() => setShowJourney(true)}
-                  className="px-4 py-1.5 md:px-6 md:py-2 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-xs md:text-sm font-medium"
+                  className="px-4 py-2 md:px-6 md:py-2.5 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-sm md:text-base font-medium"
                 >
                   {t('navigation.feelingJourney')}
                 </AnimatedButton>
                 <AnimatedButton
                   onClick={() => setShowPrepTools(true)}
-                  className="px-4 py-1.5 md:px-6 md:py-2 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-xs md:text-sm font-medium"
+                  className="px-4 py-2 md:px-6 md:py-2.5 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-sm md:text-base font-medium"
                 >
                   Performance Prep
                 </AnimatedButton>
                 <AnimatedButton
                   onClick={handleRandomSong}
-                  className="px-4 py-1.5 md:px-6 md:py-2 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-xs md:text-sm font-medium"
+                  className="px-4 py-2 md:px-6 md:py-2.5 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-sm md:text-base font-medium"
                 >
                   {t('navigation.surpriseMe')}
                 </AnimatedButton>
@@ -304,8 +304,8 @@ const Index = () => {
 
           {/* Empty state */}
           {!currentMap && !showVibePicker && !showLibrary && !showJourney && !showPrepTools && !isLoading && (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground text-lg">
+            <div className="text-center py-12">
+              <p className="text-muted-foreground text-lg md:text-xl">
                 Enter a song and I'll map its feelings.
               </p>
             </div>
