@@ -729,7 +729,7 @@ export function MetronomeCard({ className }: { className?: string }) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
+        <div className="grid gap-8">
           {/* Visuals */}
           <div className="space-y-4">
             <div className="text-center text-lg font-medium text-muted-foreground">{tempoLabel}</div>
@@ -803,7 +803,7 @@ export function MetronomeCard({ className }: { className?: string }) {
           </motion.div>
           </div>
 
-          {/* Controls */}
+          {/* Controls (stacked below visuals) */}
           <div className="rounded-3xl border bg-card/95 p-6 space-y-8">
             <div className="space-y-3">
               <div className="text-sm text-muted-foreground">Tempo</div>

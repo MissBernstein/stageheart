@@ -22,6 +22,7 @@ import { MotionIfOkay } from '@/ui/MotionIfOkay';
 import { fadeInUp, motionDur, motionEase } from '@/ui/motion';
 import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   generateWarmupPlan,
   WARMUP_VIBE_OPTIONS,
@@ -55,7 +56,7 @@ type ToolCategory = 'menu' | 'warmup' | 'setlist' | 'pitch' | 'metronome' | 'bac
 interface ToolCategoryCard {
   id: ToolCategory;
   title: string;
-  description: string;
+  description: string; // i18n key
   icon: string;
   color: string;
 }
@@ -64,35 +65,35 @@ const TOOL_CATEGORIES: ToolCategoryCard[] = [
   {
     id: 'warmup',
     title: 'Warm Up',
-    description: 'AI-generated warm-up routines with vibe selection, voice types, and techniques',
+    description: 'prep.desc.warmup',
     icon: warmupIcon,
     color: 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-500/30'
   },
   {
     id: 'setlist',
     title: 'Setlist Builder',
-    description: 'Build cohesive setlists based on emotional arcs and song transitions',
+    description: 'prep.desc.setlist',
     icon: personalNotesIcon,
     color: 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-blue-500/30'
   },
   {
     id: 'pitch',
     title: 'Pitch Detector',
-    description: 'Real-time pitch detection and tuning assistance for vocal training',
+    description: 'prep.desc.pitch',
     icon: pitchDetectorIcon,
     color: 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-500/30'
   },
   {
     id: 'metronome',
     title: 'Metronome',
-    description: 'Visual and audio metronome with customizable tempo and beat patterns',
+    description: 'prep.desc.metronome',
     icon: metronomeIcon,
     color: 'bg-gradient-to-br from-purple-500/20 to-violet-500/20 border-purple-500/30'
   },
   {
     id: 'backing',
     title: 'Backing Tracks',
-    description: 'Practice with backing tracks and accompaniment (coming soon)',
+    description: 'prep.desc.backing',
     icon: backingTrackIcon,
     color: 'bg-gradient-to-br from-pink-500/20 to-rose-500/20 border-pink-500/30'
   }
@@ -156,6 +157,7 @@ interface PerformancePrepToolsProps {
 }
 
 export const PerformancePrepTools = ({ currentSong, onClose, songs }: PerformancePrepToolsProps) => {
+  const { t } = useTranslation();
   const [currentTool, setCurrentTool] = useState<ToolCategory>('menu');
   const [warmupData, setWarmupData] = useState<WarmupPlan | null>(null);
   const [setlistData, setSetlistData] = useState<SetlistResponse | null>(null);
@@ -572,12 +574,12 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                     alt="Performance prep icon"
                     className="w-24 h-24 transition-transform duration-200"
                   />
-                  <h1 className="text-2xl font-bold whitespace-nowrap">Performance Prep Tools</h1>
+                  <h1 className="text-2xl font-bold whitespace-nowrap">{t('prep.title')}</h1>
                 </div>
               </div>
               {currentSong && (
                 <p className="text-sm text-card-foreground/70 text-center">
-                  Preparing for "{currentSong.title}" by {currentSong.artist}
+                  {t('common.by', 'by') && t('prep.preparingFor', 'Preparing for')} "{currentSong.title}" {t('common.by')} {currentSong.artist}
                 </p>
               )}
             </CardHeader>
@@ -620,8 +622,8 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                                       </Badge>
                                     )}
                                   </h3>
-                                  <p className="text-sm text-muted-foreground">
-                                    {category.description}
+                                    <p className="text-sm text-muted-foreground">
+                                      {t(category.description)}
                                   </p>
                                 </div>
                               </div>

@@ -97,7 +97,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-card-foreground/40 w-4 h-4" />
                 <Input
-                  placeholder="Search songs, artists, themes, or feelings..."
+                  placeholder={t('library.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 bg-input border-input-border"
@@ -109,7 +109,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
                 onChange={(e) => setSelectedTheme(e.target.value)}
                 className="pl-3 pr-8 py-2 bg-input border border-input-border rounded-md text-card-foreground appearance-none"
               >
-                <option value="">All Themes</option>
+                <option value="">{t('library.allThemes')}</option>
                 {themes.map(theme => (
                   <option key={theme} value={theme}>{theme}</option>
                 ))}
@@ -124,7 +124,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
                   className="px-3"
                 >
                   <Grid className="w-4 h-4" />
-                  <span className="sr-only">Grid view</span>
+                  <span className="sr-only">{t('library.gridView', 'Grid view')}</span>
                 </AnimatedButton>
                 <AnimatedButton
                   variant={viewMode === 'list' ? 'secondary' : 'ghost'}
@@ -134,7 +134,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
                   className="px-3"
                 >
                   <List className="w-4 h-4" />
-                  <span className="sr-only">List view</span>
+                  <span className="sr-only">{t('library.listView', 'List view')}</span>
                 </AnimatedButton>
                 <AnimatedButton
                   variant="outline"
@@ -143,13 +143,13 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
                   className="ml-2"
                 >
                   <Shuffle className="w-4 h-4 mr-2" />
-                  Surprise Me
+                  {t('library.surpriseMe')}
                 </AnimatedButton>
               </div>
             </div>
             
             <p className="text-sm text-card-foreground/60">
-              {filteredSongs.length} of {songs.length} songs
+              {t('library.count', { count: filteredSongs.length, total: songs.length })}
             </p>
           </div>
           
@@ -219,7 +219,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
                           <div className="min-w-0 flex-1">
                             <div className="mb-1 flex items-center gap-2">
                               <h3 className="font-medium text-card-foreground">{song.title}</h3>
-                              <span className="text-sm text-card-foreground/70">by {song.artist}</span>
+                              <span className="text-sm text-card-foreground/70">{t('common.by', 'by')} {song.artist}</span>
                             </div>
                             <p className="mb-2 text-sm text-card-foreground/60">{song.summary}</p>
                             <div className="flex flex-wrap gap-1">
@@ -242,10 +242,9 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
             )}
             
             {filteredSongs.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-card-foreground/60">
-                  No songs found matching your search.
-                </p>
+              <div className="text-center py-12 space-y-2">
+                <p className="text-card-foreground/60">{t('library.noResults')}</p>
+                <p className="text-card-foreground/60">{t('library.tryDifferent')}</p>
               </div>
             )}
           </div>

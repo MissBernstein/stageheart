@@ -17,10 +17,13 @@
     "searchPlaceholder": "Lieder durchsuchen...",
     "filterByTheme": "Nach Thema filtern",
     "allThemes": "Alle Themen",
-    "viewToggle": "Ansicht wechseln",
+  "viewToggle": "Ansicht wechseln",
+  "gridView": "Rasteransicht",
+  "listView": "Listenansicht",
     "surpriseMe": "Überrasch mich",
     "noResults": "Keine Lieder gefunden",
     "tryDifferent": "Versuche einen anderen Suchbegriff oder ein anderes Thema.",
+    "count": "{{count}} von {{total}} Liedern",
     "close": "Schließen"
   },
   "navigation": {
@@ -82,6 +85,14 @@
   },
   "prep": {
     "title": "Aufführungs-Vorbereitung",
+    "preparingFor": "Vorbereitung für",
+    "desc": {
+      "warmup": "KI-generierte Aufwärm-Routinen mit Vibe-Auswahl, Stimmtypen und Techniken",
+      "setlist": "Stimmige Setlists basierend auf emotionalen Bögen und Song-Übergängen erstellen",
+      "pitch": "Echtzeit-Tonerkennung und Stimmhilfe für das Gesangstraining",
+      "metronome": "Visueller und akustischer Metronom mit anpassbarem Tempo und Taktunterteilungen",
+      "backing": "Mit Begleitspuren üben (bald verfügbar)"
+    },
     "warmupGenerator": "Aufwärm-Routine Generator",
     "setlistBuilder": "Setlist-Ersteller",
     "generateWarmup": "Aufwärm-Routine erstellen",
@@ -98,12 +109,22 @@
   },
   "favorites": {
     "title": "Gespeicherte Gefühls-Landkarten",
+    "categoryDeleted": "Kategorie gelöscht",
+    "editCategories": "Kategorien bearbeiten",
+    "removed": "Aus Favoriten entfernt",
+    "preset": "Voreinstellung",
+    "organize": "Kategorie organisieren",
+    "categoryActions": "Kategorie-Aktionen",
+    "rename": "Umbenennen",
+    "delete": "Löschen",
+    "uncategorized": "Ohne Kategorie",
     "empty": "Noch keine Favoriten",
     "emptyDesc": "Speichere einige Gefühls-Landkarten, um sie hier zu sehen!",
     "remove": "Aus Favoriten entfernen"
   },
   "common": {
     "loading": "Lädt...",
+    "by": "von",
     "error": "Etwas ist schiefgelaufen",
     "retry": "Nochmal versuchen"
   }

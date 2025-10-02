@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Music, MoreVertical, Pencil, Trash2, ArrowLeft } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AnimatedButton } from '@/ui/AnimatedButton';
@@ -17,6 +18,7 @@ import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
 import { MotionIfOkay } from '@/ui/MotionIfOkay';
 
 export default function Favorites() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { categories, deleteCategory, getSongsByCategory } = useCategories();
   const { favorites, removeFavorite } = useFavorites();
@@ -40,7 +42,7 @@ export default function Favorites() {
 
   const handleDeleteCategory = () => {
     deleteCategory(deleteDialog.categoryId);
-    success('Category deleted');
+  success(t('favorites.categoryDeleted', 'Category deleted'));
     setDeleteDialog({ open: false, categoryId: '', categoryName: '' });
   };
 
@@ -64,19 +66,19 @@ export default function Favorites() {
         onClick={() => setEditingSong(song)}
         className="opacity-0 group-hover:opacity-100 transition-opacity"
       >
-        Edit Categories
+        {t('favorites.editCategories', 'Edit Categories')}
       </AnimatedButton>
       <AnimatedButton
         variant="ghost"
         size="icon"
         onClick={() => {
           removeFavorite(song);
-          success('Removed from Favorites');
+          success(t('favorites.removed', 'Removed from Favorites'));
         }}
         className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
       >
         <Trash2 className="w-4 h-4" />
-        <span className="sr-only">Remove from favorites</span>
+        <span className="sr-only">{t('favorites.remove', 'Remove from favorites')}</span>
       </AnimatedButton>
     </div>
   );
@@ -120,16 +122,16 @@ export default function Favorites() {
             <span className="text-sm text-muted-foreground">({songs.length})</span>
           </div>
         ),
-        description: category.isPreset ? 'Preset' : undefined,
+  description: category.isPreset ? t('favorites.preset', 'Preset') : undefined,
         content: (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">Organise this category</p>
+              <p className="text-sm text-muted-foreground">{t('favorites.organize', 'Organize this category')}</p>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <AnimatedButton variant="ghost" size="icon" className="h-8 w-8">
                     <MoreVertical className="w-4 h-4" />
-                    <span className="sr-only">Category actions</span>
+                    <span className="sr-only">{t('favorites.categoryActions', 'Category actions')}</span>
                   </AnimatedButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -141,7 +143,7 @@ export default function Favorites() {
                     })}
                   >
                     <Pencil className="w-4 h-4 mr-2" />
-                    Rename
+                    {t('favorites.rename', 'Rename')}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => setDeleteDialog({
@@ -152,7 +154,7 @@ export default function Favorites() {
                     className="text-destructive"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
+                    {t('favorites.delete', 'Delete')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -169,7 +171,7 @@ export default function Favorites() {
       id: 'uncategorized',
       title: (
         <div className="flex items-center gap-3">
-          <span>Uncategorized</span>
+          <span>{t('favorites.uncategorized', 'Uncategorized')}</span>
           <span className="text-sm text-muted-foreground">({uncategorizedSongs.length})</span>
         </div>
       ),
@@ -189,7 +191,7 @@ export default function Favorites() {
           <div className="container mx-auto px-4 py-4 flex items-center gap-4">
             <AnimatedButton variant="ghost" size="icon" onClick={() => navigate('/')} className="h-10 w-10">
               <ArrowLeft className="w-5 h-5" />
-              <span className="sr-only">Back to home</span>
+              <span className="sr-only">{t('common.backToHome', 'Back to home')}</span>
             </AnimatedButton>
             <Link to="/" className="flex items-center gap-3">
               <img
@@ -197,7 +199,7 @@ export default function Favorites() {
                 alt="Heart icon"
                 className="w-8 h-8 object-contain"
               />
-              <h1 className="text-2xl font-bold">My Favorites</h1>
+              <h1 className="text-2xl font-bold">{t('favorites.title')}</h1>
             </Link>
           </div>
         </header>
@@ -206,10 +208,8 @@ export default function Favorites() {
         {favorites.length === 0 ? (
           <div className="text-center py-16">
             <Music className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <p className="text-lg text-muted-foreground">No favorites yet</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Start adding songs to your favorites from the library
-            </p>
+            <p className="text-lg text-muted-foreground">{t('favorites.empty')}</p>
+            <p className="text-sm text-muted-foreground mt-2">{t('favorites.emptyDesc')}</p>
           </div>
         ) : (
           <AnimatedAccordion items={categoryItems} type="multiple" className="space-y-3" />

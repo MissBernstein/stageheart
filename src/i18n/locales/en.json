@@ -17,10 +17,13 @@
     "searchPlaceholder": "Search songs...",
     "filterByTheme": "Filter by theme",
     "allThemes": "All themes",
-    "viewToggle": "Toggle view",
+  "viewToggle": "Toggle view",
+  "gridView": "Grid view",
+  "listView": "List view",
     "surpriseMe": "Surprise Me",
     "noResults": "No songs found",
     "tryDifferent": "Try a different search term or theme.",
+    "count": "{{count}} of {{total}} songs",
     "close": "Close"
   },
   "navigation": {
@@ -82,6 +85,14 @@
   },
   "prep": {
     "title": "Performance Prep Tools",
+    "preparingFor": "Preparing for",
+    "desc": {
+      "warmup": "AI-generated warm-up routines with vibe selection, voice types, and techniques",
+      "setlist": "Build cohesive setlists based on emotional arcs and song transitions",
+      "pitch": "Real-time pitch detection and tuning assistance for vocal training",
+      "metronome": "Visual and audio metronome with customizable tempo and beat patterns",
+      "backing": "Practice with backing tracks and accompaniment (coming soon)"
+    },
     "warmupGenerator": "Warm-up Routine Generator",
     "setlistBuilder": "Setlist Builder",
     "generateWarmup": "Generate Warm-up Routine",
@@ -98,12 +109,22 @@
   },
   "favorites": {
     "title": "Saved Feeling Maps",
+    "categoryDeleted": "Category deleted",
+    "editCategories": "Edit Categories",
+    "removed": "Removed from Favorites",
+    "preset": "Preset",
+    "organize": "Organize this category",
+    "categoryActions": "Category actions",
+    "rename": "Rename",
+    "delete": "Delete",
+    "uncategorized": "Uncategorized",
     "empty": "No favorites yet",
     "emptyDesc": "Save some feeling maps to see them here!",
     "remove": "Remove from favorites"
   },
   "common": {
     "loading": "Loading...",
+    "by": "by",
     "error": "Something went wrong",
     "retry": "Try again"
   }

@@ -119,7 +119,7 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
       <div className="bg-card rounded-3xl p-8 shadow-card border border-card-border">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex flex-col items-center justify-center gap-3 mb-6">
-            <img src={musicalNotesIcon} alt="Musical Notes Icon" className="w-14 h-14 object-contain mx-auto" />
+            <img src={musicalNotesIcon} alt={t('app.title')} className="w-14 h-14 object-contain mx-auto" />
             <h2 className="text-2xl font-semibold text-card-foreground text-center">
               {t('search.searchSong')}
             </h2>
