@@ -543,9 +543,9 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
         exit={prefersReducedMotion ? undefined : fadeInUp.exit}
         className="fixed inset-0 bg-background z-50 overflow-y-auto min-h-screen w-full"
       >
-        <div className="container mx-auto px-4 py-12 md:py-8">
+        <div className="container mx-auto px-4 py-8 md:py-6">
           <Card className="max-w-4xl mx-auto">
-            <CardHeader className="pt-8 md:pt-6">
+            <CardHeader className="pt-6 md:pt-4">
               <div className="relative mb-4">
                 <div className="absolute top-0 right-0">
                   <AnimatedButton
@@ -558,13 +558,16 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                     <span className="sr-only">Close performance prep tools</span>
                   </AnimatedButton>
                 </div>
-                <div className="flex flex-col items-center gap-3">
+                <div className="flex flex-col items-center gap-2">
                   <img
                     src={prepIcon}
                     alt="Performance prep icon"
-                    className="w-12 h-12 transition-transform duration-200"
+                    className="w-24 h-24 transition-transform duration-200"
                   />
                   <h1 className="text-2xl font-bold whitespace-nowrap">Performance Prep Tools</h1>
+                  <p className="text-muted-foreground text-sm md:text-base text-center">
+                    Choose a tool to enhance your performance preparation
+                  </p>
                 </div>
               </div>
               {currentSong && (

@@ -214,84 +214,51 @@ const Index = () => {
         <div className="relative z-10 container mx-auto px-4 py-4 md:py-8">
         <div className="space-y-8 md:space-y-12">
           {/* Header */}
-          <div className="text-center">
-            <div className="flex justify-between items-start mb-8 md:mb-12">
-              <div className="flex-1 flex justify-start items-start pt-2">
-                <AnimatedButton
-                  variant="secondary"
-                  className="relative h-10 w-10 md:h-12 md:w-12 flex items-center justify-center bg-card hover:bg-muted border border-card-border rounded-2xl shadow-card p-0"
-                  onClick={() => navigate('/favorites')}
-                >
-                  <Heart className="w-4 h-4 md:w-5 md:h-5 text-star" />
-                  <span className="sr-only">Favorites</span>
-                  {favorites.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-star text-white text-xs rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center text-[10px] md:text-xs">
-                      {favorites.length}
-                    </span>
-                  )}
-                </AnimatedButton>
-              </div>
-              <div className="flex-1 flex flex-col items-center">
-                <button
-                  type="button"
-                  onClick={handleBrandClick}
-                  className="flex flex-col items-center justify-center gap-2 md:gap-3 py-2 md:py-4 group"
-                >
-                  <img
-                    src={logo}
-                    alt="Stage Heart Logo"
-                    className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain mx-auto transition-transform duration-200 group-hover:scale-105"
-                  />
-                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground text-center">
-                    Stage Heart
-                  </h1>
-                  <p className="text-sm md:text-base text-foreground max-w-2xl mx-auto text-center">
-                    {t('app.subtitle') || 'Discover the emotional journey of music'}
-                  </p>
-                </button>
-              </div>
-              <div className="flex-1 flex justify-end items-start gap-2 md:gap-3 pt-2">
-                <LanguageToggle />
-                <AnimatedButton
-                  size="sm"
-                  onClick={handleLogout}
-                  className="rounded-full border border-card-border/60 bg-card/70 px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-medium text-card-foreground hover:bg-card/80 justify-center"
-                >
-                  Logout
-                </AnimatedButton>
-              </div>
+          <div className="text-center mt-12 md:mt-16">
+            <div className="flex flex-col items-center gap-4">
+              <img
+                src={logo}
+                alt="Stage Heart Logo"
+                className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain mx-auto transition-transform duration-200 group-hover:scale-105"
+              />
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground text-center whitespace-nowrap">
+                Stage Heart
+              </h1>
+              <p className="text-sm md:text-base text-foreground max-w-2xl mx-auto text-center">
+                {t('app.subtitle') || 'Discover the emotional journey of music'}
+              </p>
             </div>
-            
-            {/* Navigation buttons */}
-            {!currentMap && !showVibePicker && !showLibrary && !showJourney && !showPrepTools && (
-              <div className="flex flex-wrap justify-center gap-3 md:gap-4 px-4 mt-8">
-                <AnimatedButton
-                  onClick={() => setShowLibrary(true)}
-                  className="px-4 py-2 md:px-6 md:py-2.5 bg-accent hover:bg-button-secondary-hover text-accent-foreground rounded-full transition-colors text-sm md:text-base font-medium"
-                >
-                  {t('navigation.browseLibrary')} ({songs.length} songs)
-                </AnimatedButton>
-                <AnimatedButton
-                  onClick={() => setShowJourney(true)}
-                  className="px-4 py-2 md:px-6 md:py-2.5 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-sm md:text-base font-medium"
-                >
-                  {t('navigation.feelingJourney')}
-                </AnimatedButton>
-                <AnimatedButton
-                  onClick={() => setShowPrepTools(true)}
-                  className="px-4 py-2 md:px-6 md:py-2.5 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-sm md:text-base font-medium"
-                >
-                  Performance Prep
-                </AnimatedButton>
-                <AnimatedButton
-                  onClick={handleRandomSong}
-                  className="px-4 py-2 md:px-6 md:py-2.5 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-sm md:text-base font-medium"
-                >
-                  {t('navigation.surpriseMe')}
-                </AnimatedButton>
-              </div>
-            )}
           </div>
+          
+          {/* Navigation buttons */}
+          {!currentMap && !showVibePicker && !showLibrary && !showJourney && !showPrepTools && (
+            <div className="flex flex-wrap justify-center gap-3 md:gap-4 px-4 mt-8">
+              <AnimatedButton
+                onClick={() => setShowLibrary(true)}
+                className="px-4 py-2 md:px-6 md:py-2.5 bg-accent hover:bg-button-secondary-hover text-accent-foreground rounded-full transition-colors text-sm md:text-base font-medium"
+              >
+                {t('navigation.browseLibrary')} ({songs.length} songs)
+              </AnimatedButton>
+              <AnimatedButton
+                onClick={() => setShowJourney(true)}
+                className="px-4 py-2 md:px-6 md:py-2.5 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-sm md:text-base font-medium"
+              >
+                {t('navigation.feelingJourney')}
+              </AnimatedButton>
+              <AnimatedButton
+                onClick={() => setShowPrepTools(true)}
+                className="px-4 py-2 md:px-6 md:py-2.5 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-sm md:text-base font-medium"
+              >
+                Performance Prep
+              </AnimatedButton>
+              <AnimatedButton
+                onClick={handleRandomSong}
+                className="px-4 py-2 md:px-6 md:py-2.5 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-sm md:text-base font-medium"
+              >
+                {t('navigation.surpriseMe')}
+              </AnimatedButton>
+            </div>
+          )}
 
           {/* Search Form */}
           {!currentMap && !showVibePicker && !showLibrary && !showJourney && !showPrepTools && (
