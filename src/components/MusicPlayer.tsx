@@ -473,11 +473,11 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
   <CardHeader className="flex flex-col gap-4 pt-0">
         {/* Title removed per request; keep actions only */}
   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <Button className="w-full" variant="outline" onClick={() => document.getElementById("file-input")?.click()} title={t('prep.player.help.addFiles') as string}><Upload className="h-4 w-4 mr-2"/>Add Files</Button>
+    <Button className="w-full motion-safe:transition-transform motion-safe:hover:-translate-y-0.5" variant="outline" onClick={() => document.getElementById("file-input")?.click()} title={t('prep.player.help.addFiles') as string}><Upload className="h-4 w-4 mr-2"/>Add Files</Button>
           <input id="file-input" type="file" accept="audio/*" multiple className="hidden" onChange={(e)=>onFiles(e.target.files)} />
-          <Button className="w-full" variant="outline" onClick={addUrl} title={t('prep.player.help.addUrl') as string}><LinkIcon className="h-4 w-4 mr-2"/>Add URL</Button>
-          <Button className="w-full" variant="outline" onClick={exportJson}><Download className="h-4 w-4 mr-2"/>Export</Button>
-          <Button className="w-full" variant="outline" onClick={() => importJsonInputRef.current?.click()} title={t('prep.player.help.import') as string}><Upload className="h-4 w-4 mr-2"/>Import</Button>
+    <Button className="w-full motion-safe:transition-transform motion-safe:hover:-translate-y-0.5" variant="outline" onClick={addUrl} title={t('prep.player.help.addUrl') as string}><LinkIcon className="h-4 w-4 mr-2"/>Add URL</Button>
+    <Button className="w-full motion-safe:transition-transform motion-safe:hover:-translate-y-0.5" variant="outline" onClick={exportJson}><Download className="h-4 w-4 mr-2"/>Export</Button>
+    <Button className="w-full motion-safe:transition-transform motion-safe:hover:-translate-y-0.5" variant="outline" onClick={() => importJsonInputRef.current?.click()} title={t('prep.player.help.import') as string}><Upload className="h-4 w-4 mr-2"/>Import</Button>
           <input ref={importJsonInputRef} type="file" accept="application/json" className="hidden" onChange={(e)=>onImportJson(e.target.files)} />
         </div>
         <div className="text-xs text-muted-foreground sm:text-right">{t('prep.player.help.addUrl')}</div>
@@ -490,7 +490,7 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
         )}
         <div className="grid gap-5 sm:gap-6 md:grid-cols-2">
           {/* Visualizer + Transport */}
-          <div className="rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 p-4 sm:p-6">
+          <div className="rounded-2xl border bg-gradient-to-b from-slate-900 to-slate-950 p-4 sm:p-6 motion-safe:transition-transform motion-safe:hover:-translate-y-0.5 hover:shadow-lg">
             {/* Visualizer (collapsible on mobile) */}
             <button
               type="button"
@@ -501,7 +501,7 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
               <ChevronDown className={cn("h-4 w-4 transition-transform", showViz ? "rotate-180" : "")} />
             </button>
             {(isDesktop || showViz) && (
-              <div className="rounded-xl border bg-slate-950 h-24 sm:h-28 overflow-hidden">
+              <div className="mt-2 sm:mt-0 rounded-xl border bg-slate-950 h-24 sm:h-28 overflow-hidden">
                 <canvas ref={canvasRef} className="w-full h-full"/>
               </div>
             )}
@@ -510,13 +510,13 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
 
             {/* Transport */}
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <Button size="icon" variant="secondary" onClick={prevTrack} disabled={!tracks.length}><SkipBack className="h-4 w-4"/></Button>
-              <Button size="icon" className="h-9 w-9 sm:h-10 sm:w-10" onClick={()=>setPlaying(p=>!p)} disabled={!tracks.length}>
+              <Button size="icon" className="motion-safe:transition-transform motion-safe:hover:-translate-y-0.5" variant="secondary" onClick={prevTrack} disabled={!tracks.length}><SkipBack className="h-4 w-4"/></Button>
+              <Button size="icon" className="h-9 w-9 sm:h-10 sm:w-10 motion-safe:transition-transform motion-safe:hover:-translate-y-0.5" onClick={()=>setPlaying(p=>!p)} disabled={!tracks.length}>
                 {playing ? <Pause className="h-5 w-5"/> : <Play className="h-5 w-5"/>}
               </Button>
-              <Button size="icon" variant="secondary" onClick={nextTrack} disabled={!tracks.length}><SkipForward className="h-4 w-4"/></Button>
-              <Button size="icon" variant={shuf?"default":"secondary"} onClick={()=>setShuf(s=>!s)} title="Shuffle"><Shuffle className="h-4 w-4"/></Button>
-              <Button size="icon" variant={loopMode!=="off"?"default":"secondary"} onClick={()=>setLoopMode(m=>m==="off"?"all":m==="all"?"one":"off")} title="Loop (off/all/one)"><Repeat className="h-4 w-4"/></Button>
+              <Button size="icon" className="motion-safe:transition-transform motion-safe:hover:-translate-y-0.5" variant="secondary" onClick={nextTrack} disabled={!tracks.length}><SkipForward className="h-4 w-4"/></Button>
+              <Button size="icon" className="motion-safe:transition-transform motion-safe:hover:-translate-y-0.5" variant={shuf?"default":"secondary"} onClick={()=>setShuf(s=>!s)} title="Shuffle"><Shuffle className="h-4 w-4"/></Button>
+              <Button size="icon" className="motion-safe:transition-transform motion-safe:hover:-translate-y-0.5" variant={loopMode!=="off"?"default":"secondary"} onClick={()=>setLoopMode(m=>m==="off"?"all":m==="all"?"one":"off")} title="Loop (off/all/one)"><Repeat className="h-4 w-4"/></Button>
               <div className="w-full sm:w-auto sm:ml-auto mt-2 sm:mt-0 flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Crossfade</span>
                 <Slider value={[crossfade]} min={0} max={5} step={0.1} onValueChange={(v)=>setCrossfade(v[0])} className="w-full sm:w-32"/>
@@ -581,7 +581,7 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
           </div>
 
           {/* Playlist (drag-reorder + rename) */}
-          <div className="rounded-2xl border bg-card p-4 sm:p-6">
+          <div className="rounded-2xl border bg-card p-4 sm:p-6 motion-safe:transition-transform motion-safe:hover:-translate-y-0.5 hover:shadow-lg">
             <div className="text-sm text-muted-foreground">Playlist</div>
             <ul className="mt-2 divide-y divide-slate-800 rounded-xl border bg-slate-950">
               {tracks.length===0 && (
