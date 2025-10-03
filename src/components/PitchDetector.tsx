@@ -4,6 +4,7 @@ import { AnimatedButton } from "@/ui/AnimatedButton";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -985,22 +986,26 @@ export function MetronomeCard({ className }: { className?: string }) {
               </p>
             </div>
 
-            {/* Tempo markings info */}
-            <div className="rounded-xl border bg-slate-950 p-4 space-y-3">
-              <div className="text-xs text-muted-foreground uppercase tracking-wide">Tempo Markings</div>
-              <div className="grid gap-x-6 gap-y-2 text-sm text-slate-200 sm:grid-cols-2">
-                <span><strong>Grave</strong> ≈ 25–45 BPM · very slow, solemn</span>
-                <span><strong>Largo</strong> ≈ 40–60 BPM · broad</span>
-                <span><strong>Larghetto</strong> ≈ 60–66 BPM · rather broad</span>
-                <span><strong>Adagio</strong> ≈ 66–76 BPM · slow, at ease</span>
-                <span><strong>Andante</strong> ≈ 76–108 BPM · walking pace</span>
-                <span><strong>Moderato</strong> ≈ 98–120 BPM · moderate</span>
-                <span><strong>Allegro</strong> ≈ 120–156 BPM · fast, lively</span>
-                <span><strong>Vivace</strong> ≈ 156–176 BPM · very lively</span>
-                <span><strong>Presto</strong> ≈ 168–200 BPM · very fast</span>
-                <span><strong>Prestissimo</strong> ≳ 200 BPM · as fast as possible</span>
-              </div>
-            </div>
+            {/* Tempo markings info - Collapsible */}
+            <Collapsible className="rounded-xl border bg-slate-950 p-4">
+              <CollapsibleTrigger className="w-full text-left hover:opacity-80 transition-opacity">
+                <div className="text-xs text-muted-foreground uppercase tracking-wide">Tempo Markings ▼</div>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-3">
+                <div className="grid gap-x-6 gap-y-2 text-sm text-slate-200 sm:grid-cols-2">
+                  <span><strong>Grave</strong> ≈ 25–45 BPM · very slow, solemn</span>
+                  <span><strong>Largo</strong> ≈ 40–60 BPM · broad</span>
+                  <span><strong>Larghetto</strong> ≈ 60–66 BPM · rather broad</span>
+                  <span><strong>Adagio</strong> ≈ 66–76 BPM · slow, at ease</span>
+                  <span><strong>Andante</strong> ≈ 76–108 BPM · walking pace</span>
+                  <span><strong>Moderato</strong> ≈ 98–120 BPM · moderate</span>
+                  <span><strong>Allegro</strong> ≈ 120–156 BPM · fast, lively</span>
+                  <span><strong>Vivace</strong> ≈ 156–176 BPM · very lively</span>
+                  <span><strong>Presto</strong> ≈ 168–200 BPM · very fast</span>
+                  <span><strong>Prestissimo</strong> ≳ 200 BPM · as fast as possible</span>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
             <div className="text-xs text-muted-foreground">Audio runs locally. For mobile reliability, keep the tab active and device unmuted.</div>
           </div>
