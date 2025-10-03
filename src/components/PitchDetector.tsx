@@ -1,3 +1,4 @@
+"use client";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedButton } from "@/ui/AnimatedButton";
@@ -11,6 +12,12 @@ import { useTranslation } from "react-i18next";
 import { motionDur, motionEase } from "@/ui/motion";
 import { usePrefersReducedMotion } from "@/ui/usePrefersReducedMotion";
 
+// Constants for performance optimization
+const PITCH_UPDATE_THROTTLE = 16; // ~60fps
+const SMOOTHING_ALPHA = 0.25;
+const GATE_THRESHOLD = 0.015;
+const TEST_DURATION = 8000;
+
 // -------------------------------------------------------------
 // Stage Heart · Prep Tools
 // 1) Pitch Detector (with 8s Hold‑Note Test)
@@ -22,91 +29,137 @@ import { usePrefersReducedMotion } from "@/ui/usePrefersReducedMotion";
 const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"] as const;
 
 export type DetectorRangeKey = "voice" | "guitar" | "bass" | "violin" | "piano" | "wide";
+export type MetronomeSound = "blip" | "woodblock" | "hihat" | "clave";
+export type Subdivision = 1 | 2 | 3 | 4;
+export type FlashType = "bar" | "beat" | "sub";
 
-const DETECT_RANGES: Record<DetectorRangeKey, { min: number; max: number; label: string }> = {
-  voice: { min: 80, max: 1000, label: "Voice" }, // Alto–Tenor–Soprano fundamentals
+interface DetectRange {
+  readonly min: number;
+  readonly max: number;
+  readonly label: string;
+}
+
+const DETECT_RANGES: Record<DetectorRangeKey, DetectRange> = {
+  voice: { min: 80, max: 1000, label: "Voice" },
   guitar: { min: 80, max: 880, label: "Guitar" },
   bass: { min: 40, max: 400, label: "Bass" },
   violin: { min: 196, max: 3520, label: "Violin" },
   piano: { min: 27.5, max: 4186, label: "Piano" },
   wide: { min: 40, max: 4000, label: "Wide" },
-};
+} as const;
 
 export interface UsePitchOptions {
-  gate?: number; // minimum RMS to consider a signal (0..1)
-  range?: DetectorRangeKey;
-  a4?: number; // reference A4 (Hz)
-  fftSize?: 2048 | 4096;
+  readonly gate?: number;
+  readonly range?: DetectorRangeKey;
+  readonly a4?: number;
+  readonly fftSize?: 2048 | 4096;
 }
 
 export interface PitchState {
-  running: boolean;
-  noteName?: string; // e.g., "A4"
-  frequency?: number; // Hz
-  cents?: number; // detune vs nearest
-  level: number; // 0..1
+  readonly running: boolean;
+  readonly noteName?: string;
+  readonly frequency?: number;
+  readonly cents?: number;
+  readonly level: number;
 }
 
-type NumArray = ArrayLike<number> | ReadonlyArray<number> | Float32Array;
+interface NoteInfo {
+  readonly name: string;
+  readonly cents: number;
+  readonly ref: number;
+}
+
+interface TestData {
+  readonly centsSeries: readonly number[];
+  readonly avgCents?: number;
+  readonly mad?: number;
+  readonly avgFreq?: number;
+  readonly note?: string;
+}
+
+interface StabilityLabel {
+  readonly text: string;
+  readonly cls: string;
+}
+
+type NumArray = Float32Array | ArrayLike<number>;
+
+interface PitchDetectorAPI {
+  readonly start: () => Promise<void>;
+  readonly stop: () => void;
+  readonly setA4: (hz: number) => void;
+  readonly setRange: (key: DetectorRangeKey) => void;
+  readonly getSampleRate: () => number | undefined;
+}
 
 export function usePitchDetector(
   opts: UsePitchOptions = {}
-): [
-  PitchState,
-  {
-    start: () => Promise<void>;
-    stop: () => void;
-    setA4: (hz: number) => void;
-    setRange: (key: DetectorRangeKey) => void;
-    getSampleRate: () => number | undefined;
-  }
-] {
-  const gate = opts.gate ?? 0.015;
+): [PitchState, PitchDetectorAPI] {
+  const gate = opts.gate ?? GATE_THRESHOLD;
   const initialRange = opts.range ?? "voice";
   const initialA4 = opts.a4 ?? 440;
+  const fftSize = opts.fftSize ?? 2048;
 
+  // Refs for audio processing
   const audioRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const bufRef = useRef(new Float32Array(opts.fftSize ?? 2048));
+  const streamRef = useRef<MediaStream | null>(null);
+  const bufRef = useRef(new Float32Array(fftSize));
   const rafRef = useRef<number>(0);
   const prevFreqRef = useRef<number>(0);
   const a4Ref = useRef<number>(initialA4);
-  const rangeRef = useRef(DETECT_RANGES[initialRange]);
+  const rangeRef = useRef<DetectRange>(DETECT_RANGES[initialRange]);
+  const lastUpdateRef = useRef<number>(0);
+  const isMountedRef = useRef<boolean>(true);
 
   const [state, setState] = useState<PitchState>({ running: false, level: 0 });
 
-  const freqToNote = useCallback((f: number) => {
+  const freqToNote = useCallback((f: number): NoteInfo => {
     const n = Math.round(12 * Math.log2(f / a4Ref.current) + 69);
-    const name = NOTE_NAMES[((n % 12) + 12) % 12] + Math.floor(n / 12 - 1);
+    const noteIndex = ((n % 12) + 12) % 12;
+    const octave = Math.floor(n / 12 - 1);
+    const name = NOTE_NAMES[noteIndex] + octave;
     const ref = a4Ref.current * Math.pow(2, (n - 69) / 12);
     const cents = 1200 * Math.log2(f / ref);
     return { name, cents, ref };
   }, []);
 
-  const rms = (buf: NumArray) => {
-    let s = 0;
-    const L = buf.length;
-    for (let i = 0; i < L; i++) s += (buf as any)[i] * (buf as any)[i];
-    return Math.sqrt(s / L);
-  };
+  const rms = useCallback((buf: NumArray): number => {
+    let sum = 0;
+    const length = buf.length;
+    for (let i = 0; i < length; i++) {
+      const value = buf[i];
+      sum += value * value;
+    }
+    return Math.sqrt(sum / length);
+  }, []);
 
-  // Basic autocorrelation (ACF) with windowing + quadratic peak interp
-  const detectPitchACF = (input: NumArray, sampleRate: number) => {
+  // Optimized autocorrelation with proper typing
+  const detectPitchACF = useCallback((input: NumArray, sampleRate: number): number => {
     const SIZE = input.length;
     const buf = new Float32Array(SIZE);
-    for (let i = 0; i < SIZE; i++) buf[i] = (input as any)[i];
-    // Remove DC, apply Hann window
+    
+    // Copy and prepare buffer
+    for (let i = 0; i < SIZE; i++) {
+      buf[i] = input[i];
+    }
+    
+    // Remove DC bias and apply Hann window
     let mean = 0;
-    for (let i = 0; i < SIZE; i++) mean += buf[i];
+    for (let i = 0; i < SIZE; i++) {
+      mean += buf[i];
+    }
     mean /= SIZE;
-    for (let i = 0; i < SIZE; i++) buf[i] = (buf[i] - mean) * (0.5 - 0.5 * Math.cos((2 * Math.PI * i) / (SIZE - 1)));
+    for (let i = 0; i < SIZE; i++) {
+      buf[i] = (buf[i] - mean) * (0.5 - 0.5 * Math.cos((2 * Math.PI * i) / (SIZE - 1)));
+    }
 
     const { min, max } = rangeRef.current;
     const maxLag = Math.floor(sampleRate / Math.max(50, min));
     const minLag = Math.max(2, Math.floor(sampleRate / Math.min(1000, max)));
 
-    let bestOffset = -1,
-      bestCorr = 0;
+    let bestOffset = -1;
+    let bestCorr = 0;
     for (let lag = minLag; lag < maxLag; lag++) {
       let corr = 0;
       for (let i = 0; i < SIZE - lag; i++) corr += buf[i] * buf[i + lag];
@@ -134,82 +187,160 @@ export function usePitchDetector(
     const freq = sampleRate / period;
 
     return freq >= min && freq <= max ? freq : 0;
-  };
+  }, []);
 
-  const smooth = (prev: number, next: number) => {
+  const smooth = useCallback((prev: number, next: number): number => {
     if (!prev) return next;
-    const alpha = 0.25; // higher = more responsive, lower = smoother
-    return prev + alpha * (next - prev);
-  };
+    return prev + SMOOTHING_ALPHA * (next - prev);
+  }, []);
 
   const update = useCallback(() => {
+    if (!isMountedRef.current) return;
+    
     const analyser = analyserRef.current;
     const audio = audioRef.current;
     if (!analyser || !audio) return;
+
+    const now = Date.now();
+    if (now - lastUpdateRef.current < PITCH_UPDATE_THROTTLE) {
+      rafRef.current = requestAnimationFrame(update);
+      return;
+    }
+    lastUpdateRef.current = now;
 
     analyser.getFloatTimeDomainData(bufRef.current);
     const level = Math.min(1, rms(bufRef.current) * 6);
 
     if (level > gate) {
-      const tmp = new Float32Array(bufRef.current.length);
-      tmp.set(bufRef.current);
-      const f = detectPitchACF(tmp, audio.sampleRate);
-      if (f) {
-        prevFreqRef.current = smooth(prevFreqRef.current, f);
-        const { name, cents } = freqToNote(prevFreqRef.current);
-        setState((s) => ({ ...s, frequency: prevFreqRef.current, noteName: name, cents, level }));
+      const frequency = detectPitchACF(bufRef.current, audio.sampleRate);
+      if (frequency > 0) {
+        const smoothedFreq = smooth(prevFreqRef.current, frequency);
+        prevFreqRef.current = smoothedFreq;
+        const { name, cents } = freqToNote(smoothedFreq);
+        
+        if (isMountedRef.current) {
+          setState(prev => ({
+            ...prev,
+            frequency: smoothedFreq,
+            noteName: name,
+            cents,
+            level
+          }));
+        }
       } else {
-        setState((s) => ({ ...s, frequency: undefined, noteName: undefined, cents: undefined, level }));
+        if (isMountedRef.current) {
+          setState(prev => ({
+            ...prev,
+            frequency: undefined,
+            noteName: undefined,
+            cents: undefined,
+            level
+          }));
+        }
       }
     } else {
-      setState((s) => ({ ...s, frequency: undefined, noteName: undefined, cents: undefined, level }));
+      if (isMountedRef.current) {
+        setState(prev => ({
+          ...prev,
+          frequency: undefined,
+          noteName: undefined,
+          cents: undefined,
+          level
+        }));
+      }
     }
 
     rafRef.current = requestAnimationFrame(update);
-  }, [freqToNote, gate]);
+  }, [freqToNote, gate, rms, detectPitchACF]);
 
-  const start = useCallback(async () => {
+  const start = useCallback(async (): Promise<void> => {
     if (audioRef.current) return; // already started
+    
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+        audio: { 
+          echoCancellation: false, 
+          noiseSuppression: false, 
+          autoGainControl: false 
+        },
       });
-      const audio = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const audio = new AudioContextClass();
+      
+      // Resume context in case it's suspended
+      if (audio.state === 'suspended') {
+        await audio.resume();
+      }
+      
       const src = audio.createMediaStreamSource(stream);
       const analyser = audio.createAnalyser();
-      analyser.fftSize = bufRef.current.length;
+      analyser.fftSize = fftSize;
+      analyser.smoothingTimeConstant = 0;
+      
       src.connect(analyser);
+      
       audioRef.current = audio;
       analyserRef.current = analyser;
-      setState((s) => ({ ...s, running: true }));
-      rafRef.current = requestAnimationFrame(update);
-    } catch (e) {
-      console.error(e);
-      setState({ running: false, level: 0 });
+      streamRef.current = stream;
+      
+      if (isMountedRef.current) {
+        setState(prev => ({ ...prev, running: true }));
+        rafRef.current = requestAnimationFrame(update);
+      }
+    } catch (error) {
+      console.error('Microphone access failed:', error);
+      if (isMountedRef.current) {
+        setState({ running: false, level: 0 });
+      }
     }
-  }, [update]);
+  }, [update, fftSize]);
 
   const stop = useCallback(() => {
-    if (!audioRef.current) return;
-    cancelAnimationFrame(rafRef.current);
-    audioRef.current.close();
-    audioRef.current = null;
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
+    }
+    
+    // Stop media stream tracks
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    
+    // Close audio context
+    if (audioRef.current) {
+      audioRef.current.close().catch(console.warn);
+      audioRef.current = null;
+    }
+    
     analyserRef.current = null;
     prevFreqRef.current = 0;
-    setState({ running: false, level: 0 });
+    
+    if (isMountedRef.current) {
+      setState({ running: false, level: 0 });
+    }
   }, []);
 
-  const setA4 = (hz: number) => {
+  const setA4 = useCallback((hz: number) => {
     a4Ref.current = hz;
-  };
-  const setRange = (key: DetectorRangeKey) => {
+  }, []);
+  
+  const setRange = useCallback((key: DetectorRangeKey) => {
     rangeRef.current = DETECT_RANGES[key];
-  };
-  const getSampleRate = () => audioRef.current?.sampleRate;
+  }, []);
+  
+  const getSampleRate = useCallback(() => audioRef.current?.sampleRate, []);
 
-  useEffect(() => () => stop(), [stop]);
+  const api = useMemo<PitchDetectorAPI>(() => ({
+    start,
+    stop,
+    setA4,
+    setRange,
+    getSampleRate
+  }), [start, stop, setA4, setRange, getSampleRate]);
 
-  return [state, { start, stop, setA4, setRange, getSampleRate }];
+  return [state, api];
 }
 
 function detuneColor(cents?: number) {
@@ -256,64 +387,110 @@ function Sparkline({ points }: { points: number[] }) {
   );
 }
 
-export default function PitchDetectorCard({ className, defaultRange = "voice", defaultA4 = 440, showTips = true }: PitchDetectorProps) {
+export default function PitchDetectorCard({ 
+  className, 
+  defaultRange = "voice", 
+  defaultA4 = 440, 
+  showTips = true 
+}: PitchDetectorProps) {
   const [state, api] = usePitchDetector({ range: defaultRange, a4: defaultA4 });
   const { t } = useTranslation();
   const prefersReducedMotion = usePrefersReducedMotion();
+  
   const liftTile = prefersReducedMotion
     ? {}
-    : { whileHover: { y: -2, scale: 1.01 }, whileTap: { scale: 0.99 }, transition: { duration: motionDur.fast / 1000, ease: motionEase.standard } };
+    : { 
+        whileHover: { y: -2, scale: 1.01 }, 
+        whileTap: { scale: 0.99 }, 
+        transition: { duration: motionDur.fast / 1000, ease: motionEase.standard } 
+      };
+      
   const liftSubtle = prefersReducedMotion
     ? {}
-    : { whileHover: { y: -1, scale: 1.005 }, transition: { duration: motionDur.fast / 1000, ease: motionEase.standard } };
+    : { 
+        whileHover: { y: -1, scale: 1.005 }, 
+        transition: { duration: motionDur.fast / 1000, ease: motionEase.standard } 
+      };
+      
   const [range, setRangeKey] = useState<DetectorRangeKey>(defaultRange);
   const [a4, setA4Val] = useState<number>(defaultA4);
 
   // Hold‑Note Test (8s)
   const [testing, setTesting] = useState(false);
-  const [testData, setTestData] = useState<{ centsSeries: number[]; avgCents?: number; mad?: number; avgFreq?: number; note?: string } | null>(null);
+  const [testData, setTestData] = useState<TestData | null>(null);
   const testTimerRef = useRef<number | null>(null);
 
   // keep hook options updated
   useEffect(() => api.setRange(range), [range]);
   useEffect(() => api.setA4(a4), [a4]);
 
-  // capture cents over time during test
+  // Capture cents over time during test
   useEffect(() => {
-    if (!testing) return;
-    if (state.cents == null || state.frequency == null) return;
-    setTestData((d) => ({ ...(d || { centsSeries: [] }), centsSeries: [ ...(d?.centsSeries || []), state.cents ], avgFreq: state.frequency, note: state.noteName }));
+    if (!testing || state.cents == null || state.frequency == null) return;
+    
+    setTestData((prev) => ({
+      ...(prev || { centsSeries: [] }),
+      centsSeries: [...(prev?.centsSeries || []), state.cents],
+      avgFreq: state.frequency,
+      note: state.noteName
+    }));
   }, [state.cents, state.frequency, state.noteName, testing]);
+
+  // Cleanup test timer on unmount
+  useEffect(() => {
+    return () => {
+      if (testTimerRef.current) {
+        window.clearTimeout(testTimerRef.current);
+      }
+    };
+  }, []);
 
   const finalizeTest = useCallback(() => {
     setTesting(false);
-    setTestData((d) => {
-      if (!d || d.centsSeries.length === 0) return { centsSeries: [] };
-      const avg = d.centsSeries.reduce((a, b) => a + b, 0) / d.centsSeries.length;
-      const mad = d.centsSeries.reduce((a, b) => a + Math.abs(b - avg), 0) / d.centsSeries.length; // mean abs deviation (¢)
-      return { ...d, avgCents: avg, mad };
+    setTestData((prev) => {
+      if (!prev || prev.centsSeries.length === 0) {
+        return { centsSeries: [] };
+      }
+      
+      const series = prev.centsSeries;
+      const avg = series.reduce((a, b) => a + b, 0) / series.length;
+      const mad = series.reduce((a, b) => a + Math.abs(b - avg), 0) / series.length;
+      
+      return { ...prev, avgCents: avg, mad };
     });
   }, []);
 
   const startTest = useCallback(async () => {
-    if (!state.running) await api.start();
+    if (!state.running) {
+      await api.start();
+    }
+    
     setTestData({ centsSeries: [] });
     setTesting(true);
-    if (testTimerRef.current) window.clearTimeout(testTimerRef.current);
-    testTimerRef.current = window.setTimeout(finalizeTest, 8000);
+    
+    if (testTimerRef.current) {
+      window.clearTimeout(testTimerRef.current);
+    }
+    
+    testTimerRef.current = window.setTimeout(finalizeTest, TEST_DURATION);
   }, [api, finalizeTest, state.running]);
 
-  const resetTest = () => {
+  const resetTest = useCallback(() => {
     setTesting(false);
     setTestData(null);
-    if (testTimerRef.current) window.clearTimeout(testTimerRef.current);
-  };
+    
+    if (testTimerRef.current) {
+      window.clearTimeout(testTimerRef.current);
+      testTimerRef.current = null;
+    }
+  }, []);
 
   const angle = useMemo(() => needleAngle(state.cents), [state.cents]);
 
-  const stabilityLabel = useMemo(() => {
+  const stabilityLabel = useMemo((): StabilityLabel | null => {
     const mad = testData?.mad;
     if (mad == null) return null;
+    
     if (mad <= 5) return { text: "Rock steady (±5¢)", cls: "text-green-400" };
     if (mad <= 10) return { text: "Steady (±10¢)", cls: "text-emerald-400" };
     if (mad <= 20) return { text: "Okay (±20¢)", cls: "text-yellow-400" };

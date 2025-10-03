@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,21 +45,49 @@ type Track = {
   fileName?: string;
 };
 
-const LS_KEY = "stageheart.player.v3";
+type LoopMode = "off" | "one" | "all";
+type ActivePlayer = "A" | "B";
 
-function formatTime(secs?: number) {
+const LS_KEY = "stageheart.player.v3";
+const POSITION_UPDATE_THROTTLE = 100; // ms
+const STORAGE_DEBOUNCE = 250; // ms
+const ANALYZER_FPS = 30;
+
+// Utility functions
+function formatTime(secs?: number): string {
   if (secs == null || !Number.isFinite(secs)) return "0:00";
   const m = Math.floor(secs / 60);
   const s = Math.floor(secs % 60);
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+function createTrackFromFile(file: File): Track {
+  return {
+    id: crypto.randomUUID(),
+    title: file.name.replace(/\.[^/.]+$/, ""),
+    src: URL.createObjectURL(file),
+    fileName: file.name
+  };
+}
+
+function revokeTrackUrl(track: Track): void {
+  if (track.src.startsWith("blob:")) {
+    URL.revokeObjectURL(track.src);
+  }
+}
+
 export default function MusicPlayerCard({ className }: { className?: string }) {
   const { t } = useTranslation();
+  const fileInputId = useId();
+  const importInputId = useId();
+  
   // Elements (dual players for crossfade)
   const audioARef = useRef<HTMLAudioElement | null>(null);
   const audioBRef = useRef<HTMLAudioElement | null>(null);
-  const activeRef = useRef<"A" | "B">("A");
+  const activeRef = useRef<ActivePlayer>("A");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const importJsonInputRef = useRef<HTMLInputElement | null>(null);
+  const isMountedRef = useRef(true);
 
   // WebAudio graph
   const ctxRef = useRef<AudioContext | null>(null);
@@ -74,13 +102,16 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
   const rafRef = useRef<number>(0);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const nextTrackRef = useRef<() => boolean>(() => false);
+  const lastPositionUpdateRef = useRef(0);
+  const storageTimeoutRef = useRef<number | null>(null);
+  const canvasSizeRef = useRef({ width: 0, height: 0 });
 
   // Playlist & playback state
   const [tracks, setTracks] = useState<Track[]>([]);
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [shuf, setShuf] = useState(false);
-  const [loopMode, setLoopMode] = useState<"off" | "one" | "all">("off");
+  const [loopMode, setLoopMode] = useState<LoopMode>("off");
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.9);
@@ -133,109 +164,195 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
     } catch {}
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem(LS_KEY, JSON.stringify({ tracks, index }));
+  // Debounced localStorage save
+  const saveToStorage = useCallback(() => {
+    if (storageTimeoutRef.current) {
+      clearTimeout(storageTimeoutRef.current);
+    }
+    storageTimeoutRef.current = window.setTimeout(() => {
+      if (isMountedRef.current) {
+        try {
+          localStorage.setItem(LS_KEY, JSON.stringify({ tracks, index }));
+        } catch (error) {
+          console.warn('Failed to save playlist to localStorage:', error);
+        }
+      }
+    }, STORAGE_DEBOUNCE);
   }, [tracks, index]);
+
+  useEffect(() => {
+    saveToStorage();
+  }, [saveToStorage]);
 
   const current = tracks[index];
 
-  // Ensure AudioContext is running before play
-  const resumeAudio = useCallback(async () => {
-    try { await ctxRef.current?.resume?.(); } catch {}
-  }, []);
-
-  // Build WebAudio graph once
-  useEffect(() => {
-    // Ensure refs exist before building graph (defensive for certain mount orders)
-    if (!audioARef.current || !audioBRef.current) {
-      // try once on next tick
-      const id = window.setTimeout(() => {
-        if (!audioARef.current || !audioBRef.current) return;
-        // re-run effect body by forcing a small state update? not needed; below continues
-      }, 0);
-      return () => window.clearTimeout(id);
+  // Lazy audio context initialization
+  const ensureAudioGraph = useCallback(async (): Promise<boolean> => {
+    if (ctxRef.current && ctxRef.current.state !== 'closed') {
+      if (ctxRef.current.state === 'suspended') {
+        try {
+          await ctxRef.current.resume();
+        } catch (error) {
+          console.warn('Failed to resume AudioContext:', error);
+          return false;
+        }
+      }
+      return true;
     }
-    let created = false;
+
+    // Ensure audio elements exist
+    if (!audioARef.current || !audioBRef.current) {
+      console.warn('Audio elements not ready');
+      return false;
+    }
+
     try {
-      const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) {
+        console.warn('Web Audio API not supported');
+        return false;
+      }
+
       const ctx = new AudioCtx();
       ctxRef.current = ctx;
 
-    // Nodes
-    const master = ctx.createGain();
-    master.gain.value = muted ? 0 : volume;
-    master.connect(ctx.destination);
-    masterGainRef.current = master;
+      // Create nodes
+      const master = ctx.createGain();
+      master.gain.value = muted ? 0 : volume;
+      master.connect(ctx.destination);
+      masterGainRef.current = master;
 
-    const analyser = ctx.createAnalyser();
-    analyser.fftSize = 256;
-    analyserRef.current = analyser;
-    master.connect(analyser);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      analyserRef.current = analyser;
+      master.connect(analyser);
 
-    const low = ctx.createBiquadFilter();
-    low.type = "lowshelf"; low.frequency.value = 200; low.gain.value = lowShelf;
-    const high = ctx.createBiquadFilter();
-    high.type = "highshelf"; high.frequency.value = 4000; high.gain.value = highShelf;
-    lowShelfRef.current = low; highShelfRef.current = high;
+      const low = ctx.createBiquadFilter();
+      low.type = "lowshelf";
+      low.frequency.value = 200;
+      low.gain.value = lowShelf;
+      
+      const high = ctx.createBiquadFilter();
+      high.type = "highshelf";
+      high.frequency.value = 4000;
+      high.gain.value = highShelf;
+      
+      lowShelfRef.current = low;
+      highShelfRef.current = high;
+      low.connect(high).connect(master);
 
-    // connect: sources -> gains -> low -> high -> master -> analyser -> dest
-    low.connect(high).connect(master);
+      // Connect audio elements
+      const a = audioARef.current;
+      const b = audioBRef.current;
+      
+      a.crossOrigin = "anonymous";
+      b.crossOrigin = "anonymous";
+      
+      const ga = ctx.createGain();
+      ga.gain.value = 1;
+      gainARef.current = ga;
+      const sa = ctx.createMediaElementSource(a);
+      srcARef.current = sa;
+      sa.connect(ga).connect(low);
 
-    // connect A
-  const a = audioARef.current!; a.crossOrigin = "anonymous";
-    const ga = ctx.createGain(); ga.gain.value = 1; gainARef.current = ga;
-    const sa = ctx.createMediaElementSource(a); srcARef.current = sa;
-    sa.connect(ga).connect(low);
+      const gb = ctx.createGain();
+      gb.gain.value = 0;
+      gainBRef.current = gb;
+      const sb = ctx.createMediaElementSource(b);
+      srcBRef.current = sb;
+      sb.connect(gb).connect(low);
 
-  // connect B
-  const b = audioBRef.current!; b.crossOrigin = "anonymous";
-    const gb = ctx.createGain(); gb.gain.value = 0; gainBRef.current = gb;
-    const sb = ctx.createMediaElementSource(b); srcBRef.current = sb;
-    sb.connect(gb).connect(low);
+      // Start analyzer if canvas is ready
+      if (canvasRef.current) {
+        startAnalyzerLoop();
+      }
 
-    // Visualizer draw loop
+      return true;
+    } catch (error) {
+      console.error('Failed to initialize audio graph:', error);
+      return false;
+    }
+  }, [volume, muted, lowShelf, highShelf]);
+
+  // Optimized analyzer loop with ResizeObserver
+  const startAnalyzerLoop = useCallback(() => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+    }
+
     const draw = () => {
-      const cvs = canvasRef.current; const ana = analyserRef.current; if (!cvs || !ana) return;
-      const g = cvs.getContext("2d"); if (!g) return;
+      if (!isMountedRef.current) return;
+      
+      const cvs = canvasRef.current;
+      const ana = analyserRef.current;
+      if (!cvs || !ana) return;
+
+      const g = cvs.getContext("2d");
+      if (!g) return;
+
       const rect = cvs.getBoundingClientRect();
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
-      cvs.width = Math.floor(rect.width * dpr); cvs.height = Math.floor(rect.height * dpr);
-      if ((g as any).resetTransform) (g as any).resetTransform(); else g.setTransform(1,0,0,1,0,0);
-      g.scale(dpr, dpr);
-      const w = rect.width, h = rect.height;
+      const newWidth = Math.floor(rect.width);
+      const newHeight = Math.floor(rect.height);
+      
+      // Only resize canvas if dimensions changed
+      if (canvasSizeRef.current.width !== newWidth || canvasSizeRef.current.height !== newHeight) {
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        cvs.width = newWidth * dpr;
+        cvs.height = newHeight * dpr;
+        g.scale(dpr, dpr);
+        canvasSizeRef.current = { width: newWidth, height: newHeight };
+      }
+
       const data = new Uint8Array(ana.frequencyBinCount);
       ana.getByteFrequencyData(data);
-      g.clearRect(0,0,w,h);
-      const bars = 32; const step = Math.floor(data.length / bars);
-      for (let i=0;i<bars;i++){
-        const v = data[i*step] / 255; const bw = (w/bars) * 0.7; const x = (w/bars) * i + (w/bars-bw)/2; const bh = Math.max(2, v*h);
-        g.fillStyle = "#9cc9ff"; g.fillRect(x, h-bh, bw, bh);
+      
+      g.clearRect(0, 0, newWidth, newHeight);
+      
+      const bars = 32;
+      const step = Math.floor(data.length / bars);
+      const barWidth = (newWidth / bars) * 0.7;
+      
+      for (let i = 0; i < bars; i++) {
+        const value = data[i * step] / 255;
+        const x = (newWidth / bars) * i + (newWidth / bars - barWidth) / 2;
+        const barHeight = Math.max(2, value * newHeight);
+        g.fillStyle = "#9cc9ff";
+        g.fillRect(x, newHeight - barHeight, barWidth, barHeight);
       }
+
       rafRef.current = requestAnimationFrame(draw);
     };
-    rafRef.current = requestAnimationFrame(draw);
-    created = true;
 
-    return () => {
-      cancelAnimationFrame(rafRef.current);
-      try {
-        if (created) {
-          srcARef.current?.disconnect();
-          srcBRef.current?.disconnect();
-          low.disconnect();
-          high.disconnect();
-          master.disconnect();
-          analyser.disconnect();
-          ctx.close();
-        }
-      } catch {}
-      analyserRef.current = null; masterGainRef.current = null; srcARef.current = null; srcBRef.current = null; gainARef.current = null; gainBRef.current = null; lowShelfRef.current = null; highShelfRef.current = null; ctxRef.current = null;
-    };
-    } catch (e) {
-      console.error("MusicPlayer init failed", e);
-      return () => { /* no graph created */ };
-    }
+    rafRef.current = requestAnimationFrame(draw);
   }, []);
+
+  // Component cleanup
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+      if (storageTimeoutRef.current) {
+        clearTimeout(storageTimeoutRef.current);
+      }
+      // Cleanup audio graph
+      try {
+        srcARef.current?.disconnect();
+        srcBRef.current?.disconnect();
+        lowShelfRef.current?.disconnect();
+        highShelfRef.current?.disconnect();
+        masterGainRef.current?.disconnect();
+        analyserRef.current?.disconnect();
+        ctxRef.current?.close();
+      } catch (error) {
+        console.warn('Cleanup error:', error);
+      }
+      // Revoke blob URLs
+      tracks.forEach(revokeTrackUrl);
+    };
+  }, [tracks]);
 
   // Keep volume/mute/EQ in sync
   useEffect(() => { if (masterGainRef.current) masterGainRef.current.gain.value = muted ? 0 : volume; }, [volume, muted]);
@@ -245,10 +362,23 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
   // Attach element listeners (timeupdate, ended) for both players
   useEffect(() => {
     const onTime = () => {
-      const el = activeRef.current === "A" ? audioARef.current! : audioBRef.current!;
-      setPosition(el.currentTime || 0);
-      setDuration(el.duration || 0);
-      if (abOn && A != null && B != null && B > A && el.currentTime >= B - 0.01) {
+      if (!isMountedRef.current) return;
+      
+      const el = activeRef.current === "A" ? audioARef.current : audioBRef.current;
+      if (!el) return;
+      
+      const now = Date.now();
+      if (now - lastPositionUpdateRef.current < POSITION_UPDATE_THROTTLE) return;
+      
+      const currentTime = el.currentTime || 0;
+      const currentDuration = el.duration || 0;
+      
+      setPosition(currentTime);
+      setDuration(currentDuration);
+      lastPositionUpdateRef.current = now;
+      
+      // A/B loop check
+      if (abOn && A != null && B != null && B > A && currentTime >= B - 0.01) {
         el.currentTime = A;
       }
     };
@@ -291,15 +421,24 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
 
   // Play/Pause toggles active element
   useEffect(() => {
-    const el = activeRef.current === "A" ? audioARef.current! : audioBRef.current!;
+    const el = activeRef.current === "A" ? audioARef.current : audioBRef.current;
+    if (!el || !isMountedRef.current) return;
+    
     if (playing) {
-      resumeAudio().then(()=>{
-        el.play().catch(()=>setPlaying(false));
+      ensureAudioGraph().then((success) => {
+        if (success && isMountedRef.current && el) {
+          el.play().catch((error) => {
+            console.warn('Playback failed:', error);
+            if (isMountedRef.current) {
+              setPlaying(false);
+            }
+          });
+        }
       });
     } else {
       el.pause();
     }
-  }, [playing, resumeAudio]);
+  }, [playing, ensureAudioGraph]);
 
   // Helpers
   const playIndex = useCallback((i: number) => {
@@ -309,7 +448,9 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
       setIndex(i);
       const act = activeRef.current; const el = act === "A" ? audioARef.current! : audioBRef.current!;
       el.src = tracks[i].src; el.currentTime = 0; setPosition(0); setDuration(0);
-      resumeAudio().then(()=> setPlaying(true));
+      ensureAudioGraph().then((success) => {
+        if (success) setPlaying(true);
+      });
       return;
     }
     // Crossfade: load into inactive, ramp gains, then swap active
@@ -322,7 +463,11 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
     const toGain = act === "A" ? gainBRef.current! : gainARef.current!;
 
     toEl.src = tracks[i].src; toEl.currentTime = 0; toGain.gain.setValueAtTime(0, now);
-  resumeAudio().then(()=>{ toEl.play().catch(()=>{}); });
+  ensureAudioGraph().then((success) => {
+    if (success) {
+      toEl.play().catch(() => {});
+    }
+  });
     // ramp
     fromGain.gain.cancelScheduledValues(now); toGain.gain.cancelScheduledValues(now);
     fromGain.gain.setValueAtTime(fromGain.gain.value, now); fromGain.gain.linearRampToValueAtTime(0.0001, now + fade);
@@ -334,7 +479,7 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
       activeRef.current = act === "A" ? "B" : "A";
       setIndex(i); setPosition(0); setDuration(0);
     }, fade * 1000 + 50);
-  }, [tracks.length, crossfade, playing, tracks, resumeAudio]);
+  }, [tracks.length, crossfade, playing, tracks, ensureAudioGraph]);
 
   const nextTrack = useCallback((): boolean => {
     if (tracks.length === 0) return false;
@@ -367,18 +512,26 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [duration]);
 
-  // File handling
-  const onFiles = async (files: FileList | null) => {
-    if (!files || !files.length) return;
+  // File handling with proper types
+  const onFiles = useCallback((files: FileList | null) => {
+    if (!files?.length) return;
+    
     const added: Track[] = [];
-    for (const f of Array.from(files)){
-      if (!f.type.startsWith("audio/")) continue;
-      const url = URL.createObjectURL(f);
-      added.push({ id: crypto.randomUUID(), title: f.name.replace(/\.[^/.]+$/, ""), src: url, fileName: f.name });
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith("audio/")) continue;
+      added.push(createTrackFromFile(file));
     }
-    setTracks(t => [...t, ...added]);
-    if (tracks.length === 0 && added.length > 0) setIndex(0);
-  };
+    
+    if (added.length > 0) {
+      setTracks(prev => {
+        const next = [...prev, ...added];
+        if (prev.length === 0) {
+          setIndex(0);
+        }
+        return next;
+      });
+    }
+  }, []);
 
   const addUrl = () => {
     const u = prompt("Add audio URL (https://…)");
@@ -395,33 +548,66 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
     setErrorMsg(null);
   };
 
-  const removeAt = (i: number) => {
-    setTracks(t => {
-      const next = t.slice();
-      const [removed] = next.splice(i,1);
-      if (removed?.src.startsWith("blob:")) URL.revokeObjectURL(removed.src);
-      if (i < index) setIndex(idx=>Math.max(0, idx-1));
-      else if (i === index) setPlaying(false);
+  const removeAt = useCallback((i: number) => {
+    setTracks(prev => {
+      if (i < 0 || i >= prev.length) return prev;
+      
+      const next = [...prev];
+      const [removed] = next.splice(i, 1);
+      
+      // Clean up blob URL
+      if (removed) {
+        revokeTrackUrl(removed);
+      }
+      
+      // Update index and playing state
+      if (i < index) {
+        setIndex(idx => Math.max(0, idx - 1));
+      } else if (i === index) {
+        setPlaying(false);
+        if (next.length > 0) {
+          setIndex(idx => Math.min(idx, next.length - 1));
+        }
+      }
+      
       return next;
     });
-  };
+  }, [index]);
 
-  // Drag to reorder handlers
-  const onDragStart = (i: number) => (e: React.DragEvent) => { dragIndexRef.current = i; e.dataTransfer.effectAllowed = "move"; };
-  const onDragOver = (i: number) => (e: React.DragEvent) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; };
-  const onDrop = (i: number) => (e: React.DragEvent) => {
+  // Drag to reorder handlers with proper types
+  const onDragStart = useCallback((i: number) => (e: React.DragEvent<HTMLLIElement>) => {
+    dragIndexRef.current = i;
+    e.dataTransfer.effectAllowed = "move";
+  }, []);
+  
+  const onDragOver = useCallback((i: number) => (e: React.DragEvent<HTMLLIElement>) => {
     e.preventDefault();
-    const from = dragIndexRef.current; dragIndexRef.current = null;
+    e.dataTransfer.dropEffect = "move";
+  }, []);
+  
+  const onDrop = useCallback((i: number) => (e: React.DragEvent<HTMLLIElement>) => {
+    e.preventDefault();
+    const from = dragIndexRef.current;
+    dragIndexRef.current = null;
+    
     if (from == null || from === i) return;
+    
     setTracks(list => {
-      const copy = list.slice();
-      const [moved] = copy.splice(from,1);
-      copy.splice(i,0,moved);
+      const copy = [...list];
+      const [moved] = copy.splice(from, 1);
+      copy.splice(i, 0, moved);
       return copy;
     });
-    if (from < index && i >= index) setIndex(prev=>prev-1);
-    if (from > index && i <= index) setIndex(prev=>prev+1);
-  };
+    
+    // Update current index if needed
+    if (from < index && i >= index) {
+      setIndex(prev => prev - 1);
+    } else if (from > index && i <= index) {
+      setIndex(prev => prev + 1);
+    } else if (from === index) {
+      setIndex(i);
+    }
+  }, [index]);
 
   const setSeek = (t: number) => {
     const el = activeRef.current === "A" ? audioARef.current! : audioBRef.current!;
@@ -438,27 +624,47 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
     a.href = url; a.download = "stageheart-playlist.json"; a.click();
     URL.revokeObjectURL(url);
   };
-  const importJsonInputRef = useRef<HTMLInputElement | null>(null);
-  const onImportJson = async (files: FileList | null) => {
-    if (!files || !files[0]) return;
+  const onImportJson = useCallback(async (files: FileList | null) => {
+    if (!files?.[0]) return;
+    
     try {
       const text = await files[0].text();
-      const arr = JSON.parse(text) as Array<{ title: string; src: string; fileName?: string }>;
-      const sanitized: Track[] = [];
-      for (const it of arr) {
-        if (!it || typeof it.title !== "string" || typeof it.src !== "string") continue;
-        // skip blob: URLs (not valid across sessions)
-        if (it.src.startsWith("blob:")) continue;
-        sanitized.push({ id: crypto.randomUUID(), title: it.title, src: it.src, fileName: it.fileName });
+      const data = JSON.parse(text);
+      
+      if (!Array.isArray(data)) {
+        throw new Error('Invalid playlist format');
       }
-      if (sanitized.length) setTracks(t => [...t, ...sanitized]);
-      else alert("No usable tracks found. Only http(s) URLs can be imported.");
-    } catch (e) {
-      alert("Invalid JSON playlist.");
+      
+      const sanitized: Track[] = [];
+      for (const item of data) {
+        if (!item || typeof item.title !== "string" || typeof item.src !== "string") continue;
+        // Skip blob URLs (not valid across sessions)
+        if (item.src.startsWith("blob:")) continue;
+        
+        sanitized.push({
+          id: crypto.randomUUID(),
+          title: item.title,
+          src: item.src,
+          fileName: item.fileName
+        });
+      }
+      
+      if (sanitized.length) {
+        setTracks(prev => [...prev, ...sanitized]);
+      } else {
+        setErrorMsg("No usable tracks found. Only http(s) URLs can be imported.");
+        setTimeout(() => setErrorMsg(null), 5000);
+      }
+    } catch (error) {
+      console.error('Import error:', error);
+      setErrorMsg("Invalid JSON playlist format.");
+      setTimeout(() => setErrorMsg(null), 5000);
     } finally {
-      if (importJsonInputRef.current) importJsonInputRef.current.value = "";
+      if (importJsonInputRef.current) {
+        importJsonInputRef.current.value = "";
+      }
     }
-  };
+  }, []);
 
   // Rename
   const startRename = (t: Track) => { setRenaming(t.id); setRenameText(t.title); };
