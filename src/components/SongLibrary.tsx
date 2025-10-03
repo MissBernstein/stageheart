@@ -7,6 +7,49 @@ import { Input } from '@/components/ui/input';
 import { Song } from '@/types';
 import songsData from '@/data/songs.json';
 import { getCanonicalThemes } from '@/lib/themes';
+
+// Helper function to translate themes
+const getThemeTranslationKey = (theme: string): string => {
+  const themeMap: Record<string, string> = {
+    'Awe & contentment': 'themes.aweContentment',
+    'Bittersweet perspective': 'themes.bittersweetPerspective', 
+    'Freedom / breaking free': 'themes.freedomBreakingFree',
+    'Hopeful unity': 'themes.hopefulUnity',
+    'Identity & authenticity': 'themes.identityAuthenticity',
+    'Joyful praise & celebration': 'themes.joyfulPraiseCelebration',
+    'Nostalgia & homesickness': 'themes.nostalgiaHomesickness',
+    'Playful groove & connection': 'themes.playfulGrooveConnection',
+    'Resilience & strength': 'themes.resilienceStrength',
+    'Tender love & devoted care': 'themes.tenderLoveDevotedCare',
+    'Unconditional support & comfort': 'themes.unconditionalSupportComfort',
+    'Yearning & reflection': 'themes.yearningReflection'
+  };
+  return themeMap[theme] || theme;
+};
+
+// Helper function to translate feelings
+const getFeelingTranslationKey = (feeling: string): string => {
+  const feelingMap: Record<string, string> = {
+    'deep empathy': 'songContent.feelingCards.deepEmpathy',
+    'warm reassurance': 'songContent.feelingCards.warmReassurance',
+    'quiet strength': 'songContent.feelingCards.quietStrength',
+    'playful groove': 'songContent.feelingCards.playfulGroove',
+    'cheeky frustration': 'songContent.feelingCards.cheekyFrustration',
+    'joy': 'songContent.feelingCards.joy',
+    'celebration': 'songContent.feelingCards.celebration',
+    "i've learned": 'songContent.feelingCards.ivelearned',
+    'gentle awe': 'songContent.feelingCards.gentleAwe',
+    'quiet surrender': 'songContent.feelingCards.quietSurrender',
+    'playful sass': 'songContent.feelingCards.playfulSass',
+    'undercurrent': 'songContent.feelingCards.undercurrent',
+    'warm trust': 'songContent.feelingCards.warmTrust',
+    'rising hope': 'songContent.feelingCards.risingHope',
+    'tender longing': 'songContent.feelingCards.tenderLonging',
+    'vulnerable hope': 'songContent.feelingCards.vulnerableHope'
+  };
+  const key = feelingMap[feeling.toLowerCase()];
+  return key ? key : feeling;
+};
 import { AnimatedButton } from '@/ui/AnimatedButton';
 import { AnimatedListItem } from '@/ui/AnimatedListItem';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -111,7 +154,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
               >
                 <option value="">{t('library.allThemes')}</option>
                 {themes.map(theme => (
-                  <option key={theme} value={theme}>{theme}</option>
+                  <option key={theme} value={theme}>{t(getThemeTranslationKey(theme))}</option>
                 ))}
               </select>
               
@@ -187,7 +230,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
                             key={index}
                             className="rounded-full bg-emotion-bg px-2 py-1 text-xs text-emotion-foreground"
                           >
-                            {feeling}
+                            {t(getFeelingTranslationKey(feeling))}
                           </span>
                         ))}
                         {song.core_feelings.length > 2 && (
@@ -228,7 +271,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
                                   key={index}
                                   className="rounded-full bg-emotion-bg px-2 py-1 text-xs text-emotion-foreground"
                                 >
-                                  {feeling}
+                                  {t(getFeelingTranslationKey(feeling))}
                                 </span>
                               ))}
                             </div>

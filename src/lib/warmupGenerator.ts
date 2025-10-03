@@ -124,11 +124,16 @@ const VIBE_CONFIGS: Record<WarmupVibe, WarmupVibeConfig> = {
   },
 };
 
-export const WARMUP_VIBE_OPTIONS = Object.entries(VIBE_CONFIGS).map(([id, config]) => ({
-  id: id as WarmupVibe,
-  label: config.label,
-  subtitle: config.subtitle,
-}));
+export const WARMUP_VIBE_OPTIONS: Array<{
+  id: WarmupVibe;
+  labelKey: string;
+  subtitleKey: string;
+}> = [
+  { id: 'bright_playful', labelKey: 'prep.brightPlayful', subtitleKey: 'prep.lightSparkly' },
+  { id: 'warm_emotional', labelKey: 'prep.warmEmotional', subtitleKey: 'prep.tenderNostalgic' },
+  { id: 'strong_powerful', labelKey: 'prep.strongPowerful', subtitleKey: 'prep.boldAnthemic' },
+  { id: 'grounded_spiritual', labelKey: 'prep.groundedSpiritual', subtitleKey: 'prep.calmReverent' },
+];
 
 const TECHNIQUE_MODIFIERS: Record<Technique, { physical: string[]; vocal: string[]; emotional: string[]; }> = {
   belting: {

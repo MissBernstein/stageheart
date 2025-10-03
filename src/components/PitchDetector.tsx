@@ -1161,7 +1161,7 @@ export function MetronomeCard({ className }: { className?: string }) {
               </div>
 
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Use "+" to group beats inside the bar. Must sum to the selected beats. Example: 7 beats with "2+2+3" accents beat 1, 3, and 5.
+                {t('prep.metronome.groupingExplanation')}
               </p>
             </div>
 

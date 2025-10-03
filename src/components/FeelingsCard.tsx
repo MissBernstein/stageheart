@@ -1,6 +1,30 @@
 import { Heart, CheckCircle2, Pencil, Trash2, Plus } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+
+// Helper function to translate feelings
+const getFeelingTranslationKey = (feeling: string): string => {
+  const feelingMap: Record<string, string> = {
+    'deep empathy': 'songContent.feelingCards.deepEmpathy',
+    'warm reassurance': 'songContent.feelingCards.warmReassurance',
+    'quiet strength': 'songContent.feelingCards.quietStrength',
+    'playful groove': 'songContent.feelingCards.playfulGroove',
+    'cheeky frustration': 'songContent.feelingCards.cheekyFrustration',
+    'joy': 'songContent.feelingCards.joy',
+    'celebration': 'songContent.feelingCards.celebration',
+    "i've learned": 'songContent.feelingCards.ivelearned',
+    'gentle awe': 'songContent.feelingCards.gentleAwe',
+    'quiet surrender': 'songContent.feelingCards.quietSurrender',
+    'playful sass': 'songContent.feelingCards.playfulSass',
+    'undercurrent': 'songContent.feelingCards.undercurrent',
+    'warm trust': 'songContent.feelingCards.warmTrust',
+    'rising hope': 'songContent.feelingCards.risingHope',
+    'tender longing': 'songContent.feelingCards.tenderLonging',
+    'vulnerable hope': 'songContent.feelingCards.vulnerableHope'
+  };
+  const key = feelingMap[feeling.toLowerCase()];
+  return key ? key : feeling;
+};
 import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -323,7 +347,7 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
       toast({
         title: "Copy failed",
         description: "Please try selecting and copying the text manually.",
-        variant: "destructive",
+        variant: "default",
       });
     }
   };
@@ -435,7 +459,7 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                     className="inline-flex items-center gap-2 px-4 py-2 bg-emotion-bg text-emotion-text border border-emotion-border rounded-full text-sm font-medium shadow-emotion transition-all duration-200"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
-                    <span>{item.text}</span>
+                    <span>{item.isCustom ? item.text : t(getFeelingTranslationKey(item.text))}</span>
                     <button
                       type="button"
                       onClick={() => {

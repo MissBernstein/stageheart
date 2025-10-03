@@ -302,7 +302,7 @@ const Index = () => {
           {!currentMap && !showVibePicker && !showLibrary && !showJourney && !showPrepTools && !isLoading && (
             <div className="text-center pt-6 pb-12">
               <p className="text-muted-foreground text-sm md:text-base">
-                Enter a song and I'll map its feelings.
+                {t('common.enterSongTagline')}
               </p>
             </div>
           )}
@@ -359,7 +359,7 @@ const Index = () => {
                 onClick={handleReset}
                 className="text-muted-foreground hover:text-foreground transition-colors text-sm underline underline-offset-4"
               >
-                ← Search another song
+                {t('common.searchAnotherSong')}
               </button>
             </div>
           )}

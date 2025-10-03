@@ -100,16 +100,16 @@ const TOOL_CATEGORIES: ToolCategoryCard[] = [
   }
 ];
 
-const VOICE_OPTIONS: { id: NonNullVoiceType; label: string }[] = [
-  { id: 'soprano', label: 'Soprano' },
-  { id: 'alto', label: 'Alto' },
-  { id: 'tenor', label: 'Tenor' },
-  { id: 'bass', label: 'Bass' },
+const VOICE_OPTIONS: { id: NonNullVoiceType; labelKey: string }[] = [
+  { id: 'soprano', labelKey: 'prep.soprano' },
+  { id: 'alto', labelKey: 'prep.alto' },
+  { id: 'tenor', labelKey: 'prep.tenor' },
+  { id: 'bass', labelKey: 'prep.bass' },
 ];
 
-const TECHNIQUE_OPTIONS: { id: Technique; label: string }[] = [
-  { id: 'belting', label: 'Belting' },
-  { id: 'head_voice', label: 'Head Voice' },
+const TECHNIQUE_OPTIONS: { id: Technique; labelKey: string }[] = [
+  { id: 'belting', labelKey: 'prep.belting' },
+  { id: 'head_voice', labelKey: 'prep.headVoice' },
 ];
 
 interface WarmupRecord {
@@ -126,10 +126,10 @@ interface WarmupRecord {
   [key: string]: any;
 }
 
-const SETLIST_SOURCE_OPTIONS: { id: SetlistSource; label: string; description: string }[] = [
-  { id: 'library', label: 'App Library', description: 'Use songs already in Stage Heart.' },
-  { id: 'favorites', label: 'My Favorites', description: 'Only your saved favorites.' },
-  { id: 'open', label: 'Open', description: 'Include outside suggestions.' },
+const SETLIST_SOURCE_OPTIONS: { id: SetlistSource; labelKey: string; descriptionKey: string }[] = [
+  { id: 'library', labelKey: 'prep.setlistSources.appLibrary', descriptionKey: 'prep.setlistSources.appLibraryDesc' },
+  { id: 'favorites', labelKey: 'prep.setlistSources.myFavorites', descriptionKey: 'prep.setlistSources.myFavoritesDesc' },
+  { id: 'open', labelKey: 'prep.setlistSources.open', descriptionKey: 'prep.setlistSources.openDesc' },
 ];
 
 const getStoredWarmupLabels = (): Record<string, string> => {
@@ -238,7 +238,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
   }, [selectedVibe, voiceType, techniques]);
 
   const selectedVibeLabel = selectedVibe
-    ? WARMUP_VIBE_OPTIONS.find(option => option.id === selectedVibe)?.label ?? null
+    ? t(WARMUP_VIBE_OPTIONS.find(option => option.id === selectedVibe)?.labelKey ?? '') ?? null
     : null;
 
   const toggleTechnique = (technique: Technique) => {
@@ -428,7 +428,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
           song_artist: currentSong?.artist || null,
           vibe:
             selectedVibe
-              ? WARMUP_VIBE_OPTIONS.find(option => option.id === selectedVibe)?.label || null
+              ? t(WARMUP_VIBE_OPTIONS.find(option => option.id === selectedVibe)?.labelKey ?? '') || null
               : null,
           physical_warmups: warmupData.physicalWarmups || [],
           vocal_warmups: warmupData.vocalWarmups || [],
@@ -690,7 +690,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                       <section className="space-y-4">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                           <p className="text-card-foreground/60">
-                            Select a vibe category to generate a warm-up routine.
+                            {t('prep.selectVibe')}
                           </p>
                           {selectedVibeLabel && (
                             <Badge variant="secondary">{selectedVibeLabel}</Badge>
@@ -722,8 +722,8 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                                       : 'border-card-border/70 bg-card/60 hover:border-primary/50'
                                   }`}
                                 >
-                                  <h4 className="text-lg font-semibold mb-1">{option.label}</h4>
-                                  <p className="text-sm text-card-foreground/60">{option.subtitle}</p>
+                                  <h4 className="text-lg font-semibold mb-1">{t(option.labelKey)}</h4>
+                                  <p className="text-sm text-card-foreground/60">{t(option.subtitleKey)}</p>
                                 </motion.button>
                               );
                             })}
@@ -734,8 +734,8 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                       <section className="space-y-4">
                         <div className="space-y-3">
                           <div>
-                            <span className="text-sm font-medium text-card-foreground/80">Voice Type</span>
-                            <div role="radiogroup" aria-label="Voice type" className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <span className="text-sm font-medium text-card-foreground/80">{t('prep.voiceType')}</span>
+                            <div role="radiogroup" aria-label={t('prep.voiceType')} className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
                               {VOICE_OPTIONS.map((option, index) => {
                                 const isActive = voiceType === option.id;
                                 return (
@@ -754,7 +754,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                                     }}
                                     className="justify-center"
                                   >
-                                    {option.label}
+                                    {t(option.labelKey)}
                                   </ChipToggle>
                                 );
                               })}
@@ -765,7 +765,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                           </div>
 
                           <div>
-                            <span className="text-sm font-medium text-card-foreground/80">Technique Focus</span>
+                            <span className="text-sm font-medium text-card-foreground/80">{t('prep.techniqueFocus')}</span>
                             <div className="mt-2 flex flex-wrap gap-2">
                               {TECHNIQUE_OPTIONS.map((option) => {
                                 const isActive = techniques.includes(option.id);
@@ -777,7 +777,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                                     isActive={isActive}
                                     onClick={() => toggleTechnique(option.id)}
                                   >
-                                    {option.label}
+                                    {t(option.labelKey)}
                                   </ChipToggle>
                                 );
                               })}
@@ -1000,7 +1000,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                                           onClick={() => handleSetlistSourceChange(option.id)}
                                           className="flex-1 min-w-[140px] justify-center"
                                         >
-                                          {option.label}
+                                          {t(option.labelKey)}
                                         </ChipToggle>
                                       );
                                     })}
@@ -1008,7 +1008,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                                   <div className="mt-1 grid grid-cols-1 gap-1 text-xs text-card-foreground/70 sm:grid-cols-3">
                                     {SETLIST_SOURCE_OPTIONS.map(option => (
                                       <span key={option.id} className="leading-tight text-center">
-                                        {option.description}
+                                        {t(option.descriptionKey)}
                                       </span>
                                     ))}
                                   </div>

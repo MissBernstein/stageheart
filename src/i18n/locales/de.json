@@ -186,7 +186,8 @@
         "Vivace ≈ 156–176 BPM · sehr lebhaft",
         "Presto ≈ 168–200 BPM · sehr schnell",
         "Prestissimo ≳ 200 BPM · so schnell wie möglich"
-      ]
+      ],
+      "groupingExplanation": "Verwende \"+\" um Schläge im Takt zu gruppieren. Muss sich zur gewählten Schlagzahl addieren. Beispiel: 7 Schläge mit \"2+2+3\" betont Schlag 1, 3 und 5."
     },
     "desc": {
       "warmup": "KI-generierte Aufwärm-Routinen mit Vibe-Auswahl, Stimmtypen und Techniken",
@@ -207,7 +208,48 @@
     "setlistTitle": "Deine 5-Lieder Setlist",
     "overallArc": "Gesamter emotionaler Bogen",
     "transitionTips": "Übergangs-Tipps",
-    "tryAgain": "Nochmal versuchen"
+    "tryAgain": "Nochmal versuchen",
+    "warmupRoutineTitle": "Ihre Aufwärm-Routine",
+    "selectVibe": "Wählen Sie eine Stimmungs-Kategorie aus, um eine Aufwärm-Routine zu generieren.",
+    "voiceType": "Stimmtyp",
+    "techniqueFocus": "Technik-Fokus",
+    "belting": "Belting",
+    "headVoice": "Kopfstimme",
+    "soprano": "Sopran",
+    "alto": "Alt",
+    "tenor": "Tenor",
+    "bass": "Bass",
+    "brightPlayful": "Hell / Verspielt",
+    "lightSparkly": "leicht, funkelnd",
+    "warmEmotional": "Warm / Emotional", 
+    "tenderNostalgic": "zärtlich, nostalgisch",
+    "strongPowerful": "Stark / Kraftvoll",
+    "boldAnthemic": "kühn, hymnisch",
+    "groundedSpiritual": "Geerdet / Spirituell",
+    "calmReverent": "ruhig, ehrfürchtig",
+    "setlistSources": {
+      "appLibrary": "App-Bibliothek",
+      "appLibraryDesc": "Verwende bereits vorhandene Lieder in Stage Heart.",
+      "myFavorites": "Meine Favoriten",
+      "myFavoritesDesc": "Nur deine gespeicherten Favoriten.",
+      "open": "Offen",
+      "openDesc": "Externe Vorschläge einbeziehen."
+    }
+  },
+  "themes": {
+    "allThemes": "Alle Themen",
+    "aweContentment": "Ehrfurcht & Zufriedenheit",
+    "bittersweetPerspective": "Bittersüße Perspektive",
+    "freedomBreakingFree": "Freiheit / Ausbrechen",
+    "hopefulUnity": "Hoffnungsvolle Einheit",
+    "identityAuthenticity": "Identität & Authentizität",
+    "joyfulPraiseCelebration": "Fröhlicher Lobpreis & Feier",
+    "nostalgiaHomesickness": "Nostalgie & Heimweh",
+    "playfulGrooveConnection": "Verspielter Groove & Verbindung",
+    "resilienceStrength": "Widerstandskraft & Stärke",
+    "tenderLoveDevotedCare": "Zärtliche Liebe & hingebungsvolle Fürsorge",
+    "unconditionalSupportComfort": "Bedingungslose Unterstützung & Trost",
+    "yearningReflection": "Sehnsucht & Reflektion"
   },
   "favorites": {
     "title": "Gespeicherte Gefühls-Landkarten",
@@ -228,6 +270,8 @@
     "loading": "Lädt...",
     "by": "von",
     "error": "Etwas ist schiefgelaufen",
-    "retry": "Nochmal versuchen"
+    "retry": "Nochmal versuchen",
+    "enterSongTagline": "Gib einen Song ein und ich kartiere seine Gefühle.",
+    "searchAnotherSong": "← Nach einem anderen Lied suchen"
   }
 }

@@ -186,7 +186,8 @@
         "Vivace ≈ 156–176 BPM · very lively",
         "Presto ≈ 168–200 BPM · very fast",
         "Prestissimo ≳ 200 BPM · as fast as possible"
-      ]
+      ],
+      "groupingExplanation": "Use \"+\" to group beats inside the bar. Must sum to the selected beats. Example: 7 beats with \"2+2+3\" accents beat 1, 3, and 5."
     },
     "desc": {
       "warmup": "AI-generated warm-up routines with vibe selection, voice types, and techniques",
@@ -207,7 +208,75 @@
     "setlistTitle": "Your 5-Song Setlist",
     "overallArc": "Overall Emotional Arc",
     "transitionTips": "Transition Tips",
-    "tryAgain": "Try Again"
+    "tryAgain": "Try Again",
+    "warmupRoutineTitle": "Your Warm-up Routine",
+    "selectVibe": "Select a vibe category to generate a warm-up routine.",
+    "voiceType": "Voice Type",
+    "techniqueFocus": "Technique Focus",
+    "belting": "Belting",
+    "headVoice": "Head Voice",
+    "soprano": "Soprano",
+    "alto": "Alto",
+    "tenor": "Tenor",
+    "bass": "Bass",
+    "brightPlayful": "Bright / Playful",
+    "lightSparkly": "light, sparkly",
+    "warmEmotional": "Warm / Emotional",
+    "tenderNostalgic": "tender, nostalgic",
+    "strongPowerful": "Strong / Powerful",
+    "boldAnthemic": "bold, anthemic",
+    "groundedSpiritual": "Grounded / Spiritual",
+    "calmReverent": "calm, reverent",
+    "setlistSources": {
+      "appLibrary": "App Library",
+      "appLibraryDesc": "Use songs already in Stage Heart.",
+      "myFavorites": "My Favorites",
+      "myFavoritesDesc": "Only your saved favorites.",
+      "open": "Open",
+      "openDesc": "Include outside suggestions."
+    }
+  },
+  "themes": {
+    "allThemes": "All Themes",
+    "aweContentment": "Awe & contentment",
+    "bittersweetPerspective": "Bittersweet perspective",
+    "freedomBreakingFree": "Freedom / breaking free",
+    "hopefulUnity": "Hopeful unity",
+    "identityAuthenticity": "Identity & authenticity",
+    "joyfulPraiseCelebration": "Joyful praise & celebration",
+    "nostalgiaHomesickness": "Nostalgia & homesickness",
+    "playfulGrooveConnection": "Playful groove & connection",
+    "resilienceStrength": "Resilience & strength",
+    "tenderLoveDevotedCare": "Tender love & devoted care",
+    "unconditionalSupportComfort": "Unconditional support & comfort",
+    "yearningReflection": "Yearning & reflection"
+  },
+  "songContent": {
+    "coreFeelingsLabel": "Core Feelings",
+    "accessIdeasLabel": "Access Ideas", 
+    "visualCuesLabel": "Visual Cues",
+    "exampleText": {
+      "title": "Enter song title...",
+      "artist": "Enter artist name..."
+    },
+    "feelingCards": {
+      "deepEmpathy": "deep empathy",
+      "warmReassurance": "warm reassurance",
+      "quietStrength": "quiet strength",
+      "playfulGroove": "playful groove",
+      "cheekyFrustration": "cheeky frustration",
+      "joy": "joy",
+      "celebration": "celebration",
+      "ivelearned": "I've learned",
+      "gentleAwe": "gentle awe",
+      "quietSurrender": "quiet surrender",
+      "playfulSass": "playful sass",
+      "undercurrent": "undercurrent",
+      "warmTrust": "warm trust",
+      "risingHope": "rising hope",
+      "tenderLonging": "tender longing",
+      "vulnerableHope": "vulnerable hope"
+    }
   },
   "favorites": {
     "title": "Saved Feeling Maps",
@@ -228,6 +297,8 @@
     "loading": "Loading...",
     "by": "by",
     "error": "Something went wrong",
-    "retry": "Try again"
+    "retry": "Try again",
+    "enterSongTagline": "Enter a song and I'll map its feelings.",
+    "searchAnotherSong": "← Search another song"
   }
 }
