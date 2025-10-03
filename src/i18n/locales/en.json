@@ -137,6 +137,45 @@
       "finish": "Finish",
       "help": "Help / Tutorial"
     },
+    "metronome": {
+      "labels": {
+        "tempo": "Tempo",
+        "beatsPerBar": "Beats per Bar",
+        "subdivisions": "Subdivisions",
+        "swing8ths": "Swing (8ths)",
+        "sound": "Sound",
+        "countInBars": "Count-in Bars",
+        "accentGroupingBeats": "Accent Grouping (beats)",
+        "volume": "Volume",
+        "tempoMarkings": "Tempo Markings",
+        "audioNote": "Audio runs locally. For mobile reliability, keep the tab active and device unmuted.",
+        "footnote": "Accents follow grouping: {{grouping}}. Count-in: {{count}} bar(s)."
+      },
+      "subdivOptions": {
+        "quarter": "Quarter",
+        "eighths": "Eighths",
+        "triplets": "Triplets",
+        "sixteenths": "Sixteenths"
+      },
+      "soundOptions": {
+        "blip": "Blip",
+        "woodblock": "Wood",
+        "hihat": "Hi-Hat",
+        "clave": "Clave"
+      },
+      "tempoList": [
+        "Grave ≈ 25–45 BPM · very slow, solemn",
+        "Largo ≈ 40–60 BPM · broad",
+        "Larghetto ≈ 60–66 BPM · rather broad",
+        "Adagio ≈ 66–76 BPM · slow, at ease",
+        "Andante ≈ 76–108 BPM · walking pace",
+        "Moderato ≈ 98–120 BPM · moderate",
+        "Allegro ≈ 120–156 BPM · fast, lively",
+        "Vivace ≈ 156–176 BPM · very lively",
+        "Presto ≈ 168–200 BPM · very fast",
+        "Prestissimo ≳ 200 BPM · as fast as possible"
+      ]
+    },
     "desc": {
       "warmup": "AI-generated warm-up routines with vibe selection, voice types, and techniques",
       "setlist": "Build cohesive setlists based on emotional arcs and song transitions",

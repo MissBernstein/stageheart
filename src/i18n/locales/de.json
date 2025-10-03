@@ -137,6 +137,45 @@
       "finish": "Fertig",
       "help": "Hilfe / Tutorial"
     },
+    "metronome": {
+      "labels": {
+        "tempo": "Tempo",
+        "beatsPerBar": "Schläge pro Takt",
+        "subdivisions": "Unterteilungen",
+        "swing8ths": "Swing (Achtel)",
+        "sound": "Klang",
+        "countInBars": "Auftakt-Takte",
+        "accentGroupingBeats": "Akzent-Gruppierung (Schläge)",
+        "volume": "Lautstärke",
+        "tempoMarkings": "Tempo-Bezeichnungen",
+        "audioNote": "Audio läuft lokal. Für mobile Zuverlässigkeit: Tab aktiv halten und Gerät nicht stumm schalten.",
+        "footnote": "Akzente folgen der Gruppierung: {{grouping}}. Auftakt: {{count}} Takt(e)."
+      },
+      "subdivOptions": {
+        "quarter": "Viertel",
+        "eighths": "Achtel",
+        "triplets": "Triolen",
+        "sixteenths": "Sechzehntel"
+      },
+      "soundOptions": {
+        "blip": "Blip",
+        "woodblock": "Holz",
+        "hihat": "Hi-Hat",
+        "clave": "Clave"
+      },
+      "tempoList": [
+        "Grave ≈ 25–45 BPM · sehr langsam, feierlich",
+        "Largo ≈ 40–60 BPM · breit",
+        "Larghetto ≈ 60–66 BPM · eher breit",
+        "Adagio ≈ 66–76 BPM · langsam, gelassen",
+        "Andante ≈ 76–108 BPM · gehend",
+        "Moderato ≈ 98–120 BPM · mäßig",
+        "Allegro ≈ 120–156 BPM · schnell, lebhaft",
+        "Vivace ≈ 156–176 BPM · sehr lebhaft",
+        "Presto ≈ 168–200 BPM · sehr schnell",
+        "Prestissimo ≳ 200 BPM · so schnell wie möglich"
+      ]
+    },
     "desc": {
       "warmup": "KI-generierte Aufwärm-Routinen mit Vibe-Auswahl, Stimmtypen und Techniken",
       "setlist": "Stimmige Setlists basierend auf emotionalen Bögen und Song-Übergängen erstellen",

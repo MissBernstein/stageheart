@@ -844,7 +844,9 @@ export function MetronomeCard({ className }: { className?: string }) {
               </div>
             )}
 
-            <div className="mt-4 text-center text-xs text-muted-foreground">Accents follow grouping: {grouping}. Count-in: {countInBars} bar(s).</div>
+            <div className="mt-4 text-center text-xs text-muted-foreground">
+              {t('prep.metronome.labels.footnote', { grouping, count: countInBars })}
+            </div>
           </motion.div>
           </div>
 
@@ -853,7 +855,7 @@ export function MetronomeCard({ className }: { className?: string }) {
             <div className="space-y-3">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="text-sm text-muted-foreground cursor-help">Tempo</div>
+                  <div className="text-sm text-muted-foreground cursor-help">{t('prep.metronome.labels.tempo')}</div>
                 </TooltipTrigger>
                 <TooltipContent>{t('prep.tips.tempo')}</TooltipContent>
               </Tooltip>
@@ -871,13 +873,13 @@ export function MetronomeCard({ className }: { className?: string }) {
                 <div className="space-y-3">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="text-sm text-muted-foreground cursor-help">Beats per Bar</div>
+                      <div className="text-sm text-muted-foreground cursor-help">{t('prep.metronome.labels.beatsPerBar')}</div>
                     </TooltipTrigger>
                     <TooltipContent>{t('prep.tips.beats')}</TooltipContent>
                   </Tooltip>
                   <Tabs value={String(beats)} onValueChange={(v) => setBeats(parseInt(v))}>
                     <TabsList
-                      className="grid grid-cols-4 sm:grid-cols-8 gap-1 w-full rounded-xl bg-slate-900/60 p-1 [&>button]:h-8 [&>button]:px-2 [&>button]:text-xs"
+                      className="grid grid-cols-4 sm:grid-cols-8 gap-2 w-full rounded-xl bg-slate-900/60 p-1 [&>button]:h-9 [&>button]:px-2 [&>button]:text-xs sm:[&>button]:text-sm"
                     >
                       {[1,2,3,4,5,6,7,8].map(n => (
                         <TabsTrigger key={n} value={String(n)}>{n}</TabsTrigger>
@@ -888,16 +890,16 @@ export function MetronomeCard({ className }: { className?: string }) {
                 <div className="space-y-3">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="text-sm text-muted-foreground cursor-help">Subdivisions</div>
+                      <div className="text-sm text-muted-foreground cursor-help">{t('prep.metronome.labels.subdivisions')}</div>
                     </TooltipTrigger>
                     <TooltipContent>{t('prep.tips.subdiv')}</TooltipContent>
                   </Tooltip>
                   <Tabs value={String(subdiv)} onValueChange={(v) => setSubdiv(parseInt(v) as 1|2|3|4)}>
-                    <TabsList className="grid grid-cols-2 gap-1 [&>button]:px-2 [&>button]:text-sm">
-                      <TabsTrigger value="1">Quarter</TabsTrigger>
-                      <TabsTrigger value="2">Eighths</TabsTrigger>
-                      <TabsTrigger value="3">Triplets</TabsTrigger>
-                      <TabsTrigger value="4">Sixteenths</TabsTrigger>
+                    <TabsList className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full rounded-xl bg-slate-900/60 p-1 [&>button]:h-9 [&>button]:px-3 [&>button]:text-xs sm:[&>button]:text-sm">
+                      <TabsTrigger value="1">{t('prep.metronome.subdivOptions.quarter')}</TabsTrigger>
+                      <TabsTrigger value="2">{t('prep.metronome.subdivOptions.eighths')}</TabsTrigger>
+                      <TabsTrigger value="3">{t('prep.metronome.subdivOptions.triplets')}</TabsTrigger>
+                      <TabsTrigger value="4">{t('prep.metronome.subdivOptions.sixteenths')}</TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </div>
@@ -907,7 +909,7 @@ export function MetronomeCard({ className }: { className?: string }) {
                 <div className="space-y-3">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="text-sm text-muted-foreground cursor-help">Swing (8ths)</div>
+                      <div className="text-sm text-muted-foreground cursor-help">{t('prep.metronome.labels.swing8ths')}</div>
                     </TooltipTrigger>
                     <TooltipContent>{t('prep.tips.swing')}</TooltipContent>
                   </Tooltip>
@@ -922,28 +924,28 @@ export function MetronomeCard({ className }: { className?: string }) {
                 <div className="space-y-3">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="text-sm text-muted-foreground cursor-help">Sound</div>
+                      <div className="text-sm text-muted-foreground cursor-help">{t('prep.metronome.labels.sound')}</div>
                     </TooltipTrigger>
                     <TooltipContent>{t('prep.tips.sound')}</TooltipContent>
                   </Tooltip>
                   <Tabs value={sound} onValueChange={(v) => setSound(v as any)}>
-                    <TabsList className="grid grid-cols-2 gap-1 [&>button]:px-2 [&>button]:text-sm">
-                      <TabsTrigger value="blip">Blip</TabsTrigger>
-                      <TabsTrigger value="woodblock">Wood</TabsTrigger>
-                      <TabsTrigger value="hihat">Hi-Hat</TabsTrigger>
-                      <TabsTrigger value="clave">Clave</TabsTrigger>
+                    <TabsList className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full rounded-xl bg-slate-900/60 p-1 [&>button]:h-9 [&>button]:px-3 [&>button]:text-xs sm:[&>button]:text-sm">
+                      <TabsTrigger value="blip">{t('prep.metronome.soundOptions.blip')}</TabsTrigger>
+                      <TabsTrigger value="woodblock">{t('prep.metronome.soundOptions.woodblock')}</TabsTrigger>
+                      <TabsTrigger value="hihat">{t('prep.metronome.soundOptions.hihat')}</TabsTrigger>
+                      <TabsTrigger value="clave">{t('prep.metronome.soundOptions.clave')}</TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </div>
                 <div className="space-y-3">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="text-sm text-muted-foreground cursor-help">Count-in Bars</div>
+                      <div className="text-sm text-muted-foreground cursor-help">{t('prep.metronome.labels.countInBars')}</div>
                     </TooltipTrigger>
                     <TooltipContent>{t('prep.tips.countIn')}</TooltipContent>
                   </Tooltip>
                   <Tabs value={String(countInBars)} onValueChange={(v) => setCountInBars(parseInt(v))}>
-                    <TabsList className="grid grid-cols-4 gap-1">
+                    <TabsList className="grid grid-cols-4 gap-2 w-full rounded-xl bg-slate-900/60 p-1 [&>button]:h-9 [&>button]:px-2 [&>button]:text-xs sm:[&>button]:text-sm">
                       {[0,1,2,4].map(n => (
                         <TabsTrigger key={n} value={String(n)}>{n}</TabsTrigger>
                       ))}
@@ -956,7 +958,7 @@ export function MetronomeCard({ className }: { className?: string }) {
                 <div className="space-y-3">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="text-sm text-muted-foreground cursor-help">Accent Grouping (beats)</div>
+                      <div className="text-sm text-muted-foreground cursor-help">{t('prep.metronome.labels.accentGroupingBeats')}</div>
                     </TooltipTrigger>
                     <TooltipContent>{t('prep.tips.grouping')}</TooltipContent>
                   </Tooltip>
@@ -970,7 +972,7 @@ export function MetronomeCard({ className }: { className?: string }) {
                 <div className="space-y-3">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="text-sm text-muted-foreground cursor-help">Volume</div>
+                      <div className="text-sm text-muted-foreground cursor-help">{t('prep.metronome.labels.volume')}</div>
                     </TooltipTrigger>
                     <TooltipContent>{t('prep.tips.volume')}</TooltipContent>
                   </Tooltip>
@@ -989,25 +991,23 @@ export function MetronomeCard({ className }: { className?: string }) {
             {/* Tempo markings info - Collapsible */}
             <Collapsible className="rounded-xl border bg-slate-950 p-4">
               <CollapsibleTrigger className="w-full text-left hover:opacity-80 transition-opacity">
-                <div className="text-xs text-muted-foreground uppercase tracking-wide">Tempo Markings ▼</div>
+                <div className="text-xs text-muted-foreground uppercase tracking-wide">{t('prep.metronome.labels.tempoMarkings')} ▼</div>
               </CollapsibleTrigger>
               <CollapsibleContent className="pt-3">
-                <div className="grid gap-x-6 gap-y-2 text-sm text-slate-200 sm:grid-cols-2">
-                  <span><strong>Grave</strong> ≈ 25–45 BPM · very slow, solemn</span>
-                  <span><strong>Largo</strong> ≈ 40–60 BPM · broad</span>
-                  <span><strong>Larghetto</strong> ≈ 60–66 BPM · rather broad</span>
-                  <span><strong>Adagio</strong> ≈ 66–76 BPM · slow, at ease</span>
-                  <span><strong>Andante</strong> ≈ 76–108 BPM · walking pace</span>
-                  <span><strong>Moderato</strong> ≈ 98–120 BPM · moderate</span>
-                  <span><strong>Allegro</strong> ≈ 120–156 BPM · fast, lively</span>
-                  <span><strong>Vivace</strong> ≈ 156–176 BPM · very lively</span>
-                  <span><strong>Presto</strong> ≈ 168–200 BPM · very fast</span>
-                  <span><strong>Prestissimo</strong> ≳ 200 BPM · as fast as possible</span>
-                </div>
+                {(() => {
+                  const list = t('prep.metronome.tempoList', { returnObjects: true }) as unknown as string[];
+                  return (
+                    <div className="grid gap-x-6 gap-y-2 text-sm text-slate-200 sm:grid-cols-2">
+                      {Array.isArray(list) && list.map((line, idx) => (
+                        <span key={idx}>{line}</span>
+                      ))}
+                    </div>
+                  );
+                })()}
               </CollapsibleContent>
             </Collapsible>
 
-            <div className="text-xs text-muted-foreground">Audio runs locally. For mobile reliability, keep the tab active and device unmuted.</div>
+            <div className="text-xs text-muted-foreground">{t('prep.metronome.labels.audioNote')}</div>
           </div>
         </div>
         </TooltipProvider>
