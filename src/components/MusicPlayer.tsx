@@ -469,9 +469,9 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
   };
 
   return (
-    <Card className={cn("w-full max-w-3xl mx-auto", className)}>
-  <CardHeader className="flex flex-col gap-4">
-        <CardTitle className="text-lg flex items-center gap-2"><Music className="h-5 w-5"/>Music Player</CardTitle>
+    <Card className={cn("w-full max-w-3xl mx-auto border-0 shadow-none", className)}>
+  <CardHeader className="flex flex-col gap-4 pt-0">
+        {/* Title removed per request; keep actions only */}
   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <Button className="w-full" variant="outline" onClick={() => document.getElementById("file-input")?.click()} title={t('prep.player.help.addFiles') as string}><Upload className="h-4 w-4 mr-2"/>Add Files</Button>
           <input id="file-input" type="file" accept="audio/*" multiple className="hidden" onChange={(e)=>onFiles(e.target.files)} />
@@ -490,11 +490,11 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
         )}
         <div className="grid gap-5 sm:gap-6 md:grid-cols-2">
           {/* Visualizer + Transport */}
-          <div className="rounded-2xl border bg-gradient-to-b from-slate-900 to-slate-950 p-4 sm:p-6">
+          <div className="rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 p-4 sm:p-6">
             {/* Visualizer (collapsible on mobile) */}
             <button
               type="button"
-              className="sm:hidden w-full rounded-md border bg-slate-900/60 px-3 py-2 text-left text-xs text-slate-200 flex items-center justify-between"
+              className="sm:hidden w-full rounded-md bg-slate-900/60 px-3 py-2 text-left text-xs text-slate-200 flex items-center justify-between border border-slate-800"
               onClick={()=> setShowViz(v=>!v)}
             >
               <span>Visualizer</span>
@@ -505,7 +505,7 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
                 <canvas ref={canvasRef} className="w-full h-full"/>
               </div>
             )}
-            {/* Title */}
+            {/* Current title */}
             <div className="mt-3 text-base sm:text-base text-sm font-medium truncate">{current?.title ?? "No track selected"}</div>
 
             {/* Transport */}
@@ -515,10 +515,8 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
                 {playing ? <Pause className="h-5 w-5"/> : <Play className="h-5 w-5"/>}
               </Button>
               <Button size="icon" variant="secondary" onClick={nextTrack} disabled={!tracks.length}><SkipForward className="h-4 w-4"/></Button>
-              <div className="ml-2 flex items-center gap-2">
-                <Button size="icon" variant={shuf?"default":"secondary"} onClick={()=>setShuf(s=>!s)} title="Shuffle"><Shuffle className="h-4 w-4"/></Button>
-                <Button size="icon" variant={loopMode!=="off"?"default":"secondary"} onClick={()=>setLoopMode(m=>m==="off"?"all":m==="all"?"one":"off")} title="Loop (off/all/one)"><Repeat className="h-4 w-4"/></Button>
-              </div>
+              <Button size="icon" variant={shuf?"default":"secondary"} onClick={()=>setShuf(s=>!s)} title="Shuffle"><Shuffle className="h-4 w-4"/></Button>
+              <Button size="icon" variant={loopMode!=="off"?"default":"secondary"} onClick={()=>setLoopMode(m=>m==="off"?"all":m==="all"?"one":"off")} title="Loop (off/all/one)"><Repeat className="h-4 w-4"/></Button>
               <div className="w-full sm:w-auto sm:ml-auto mt-2 sm:mt-0 flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Crossfade</span>
                 <Slider value={[crossfade]} min={0} max={5} step={0.1} onValueChange={(v)=>setCrossfade(v[0])} className="w-full sm:w-32"/>

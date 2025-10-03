@@ -93,7 +93,7 @@ const TOOL_CATEGORIES: ToolCategoryCard[] = [
   },
   {
     id: 'backing',
-    title: 'Backing Tracks',
+    title: 'Music Player',
     description: 'prep.desc.backing',
     icon: backingTrackIcon,
     color: 'bg-gradient-to-br from-pink-500/20 to-rose-500/20 border-pink-500/30'

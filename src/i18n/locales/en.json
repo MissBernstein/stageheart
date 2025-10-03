@@ -193,7 +193,7 @@
       "setlist": "Build cohesive setlists based on emotional arcs and song transitions",
       "pitch": "Real-time pitch detection and tuning assistance for vocal training",
       "metronome": "Visual and audio metronome with customizable tempo and beat patterns",
-  "backing": "Play and manage backing tracks with playlist, crossfade, and A/B loop"
+  "backing": "Music Player for practice and performance: manage playlists, crossfade, A/B loop, and play backing tracks for improvisation"
     },
     "warmupGenerator": "Warm-up Routine Generator",
     "setlistBuilder": "Setlist Builder",
