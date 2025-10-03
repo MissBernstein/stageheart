@@ -879,7 +879,7 @@ export function MetronomeCard({ className }: { className?: string }) {
                   </Tooltip>
                   <Tabs value={String(beats)} onValueChange={(v) => setBeats(parseInt(v))}>
                     <TabsList
-                      className="mt-1 w-full flex flex-wrap gap-2 rounded-xl bg-slate-900/60 p-1 justify-start [&>button]:h-9 [&>button]:px-3 [&>button]:text-xs sm:[&>button]:text-sm [&>button]:flex-1 [&>button]:basis-[22%] sm:[&>button]:basis-auto"
+                      className="mt-1 w-full flex flex-wrap gap-x-2 gap-y-2 !h-auto rounded-xl bg-slate-900/60 p-1 justify-start [&>button]:h-9 [&>button]:px-3 [&>button]:text-xs sm:[&>button]:text-sm [&>button]:flex-1 [&>button]:basis-[22%] sm:[&>button]:basis-auto"
                     >
                       {[1,2,3,4,5,6,7,8].map(n => (
                         <TabsTrigger key={n} value={String(n)}>{n}</TabsTrigger>
@@ -895,7 +895,7 @@ export function MetronomeCard({ className }: { className?: string }) {
                     <TooltipContent>{t('prep.tips.subdiv')}</TooltipContent>
                   </Tooltip>
                   <Tabs value={String(subdiv)} onValueChange={(v) => setSubdiv(parseInt(v) as 1|2|3|4)}>
-                    <TabsList className="mt-1 w-full flex flex-wrap gap-2 rounded-xl bg-slate-900/60 p-1 justify-start [&>button]:h-9 [&>button]:px-3 [&>button]:text-xs sm:[&>button]:text-sm [&>button]:flex-1 [&>button]:basis-[48%] sm:[&>button]:basis-auto">
+                    <TabsList className="mt-1 w-full flex flex-wrap gap-x-2 gap-y-2 !h-auto rounded-xl bg-slate-900/60 p-1 justify-start [&>button]:h-9 [&>button]:px-3 [&>button]:text-xs sm:[&>button]:text-sm [&>button]:flex-1 [&>button]:basis-[48%] sm:[&>button]:basis-auto">
                       <TabsTrigger value="1">{t('prep.metronome.subdivOptions.quarter')}</TabsTrigger>
                       <TabsTrigger value="2">{t('prep.metronome.subdivOptions.eighths')}</TabsTrigger>
                       <TabsTrigger value="3">{t('prep.metronome.subdivOptions.triplets')}</TabsTrigger>
@@ -929,7 +929,7 @@ export function MetronomeCard({ className }: { className?: string }) {
                     <TooltipContent>{t('prep.tips.sound')}</TooltipContent>
                   </Tooltip>
                   <Tabs value={sound} onValueChange={(v) => setSound(v as any)}>
-                    <TabsList className="mt-1 w-full flex flex-wrap gap-2 rounded-xl bg-slate-900/60 p-1 justify-start [&>button]:h-9 [&>button]:px-3 [&>button]:text-xs sm:[&>button]:text-sm [&>button]:flex-1 [&>button]:basis-[48%] sm:[&>button]:basis-auto">
+                    <TabsList className="mt-1 w-full flex flex-wrap gap-x-2 gap-y-2 !h-auto rounded-xl bg-slate-900/60 p-1 justify-start [&>button]:h-9 [&>button]:px-3 [&>button]:text-xs sm:[&>button]:text-sm [&>button]:flex-1 [&>button]:basis-[48%] sm:[&>button]:basis-auto">
                       <TabsTrigger value="blip">{t('prep.metronome.soundOptions.blip')}</TabsTrigger>
                       <TabsTrigger value="woodblock">{t('prep.metronome.soundOptions.woodblock')}</TabsTrigger>
                       <TabsTrigger value="hihat">{t('prep.metronome.soundOptions.hihat')}</TabsTrigger>
@@ -945,7 +945,7 @@ export function MetronomeCard({ className }: { className?: string }) {
                     <TooltipContent>{t('prep.tips.countIn')}</TooltipContent>
                   </Tooltip>
                   <Tabs value={String(countInBars)} onValueChange={(v) => setCountInBars(parseInt(v))}>
-                    <TabsList className="mt-1 w-full flex flex-wrap gap-2 rounded-xl bg-slate-900/60 p-1 justify-start [&>button]:h-9 [&>button]:px-3 [&>button]:text-xs sm:[&>button]:text-sm [&>button]:flex-1 [&>button]:basis-[22%] sm:[&>button]:basis-auto">
+                    <TabsList className="mt-1 w-full flex flex-wrap gap-x-2 gap-y-2 !h-auto rounded-xl bg-slate-900/60 p-1 justify-start [&>button]:h-9 [&>button]:px-3 [&>button]:text-xs sm:[&>button]:text-sm [&>button]:flex-1 [&>button]:basis-[22%] sm:[&>button]:basis-auto">
                       {[0,1,2,4].map(n => (
                         <TabsTrigger key={n} value={String(n)}>{n}</TabsTrigger>
                       ))}
