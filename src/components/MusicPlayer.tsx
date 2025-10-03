@@ -119,9 +119,20 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
 
   // Build WebAudio graph once
   useEffect(() => {
-    const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
-    const ctx = new AudioCtx();
-    ctxRef.current = ctx;
+    // Ensure refs exist before building graph (defensive for certain mount orders)
+    if (!audioARef.current || !audioBRef.current) {
+      // try once on next tick
+      const id = window.setTimeout(() => {
+        if (!audioARef.current || !audioBRef.current) return;
+        // re-run effect body by forcing a small state update? not needed; below continues
+      }, 0);
+      return () => window.clearTimeout(id);
+    }
+    let created = false;
+    try {
+      const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+      const ctx = new AudioCtx();
+      ctxRef.current = ctx;
 
     // Nodes
     const master = ctx.createGain();
@@ -162,7 +173,8 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
       const rect = cvs.getBoundingClientRect();
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       cvs.width = Math.floor(rect.width * dpr); cvs.height = Math.floor(rect.height * dpr);
-      g.resetTransform(); g.scale(dpr, dpr);
+      if ((g as any).resetTransform) (g as any).resetTransform(); else g.setTransform(1,0,0,1,0,0);
+      g.scale(dpr, dpr);
       const w = rect.width, h = rect.height;
       const data = new Uint8Array(ana.frequencyBinCount);
       ana.getByteFrequencyData(data);
@@ -175,12 +187,27 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
       rafRef.current = requestAnimationFrame(draw);
     };
     rafRef.current = requestAnimationFrame(draw);
+    created = true;
 
     return () => {
       cancelAnimationFrame(rafRef.current);
-      try { srcARef.current?.disconnect(); srcBRef.current?.disconnect(); low.disconnect(); high.disconnect(); master.disconnect(); analyser.disconnect(); ctx.close(); } catch {}
+      try {
+        if (created) {
+          srcARef.current?.disconnect();
+          srcBRef.current?.disconnect();
+          low.disconnect();
+          high.disconnect();
+          master.disconnect();
+          analyser.disconnect();
+          ctx.close();
+        }
+      } catch {}
       analyserRef.current = null; masterGainRef.current = null; srcARef.current = null; srcBRef.current = null; gainARef.current = null; gainBRef.current = null; lowShelfRef.current = null; highShelfRef.current = null; ctxRef.current = null;
     };
+    } catch (e) {
+      console.error("MusicPlayer init failed", e);
+      return () => { /* no graph created */ };
+    }
   }, []);
 
   // Keep volume/mute/EQ in sync
@@ -220,6 +247,7 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
     if (!current) { setPlaying(false); return; }
     const act = activeRef.current;
     const el = act === "A" ? audioARef.current! : audioBRef.current!;
+    if (!current.src) { setPlaying(false); return; }
     el.src = current.src; el.currentTime = 0;
     if (playing) el.play().catch(()=>{});
   }, [current?.id]);

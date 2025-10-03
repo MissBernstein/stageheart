@@ -181,7 +181,7 @@
       "setlist": "Stimmige Setlists basierend auf emotionalen Bögen und Song-Übergängen erstellen",
       "pitch": "Echtzeit-Tonerkennung und Stimmhilfe für das Gesangstraining",
       "metronome": "Visueller und akustischer Metronom mit anpassbarem Tempo und Taktunterteilungen",
-      "backing": "Mit Begleitspuren üben (bald verfügbar)"
+  "backing": "Begleitspuren abspielen und verwalten mit Playlist, Crossfade und A/B-Loop"
     },
     "warmupGenerator": "Aufwärm-Routine Generator",
     "setlistBuilder": "Setlist-Ersteller",

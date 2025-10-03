@@ -45,6 +45,7 @@ import {
 } from '@/lib/setlistBuilder';
 import { WarmupCriteriaPreview } from '@/components/WarmupCriteriaPreview';
 import PitchDetectorCard, { MetronomeCard } from '@/components/PitchDetector';
+import MusicPlayerCard from '@/components/MusicPlayer';
 import { Input } from '@/components/ui/input';
 
 const WARMUP_PREF_KEY = 'warmup-preferences';
@@ -614,7 +615,6 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {TOOL_CATEGORIES.map((category) => {
-                      const isComingSoon = category.id === 'backing';
                       return (
                         <motion.div
                           key={category.id}
@@ -627,9 +627,9 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                           }}
                           whileHover={prefersReducedMotion ? {} : { y: -4, scale: 1.02 }}
                           className="cursor-pointer"
-                          onClick={() => !isComingSoon && setCurrentTool(category.id)}
+                          onClick={() => setCurrentTool(category.id)}
                         >
-                          <Card className={`${category.color} border-2 h-full transition-all duration-200 ${isComingSoon ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-lg'}`}>
+                          <Card className={`${category.color} border-2 h-full transition-all duration-200 hover:shadow-lg`}>
                             <CardContent className="p-6">
                               <div className="flex items-start gap-4">
                                 <div className="flex-shrink-0">
@@ -642,11 +642,6 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                                 <div className="flex-1">
                                   <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
                                     {category.title}
-                                    {isComingSoon && (
-                                      <Badge variant="secondary" className="text-xs">
-                                        Coming Soon
-                                      </Badge>
-                                    )}
                                   </h3>
                                     <p className="text-sm text-muted-foreground">
                                       {t(category.description)}
@@ -1180,17 +1175,13 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                   )}
                   
                   {currentTool === 'backing' && (
-                    <div className="text-center py-12">
-                      <img
-                        src={backingTrackIcon}
-                        alt="Backing tracks icon"
-                        className="w-16 h-16 mx-auto mb-4 object-contain opacity-60"
-                      />
-                      <h3 className="text-xl font-semibold mb-2">Backing Tracks</h3>
-                      <p className="text-muted-foreground">
-                        Backing tracks functionality is coming soon! Practice with accompaniment tracks and adjust tempo.
-                      </p>
-                    </div>
+                    <motion.div
+                      initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: motionDur.base / 1000, ease: motionEase.standard }}
+                    >
+                      <MusicPlayerCard className="bg-card/95" />
+                    </motion.div>
                   )}
                 </div>
               )}

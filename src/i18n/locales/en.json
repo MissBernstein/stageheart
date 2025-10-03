@@ -181,7 +181,7 @@
       "setlist": "Build cohesive setlists based on emotional arcs and song transitions",
       "pitch": "Real-time pitch detection and tuning assistance for vocal training",
       "metronome": "Visual and audio metronome with customizable tempo and beat patterns",
-      "backing": "Practice with backing tracks and accompaniment (coming soon)"
+  "backing": "Play and manage backing tracks with playlist, crossfade, and A/B loop"
     },
     "warmupGenerator": "Warm-up Routine Generator",
     "setlistBuilder": "Setlist Builder",
