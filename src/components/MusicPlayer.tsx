@@ -26,6 +26,7 @@ import {
   X,
   Flag,
   BookmarkPlus,
+  ChevronDown,
 } from "lucide-react";
 
 // -------------------------------------------------------------
@@ -102,6 +103,23 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
   // EQ
   const [lowShelf, setLowShelf] = useState(0); // dB -12..+12
   const [highShelf, setHighShelf] = useState(0); // dB -12..+12
+
+  // Responsive: collapse some sections on small screens
+  const [isDesktop, setIsDesktop] = useState(true);
+  const [showViz, setShowViz] = useState(true);
+  const [showAB, setShowAB] = useState(true);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onResize = () => setIsDesktop(window.innerWidth >= 640);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  useEffect(() => {
+    // Auto-expand on desktop, collapse on mobile by default
+    setShowViz(isDesktop);
+    setShowAB(isDesktop);
+  }, [isDesktop]);
 
   // Load persisted playlist
   useEffect(() => {
@@ -455,11 +473,11 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
   <CardHeader className="flex flex-col gap-4">
         <CardTitle className="text-lg flex items-center gap-2"><Music className="h-5 w-5"/>Music Player</CardTitle>
   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <Button variant="outline" onClick={() => document.getElementById("file-input")?.click()} title={t('prep.player.help.addFiles') as string}><Upload className="h-4 w-4 mr-2"/>Add Files</Button>
+          <Button className="w-full" variant="outline" onClick={() => document.getElementById("file-input")?.click()} title={t('prep.player.help.addFiles') as string}><Upload className="h-4 w-4 mr-2"/>Add Files</Button>
           <input id="file-input" type="file" accept="audio/*" multiple className="hidden" onChange={(e)=>onFiles(e.target.files)} />
-          <Button variant="outline" onClick={addUrl} title={t('prep.player.help.addUrl') as string}><LinkIcon className="h-4 w-4 mr-2"/>Add URL</Button>
-          <Button variant="outline" onClick={exportJson}><Download className="h-4 w-4 mr-2"/>Export</Button>
-          <Button variant="outline" onClick={() => importJsonInputRef.current?.click()} title={t('prep.player.help.import') as string}><Upload className="h-4 w-4 mr-2"/>Import</Button>
+          <Button className="w-full" variant="outline" onClick={addUrl} title={t('prep.player.help.addUrl') as string}><LinkIcon className="h-4 w-4 mr-2"/>Add URL</Button>
+          <Button className="w-full" variant="outline" onClick={exportJson}><Download className="h-4 w-4 mr-2"/>Export</Button>
+          <Button className="w-full" variant="outline" onClick={() => importJsonInputRef.current?.click()} title={t('prep.player.help.import') as string}><Upload className="h-4 w-4 mr-2"/>Import</Button>
           <input ref={importJsonInputRef} type="file" accept="application/json" className="hidden" onChange={(e)=>onImportJson(e.target.files)} />
         </div>
         <div className="text-xs text-muted-foreground sm:text-right">{t('prep.player.help.addUrl')}</div>
@@ -470,20 +488,30 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
             {errorMsg}
           </div>
         )}
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-5 sm:gap-6 md:grid-cols-2">
           {/* Visualizer + Transport */}
-          <div className="rounded-2xl border bg-gradient-to-b from-slate-900 to-slate-950 p-6">
-            {/* Visualizer */}
-            <div className="rounded-xl border bg-slate-950 h-28 overflow-hidden">
-              <canvas ref={canvasRef} className="w-full h-full"/>
-            </div>
+          <div className="rounded-2xl border bg-gradient-to-b from-slate-900 to-slate-950 p-4 sm:p-6">
+            {/* Visualizer (collapsible on mobile) */}
+            <button
+              type="button"
+              className="sm:hidden w-full rounded-md border bg-slate-900/60 px-3 py-2 text-left text-xs text-slate-200 flex items-center justify-between"
+              onClick={()=> setShowViz(v=>!v)}
+            >
+              <span>Visualizer</span>
+              <ChevronDown className={cn("h-4 w-4 transition-transform", showViz ? "rotate-180" : "")} />
+            </button>
+            {(isDesktop || showViz) && (
+              <div className="rounded-xl border bg-slate-950 h-24 sm:h-28 overflow-hidden">
+                <canvas ref={canvasRef} className="w-full h-full"/>
+              </div>
+            )}
             {/* Title */}
-            <div className="mt-3 text-base font-medium truncate">{current?.title ?? "No track selected"}</div>
+            <div className="mt-3 text-base sm:text-base text-sm font-medium truncate">{current?.title ?? "No track selected"}</div>
 
             {/* Transport */}
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <Button size="icon" variant="secondary" onClick={prevTrack} disabled={!tracks.length}><SkipBack className="h-4 w-4"/></Button>
-              <Button size="icon" onClick={()=>setPlaying(p=>!p)} disabled={!tracks.length}>
+              <Button size="icon" className="h-9 w-9 sm:h-10 sm:w-10" onClick={()=>setPlaying(p=>!p)} disabled={!tracks.length}>
                 {playing ? <Pause className="h-5 w-5"/> : <Play className="h-5 w-5"/>}
               </Button>
               <Button size="icon" variant="secondary" onClick={nextTrack} disabled={!tracks.length}><SkipForward className="h-4 w-4"/></Button>
@@ -491,10 +519,10 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
                 <Button size="icon" variant={shuf?"default":"secondary"} onClick={()=>setShuf(s=>!s)} title="Shuffle"><Shuffle className="h-4 w-4"/></Button>
                 <Button size="icon" variant={loopMode!=="off"?"default":"secondary"} onClick={()=>setLoopMode(m=>m==="off"?"all":m==="all"?"one":"off")} title="Loop (off/all/one)"><Repeat className="h-4 w-4"/></Button>
               </div>
-              <div className="ml-auto flex items-center gap-2">
+              <div className="w-full sm:w-auto sm:ml-auto mt-2 sm:mt-0 flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Crossfade</span>
-                <Slider value={[crossfade]} min={0} max={5} step={0.1} onValueChange={(v)=>setCrossfade(v[0])} className="w-32"/>
-                <div className="w-10 text-right text-xs tabular-nums">{crossfade.toFixed(1)}s</div>
+                <Slider value={[crossfade]} min={0} max={5} step={0.1} onValueChange={(v)=>setCrossfade(v[0])} className="w-full sm:w-32"/>
+                <div className="w-10 text-right text-xs tabular-nums hidden sm:block">{crossfade.toFixed(1)}s</div>
               </div>
             </div>
 
@@ -535,17 +563,27 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
               </div>
             </div>
 
-            {/* A/B loop */}
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <Button variant="secondary" size="sm" onClick={()=>{ setA(position); if (B!=null && B<=position) setB(null); }} title="Set loop start"><Flag className="h-4 w-4 mr-1"/>Set A</Button>
-              <Button variant="secondary" size="sm" onClick={()=>{ if (A!=null && position>A) setB(position); }} title="Set loop end"><BookmarkPlus className="h-4 w-4 mr-1"/>Set B</Button>
-              <Button size="sm" onClick={()=>setAbOn(v=>!v)} variant={abOn?"default":"secondary"} title="Toggle A/B loop"><RefreshCcw className="h-4 w-4 mr-1"/>{abOn?"A/B On":"A/B Off"}</Button>
-              <div className="text-xs text-muted-foreground ml-auto">A: {A!=null?formatTime(A):"--"} · B: {B!=null?formatTime(B):"--"}</div>
-            </div>
+            {/* A/B loop (collapsible on mobile) */}
+            <button
+              type="button"
+              className="sm:hidden mt-3 w-full rounded-md border bg-slate-900/60 px-3 py-2 text-left text-xs text-slate-200 flex items-center justify-between"
+              onClick={()=> setShowAB(v=>!v)}
+            >
+              <span>A/B Loop</span>
+              <ChevronDown className={cn("h-4 w-4 transition-transform", showAB ? "rotate-180" : "")} />
+            </button>
+            {(isDesktop || showAB) && (
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <Button variant="secondary" size="sm" onClick={()=>{ setA(position); if (B!=null && B<=position) setB(null); }} title="Set loop start"><Flag className="h-4 w-4 mr-1"/>Set A</Button>
+                <Button variant="secondary" size="sm" onClick={()=>{ if (A!=null && position>A) setB(position); }} title="Set loop end"><BookmarkPlus className="h-4 w-4 mr-1"/>Set B</Button>
+                <Button size="sm" onClick={()=>setAbOn(v=>!v)} variant={abOn?"default":"secondary"} title="Toggle A/B loop"><RefreshCcw className="h-4 w-4 mr-1"/>{abOn?"A/B On":"A/B Off"}</Button>
+                <div className="text-xs text-muted-foreground ml-auto">A: {A!=null?formatTime(A):"--"} · B: {B!=null?formatTime(B):"--"}</div>
+              </div>
+            )}
           </div>
 
           {/* Playlist (drag-reorder + rename) */}
-          <div className="rounded-2xl border bg-card p-6">
+          <div className="rounded-2xl border bg-card p-4 sm:p-6">
             <div className="text-sm text-muted-foreground">Playlist</div>
             <ul className="mt-2 divide-y divide-slate-800 rounded-xl border bg-slate-950">
               {tracks.length===0 && (
