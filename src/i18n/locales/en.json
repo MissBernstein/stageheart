@@ -109,7 +109,8 @@
         "Pitch Detector Basics",
         "Hold Note Test",
         "Metronome Essentials",
-        "Tips & Restart"
+        "Tips & Restart",
+        "Backing Tracks Player"
       ],
       "step0": [
         "Use these tools to warm up, build setlists, check your pitch, and practice with a metronome.",
@@ -131,11 +132,22 @@
         "Pro tip: keep the display visible but listen more than you watch. Consistency beats speed.",
         "You can reset this tour anytime from the Help / Tutorial button."
       ],
+      "step5": [
+        "Add Files selects audio from your device for this session (stored locally; not included in Export).",
+        "Import loads a playlist (.json) of remote audio URLs created by Export. Add URL accepts direct http(s) audio links (e.g., .mp3) with CORS; streaming links (Spotify/Apple) won't play here. Preset tracks and playlists are coming via Supabase."
+      ],
       "next": "Next",
       "back": "Back",
       "skip": "Skip",
       "finish": "Finish",
       "help": "Help / Tutorial"
+    },
+    "player": {
+      "help": {
+        "addUrl": "Use a direct http(s) link to an audio file (e.g., .mp3, .ogg) with CORS enabled. Streaming links (Spotify/Apple Music) won't play here.",
+        "addFiles": "Choose audio files from your device. They are stored locally for this session and cannot be exported.",
+        "import": "Import a playlist (.json) of remote audio URLs. Use Export to create it; local files are not included."
+      }
     },
     "metronome": {
       "labels": {

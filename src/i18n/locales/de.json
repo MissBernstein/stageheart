@@ -109,7 +109,8 @@
         "Grundlagen Tonerkennung",
         "Langton-Test",
         "Metronom-Grundlagen",
-        "Tipps & Neustart"
+        "Tipps & Neustart",
+        "Backing-Tracks Player"
       ],
       "step0": [
         "Nutze diese Tools zum Aufwärmen, Setlists erstellen, Ton überprüfen und mit Metronom üben.",
@@ -131,11 +132,22 @@
         "Tipp: Anzeige im Blick behalten, aber mehr hören als schauen. Konstanz schlägt Tempo.",
         "Du kannst diese Tour jederzeit über den Hilfe-/Tutorial-Button zurücksetzen."
       ],
+      "step5": [
+        "'Dateien hinzufügen' wählt Audio von deinem Gerät für diese Sitzung (lokal gespeichert; nicht im Export enthalten).",
+        "'Importieren' lädt eine Playlist (.json) mit entfernten Audio-URLs, die per Export erzeugt wurde. 'URL hinzufügen' akzeptiert direkte http(s)-Links zu Audiodateien (z. B. .mp3) mit CORS; Streaming-Links (Spotify/Apple) spielen hier nicht ab. Vorgegebene Tracks & Playlists folgen über Supabase."
+      ],
       "next": "Weiter",
       "back": "Zurück",
       "skip": "Überspringen",
       "finish": "Fertig",
       "help": "Hilfe / Tutorial"
+    },
+    "player": {
+      "help": {
+        "addUrl": "Verwende einen direkten http(s)-Link zu einer Audiodatei (z. B. .mp3, .ogg) mit aktiviertem CORS. Streaming-Links (Spotify/Apple Music) funktionieren hier nicht.",
+        "addFiles": "Wähle Audiodateien von deinem Gerät. Sie werden lokal für diese Sitzung gespeichert und können nicht exportiert werden.",
+        "import": "Importiere eine Playlist (.json) mit entfernten Audio-URLs. Erstelle sie über Export; lokale Dateien sind nicht enthalten."
+      }
     },
     "metronome": {
       "labels": {

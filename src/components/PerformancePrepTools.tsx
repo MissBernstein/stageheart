@@ -1227,11 +1227,17 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                         <p>{t('prep.tour.step4.1')}</p>
                       </>
                     )}
+                    {tutorialStep === 5 && (
+                      <>
+                        <p>{t('prep.tour.step5.0')}</p>
+                        <p>{t('prep.tour.step5.1')}</p>
+                      </>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between pt-2">
                     <div className="flex items-center gap-1">
-                      {[0,1,2,3,4].map((i) => (
+                      {[0,1,2,3,4,5].map((i) => (
                         <span
                           key={i}
                           aria-hidden
@@ -1257,8 +1263,8 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                           {t('prep.tour.back')}
                         </AnimatedButton>
                       )}
-                      {tutorialStep < 4 ? (
-                        <AnimatedButton onClick={() => setTutorialStep((s) => Math.min(4, s + 1))}>
+                      {tutorialStep < 5 ? (
+                        <AnimatedButton onClick={() => setTutorialStep((s) => Math.min(5, s + 1))}>
                           {t('prep.tour.next')}
                         </AnimatedButton>
                       ) : (

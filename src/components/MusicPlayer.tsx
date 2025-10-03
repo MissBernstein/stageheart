@@ -1,5 +1,6 @@
 "use client";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -53,6 +54,7 @@ function formatTime(secs?: number) {
 }
 
 export default function MusicPlayerCard({ className }: { className?: string }) {
+  const { t } = useTranslation();
   // Elements (dual players for crossfade)
   const audioARef = useRef<HTMLAudioElement | null>(null);
   const audioBRef = useRef<HTMLAudioElement | null>(null);
@@ -70,6 +72,7 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
   const srcBRef = useRef<MediaElementAudioSourceNode | null>(null);
   const rafRef = useRef<number>(0);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const nextTrackRef = useRef<() => boolean>(() => false);
 
   // Playlist & playback state
   const [tracks, setTracks] = useState<Track[]>([]);
@@ -82,6 +85,7 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
   const [volume, setVolume] = useState(0.9);
   const [muted, setMuted] = useState(false);
   const [crossfade, setCrossfade] = useState(1.5); // seconds
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // A/B loop
   const [A, setA] = useState<number | null>(null);
@@ -116,6 +120,11 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
   }, [tracks, index]);
 
   const current = tracks[index];
+
+  // Ensure AudioContext is running before play
+  const resumeAudio = useCallback(async () => {
+    try { await ctxRef.current?.resume?.(); } catch {}
+  }, []);
 
   // Build WebAudio graph once
   useEffect(() => {
@@ -155,13 +164,13 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
     low.connect(high).connect(master);
 
     // connect A
-    const a = audioARef.current!;
+  const a = audioARef.current!; a.crossOrigin = "anonymous";
     const ga = ctx.createGain(); ga.gain.value = 1; gainARef.current = ga;
     const sa = ctx.createMediaElementSource(a); srcARef.current = sa;
     sa.connect(ga).connect(low);
 
-    // connect B
-    const b = audioBRef.current!;
+  // connect B
+  const b = audioBRef.current!; b.crossOrigin = "anonymous";
     const gb = ctx.createGain(); gb.gain.value = 0; gainBRef.current = gb;
     const sb = ctx.createMediaElementSource(b); srcBRef.current = sb;
     sb.connect(gb).connect(low);
@@ -230,15 +239,24 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
         const el = activeRef.current === "A" ? audioARef.current! : audioBRef.current!;
         el.currentTime = A ?? 0; el.play();
       } else {
-        nextTrack();
+        const moved = nextTrackRef.current();
+        if (!moved) {
+          setPlaying(false);
+        }
       }
     };
     const a = audioARef.current!, b = audioBRef.current!;
     a.addEventListener("timeupdate", onTime); b.addEventListener("timeupdate", onTime);
     a.addEventListener("ended", onEnded); b.addEventListener("ended", onEnded);
+    const onErr = () => {
+      setErrorMsg("Failed to load audio. Use a direct audio URL (e.g., .mp3) with CORS enabled, or add a local file.");
+      setPlaying(false);
+    };
+    a.addEventListener("error", onErr); b.addEventListener("error", onErr);
     return () => {
       a.removeEventListener("timeupdate", onTime); b.removeEventListener("timeupdate", onTime);
       a.removeEventListener("ended", onEnded); b.removeEventListener("ended", onEnded);
+      a.removeEventListener("error", onErr); b.removeEventListener("error", onErr);
     };
   }, [A, B, abOn, loopMode]);
 
@@ -248,27 +266,36 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
     const act = activeRef.current;
     const el = act === "A" ? audioARef.current! : audioBRef.current!;
     if (!current.src) { setPlaying(false); return; }
-    el.src = current.src; el.currentTime = 0;
+    try { el.crossOrigin = "anonymous"; } catch {}
+    el.src = current.src; el.currentTime = 0; setErrorMsg(null);
     if (playing) el.play().catch(()=>{});
   }, [current?.id]);
 
   // Play/Pause toggles active element
   useEffect(() => {
     const el = activeRef.current === "A" ? audioARef.current! : audioBRef.current!;
-    if (playing) el.play().catch(()=>setPlaying(false)); else el.pause();
-  }, [playing]);
+    if (playing) {
+      resumeAudio().then(()=>{
+        el.play().catch(()=>setPlaying(false));
+      });
+    } else {
+      el.pause();
+    }
+  }, [playing, resumeAudio]);
 
   // Helpers
   const playIndex = useCallback((i: number) => {
     if (i < 0 || i >= tracks.length) return;
-    if (!playing || crossfade <= 0) {
+    const canCrossfade = !!(ctxRef.current && gainARef.current && gainBRef.current);
+    if (!playing || crossfade <= 0 || !canCrossfade) {
       setIndex(i);
       const act = activeRef.current; const el = act === "A" ? audioARef.current! : audioBRef.current!;
-      el.src = tracks[i].src; el.currentTime = 0; setPosition(0); setDuration(0); setPlaying(true);
+      el.src = tracks[i].src; el.currentTime = 0; setPosition(0); setDuration(0);
+      resumeAudio().then(()=> setPlaying(true));
       return;
     }
     // Crossfade: load into inactive, ramp gains, then swap active
-    const now = ctxRef.current!.currentTime;
+    const now = (ctxRef.current?.currentTime ?? 0);
     const fade = Math.max(0.2, crossfade);
     const act = activeRef.current;
     const fromEl = act === "A" ? audioARef.current! : audioBRef.current!;
@@ -277,7 +304,7 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
     const toGain = act === "A" ? gainBRef.current! : gainARef.current!;
 
     toEl.src = tracks[i].src; toEl.currentTime = 0; toGain.gain.setValueAtTime(0, now);
-    toEl.play().catch(()=>{});
+  resumeAudio().then(()=>{ toEl.play().catch(()=>{}); });
     // ramp
     fromGain.gain.cancelScheduledValues(now); toGain.gain.cancelScheduledValues(now);
     fromGain.gain.setValueAtTime(fromGain.gain.value, now); fromGain.gain.linearRampToValueAtTime(0.0001, now + fade);
@@ -289,19 +316,23 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
       activeRef.current = act === "A" ? "B" : "A";
       setIndex(i); setPosition(0); setDuration(0);
     }, fade * 1000 + 50);
-  }, [tracks.length, crossfade, playing, tracks]);
+  }, [tracks.length, crossfade, playing, tracks, resumeAudio]);
 
-  const nextTrack = useCallback(() => {
-    if (tracks.length === 0) return;
+  const nextTrack = useCallback((): boolean => {
+    if (tracks.length === 0) return false;
     let n = index;
     if (shuf && tracks.length > 1){
       n = Math.floor(Math.random()*tracks.length);
       if (n === index) n = (index+1)%tracks.length;
     } else if (index < tracks.length-1) n = index+1;
     else if (loopMode === "all") n = 0;
-    else return;
+    else return false;
     playIndex(n);
+    return true;
   }, [index, loopMode, shuf, tracks.length, playIndex]);
+
+  // keep ref in sync
+  useEffect(() => { nextTrackRef.current = nextTrack; }, [nextTrack]);
 
   const prevTrack = () => setIndex(i => (i > 0 ? (playIndex(i-1), i-1) : 0));
 
@@ -335,7 +366,15 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
     const u = prompt("Add audio URL (https://…)");
     if (!u) return;
     const title = prompt("Title for this track?") || "Track";
+    try {
+      const parsed = new URL(u);
+      if (!/^https?:$/.test(parsed.protocol)) throw new Error("Only http(s) URLs supported");
+    } catch {
+      setErrorMsg("Invalid URL. Please use a full http(s) link to a direct audio file.");
+      return;
+    }
     setTracks(t => [...t, { id: crypto.randomUUID(), title, src: u }]);
+    setErrorMsg(null);
   };
 
   const removeAt = (i: number) => {
@@ -413,18 +452,24 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
 
   return (
     <Card className={cn("w-full max-w-3xl mx-auto", className)}>
-      <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+  <CardHeader className="flex flex-col gap-4">
         <CardTitle className="text-lg flex items-center gap-2"><Music className="h-5 w-5"/>Music Player</CardTitle>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => document.getElementById("file-input")?.click()}><Upload className="h-4 w-4 mr-2"/>Add Files</Button>
+  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <Button variant="outline" onClick={() => document.getElementById("file-input")?.click()} title={t('prep.player.help.addFiles') as string}><Upload className="h-4 w-4 mr-2"/>Add Files</Button>
           <input id="file-input" type="file" accept="audio/*" multiple className="hidden" onChange={(e)=>onFiles(e.target.files)} />
-          <Button variant="outline" onClick={addUrl}><LinkIcon className="h-4 w-4 mr-2"/>Add URL</Button>
+          <Button variant="outline" onClick={addUrl} title={t('prep.player.help.addUrl') as string}><LinkIcon className="h-4 w-4 mr-2"/>Add URL</Button>
           <Button variant="outline" onClick={exportJson}><Download className="h-4 w-4 mr-2"/>Export</Button>
-          <Button variant="outline" onClick={() => importJsonInputRef.current?.click()}><Upload className="h-4 w-4 mr-2"/>Import</Button>
+          <Button variant="outline" onClick={() => importJsonInputRef.current?.click()} title={t('prep.player.help.import') as string}><Upload className="h-4 w-4 mr-2"/>Import</Button>
           <input ref={importJsonInputRef} type="file" accept="application/json" className="hidden" onChange={(e)=>onImportJson(e.target.files)} />
         </div>
+        <div className="text-xs text-muted-foreground sm:text-right">{t('prep.player.help.addUrl')}</div>
       </CardHeader>
       <CardContent>
+        {errorMsg && (
+          <div className="mb-3 rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+            {errorMsg}
+          </div>
+        )}
         <div className="grid gap-6 md:grid-cols-2">
           {/* Visualizer + Transport */}
           <div className="rounded-2xl border bg-gradient-to-b from-slate-900 to-slate-950 p-6">
@@ -513,7 +558,7 @@ export default function MusicPlayerCard({ className }: { className?: string }) {
                     className={cn("p-3 flex items-center gap-3 cursor-grab", i===index && "bg-slate-900/60")}
                     onDoubleClick={()=>{ setIndex(i); setPlaying(true); playIndex(i); }}>
                   <GripVertical className="h-4 w-4 text-slate-400"/>
-                  <Button size="sm" variant={i===index?"default":"secondary"} onClick={()=> playIndex(i)}>
+                  <Button size="sm" variant={i===index?"default":"secondary"} onClick={()=> { if (i===index) setPlaying(p=>!p); else playIndex(i); }}>
                     {i===index && playing ? <Pause className="h-4 w-4"/> : <Play className="h-4 w-4"/>}
                   </Button>
                   <div className="flex-1 min-w-0">
