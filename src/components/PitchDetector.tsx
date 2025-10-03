@@ -866,7 +866,7 @@ export function MetronomeCard({ className }: { className?: string }) {
             </div>
 
             <div className="grid gap-6">
-              <div className="grid gap-6 lg:grid-cols-2">
+              <div className="space-y-6">
                 <div className="space-y-3">
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -892,7 +892,7 @@ export function MetronomeCard({ className }: { className?: string }) {
                     <TooltipContent>{t('prep.tips.subdiv')}</TooltipContent>
                   </Tooltip>
                   <Tabs value={String(subdiv)} onValueChange={(v) => setSubdiv(parseInt(v) as 1|2|3|4)}>
-                    <TabsList className="grid grid-cols-2 gap-1 md:grid-cols-4 [&>button]:px-3">
+                    <TabsList className="grid grid-cols-2 gap-1 [&>button]:px-2 [&>button]:text-sm">
                       <TabsTrigger value="1">Quarter</TabsTrigger>
                       <TabsTrigger value="2">Eighths</TabsTrigger>
                       <TabsTrigger value="3">Triplets</TabsTrigger>
@@ -917,7 +917,7 @@ export function MetronomeCard({ className }: { className?: string }) {
                 </div>
               )}
 
-              <div className="grid gap-6 lg:grid-cols-2">
+              <div className="space-y-6">
                 <div className="space-y-3">
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -926,7 +926,7 @@ export function MetronomeCard({ className }: { className?: string }) {
                     <TooltipContent>{t('prep.tips.sound')}</TooltipContent>
                   </Tooltip>
                   <Tabs value={sound} onValueChange={(v) => setSound(v as any)}>
-                    <TabsList className="grid grid-cols-2 gap-1 md:grid-cols-4">
+                    <TabsList className="grid grid-cols-2 gap-1 [&>button]:px-2 [&>button]:text-sm">
                       <TabsTrigger value="blip">Blip</TabsTrigger>
                       <TabsTrigger value="woodblock">Wood</TabsTrigger>
                       <TabsTrigger value="hihat">Hi-Hat</TabsTrigger>
