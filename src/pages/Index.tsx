@@ -245,11 +245,17 @@ const Index = () => {
           {/* Header Section */}
           <div className="text-center mt-12 md:mt-16">
             <div className="flex flex-col items-center gap-4">
-              <img
-                src={logo}
-                alt="Stage Heart Logo"
-                className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain mx-auto transition-transform duration-200 group-hover:scale-105"
-              />
+              <Link 
+                to="/" 
+                onClick={handleBrandClick}
+                className="inline-block transition-transform duration-200 hover:-translate-y-1 hover:scale-105"
+              >
+                <img
+                  src={logo}
+                  alt="Stage Heart Logo"
+                  className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain cursor-pointer"
+                />
+              </Link>
               <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground text-center whitespace-nowrap">
                 Stage Heart
               </h1>
