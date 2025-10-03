@@ -420,7 +420,7 @@ export default function PitchDetectorCard({ className, defaultRange = "voice", d
                   </TabsList>
                 </Tabs>
               </motion.div>
-              <div className="mt-6 flex gap-2">
+              <div className="mt-6 flex justify-center gap-2">
                 {!testing ? (
                   <Tooltip>
                     <TooltipTrigger asChild>
