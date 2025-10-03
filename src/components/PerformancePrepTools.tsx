@@ -4,7 +4,7 @@ import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Trash2, Mic, Music, Volume2, Zap, List } from 'lucide-react';
+import { Clock, Trash2, Mic, Music, Volume2, Zap, List, HelpCircle } from 'lucide-react';
 import { Song } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -573,15 +573,16 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
               <div className="relative mb-4">
                 <div className="absolute top-0 right-0 flex items-center gap-2">
                   <AnimatedButton
-                    variant="outline"
-                    size="sm"
+                    variant="ghost"
+                    size="icon"
                     onClick={() => {
                       setTutorialStep(0);
                       setShowTutorial(true);
                     }}
-                    className="h-9 px-3"
+                    className="h-10 w-10 text-card-foreground/60 hover:text-card-foreground"
                   >
-                    {t('prep.tour.help')}
+                    <HelpCircle className="h-5 w-5" />
+                    <span className="sr-only">Help / Tutorial</span>
                   </AnimatedButton>
                   <AnimatedButton
                     variant="ghost"
