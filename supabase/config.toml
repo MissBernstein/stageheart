@@ -1,1 +1,10 @@
 project_id = "eawddtedfvljgbfuxyfq"
+
+[functions.submit-song]
+verify_jwt = false
+
+[functions.process-submissions]
+verify_jwt = false
+
+[functions.feeling-journey]
+verify_jwt = false

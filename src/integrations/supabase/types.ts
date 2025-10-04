@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      feeling_cards: {
+        Row: {
+          access_ideas: string[]
+          core_feelings: string[]
+          created_at: string
+          id: string
+          song_id: string
+          summary: string
+          theme: string
+          visual: string | null
+        }
+        Insert: {
+          access_ideas: string[]
+          core_feelings: string[]
+          created_at?: string
+          id?: string
+          song_id: string
+          summary: string
+          theme: string
+          visual?: string | null
+        }
+        Update: {
+          access_ideas?: string[]
+          core_feelings?: string[]
+          created_at?: string
+          id?: string
+          song_id?: string
+          summary?: string
+          theme?: string
+          visual?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feeling_cards_song_id_fkey"
+            columns: ["song_id"]
+            isOneToOne: false
+            referencedRelation: "songs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -74,6 +115,63 @@ export type Database = {
         }
         Relationships: []
       }
+      songs: {
+        Row: {
+          artist: string
+          created_at: string
+          id: string
+          slug: string
+          title: string
+        }
+        Insert: {
+          artist: string
+          created_at?: string
+          id?: string
+          slug: string
+          title: string
+        }
+        Update: {
+          artist?: string
+          created_at?: string
+          id?: string
+          slug?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      submissions: {
+        Row: {
+          artist: string
+          created_at: string
+          error: string | null
+          id: string
+          processed_at: string | null
+          slug: string
+          status: Database["public"]["Enums"]["submission_status"]
+          title: string
+        }
+        Insert: {
+          artist: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          processed_at?: string | null
+          slug: string
+          status?: Database["public"]["Enums"]["submission_status"]
+          title: string
+        }
+        Update: {
+          artist?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          processed_at?: string | null
+          slug?: string
+          status?: Database["public"]["Enums"]["submission_status"]
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -82,7 +180,12 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      submission_status:
+        | "QUEUED"
+        | "PROCESSING"
+        | "REVIEW"
+        | "PUBLISHED"
+        | "REJECTED"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -209,6 +312,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      submission_status: [
+        "QUEUED",
+        "PROCESSING",
+        "REVIEW",
+        "PUBLISHED",
+        "REJECTED",
+      ],
+    },
   },
 } as const
