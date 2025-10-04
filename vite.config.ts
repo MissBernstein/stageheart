@@ -5,6 +5,11 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // If the app is deployed under a sub-path (e.g. /app/ or a platform-specific slug),
+  // using an absolute base (default '/') will make built asset URLs like /assets/xxx.png
+  // point to the domain root and 404. Allow overriding via env. For generic static hosting
+  // where index.html and assets live together, you can set VITE_BASE_PATH=./ before build.
+  base: process.env.VITE_BASE_PATH || '/',
   server: {
     host: "::",
     port: 8080,

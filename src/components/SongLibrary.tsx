@@ -7,6 +7,7 @@ import jukeboxIcon from '@/assets/jukeboxicon.png';
 import { Input } from '@/components/ui/input';
 import { Song } from '@/types';
 import songsData from '@/data/songs.json';
+import { useRemoteSongs } from '@/hooks/useRemoteSongs';
 import { getCanonicalThemes } from '@/lib/themes';
 
 // Helper function to translate themes
@@ -70,7 +71,13 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const prefersReducedMotion = usePrefersReducedMotion();
   
-  const songs: Song[] = songsData;
+  const { remoteSongs, loading: remoteLoading, error: remoteError } = useRemoteSongs();
+  const songs: Song[] = useMemo(() => {
+    // Merge static songs first (canonical ordering) then remote additions
+    const existingIds = new Set(songsData.map(s => s.id));
+    const additions = remoteSongs.filter(r => !existingIds.has(r.id));
+    return [...songsData, ...additions];
+  }, [remoteSongs]);
 
   const themes = useMemo(() => getCanonicalThemes(), []);
 
@@ -201,9 +208,14 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
               </div>
             </div>
             
-            <p className="text-sm text-card-foreground/60">
-              {t('library.count', { count: filteredSongs.length, total: songs.length })}
-            </p>
+            <div className="flex items-center gap-3 text-sm text-card-foreground/60 flex-wrap">
+              <span>{t('library.count', { count: filteredSongs.length, total: songs.length })}</span>
+              {remoteLoading && <span className="animate-pulse">{t('common.loading')}</span>}
+              {remoteError && <span className="text-destructive/80">API: {remoteError}</span>}
+              {!remoteLoading && remoteSongs.length > 0 && (
+                <span className="text-card-foreground/50">+{remoteSongs.length} remote</span>
+              )}
+            </div>
           </div>
           
           {/* Songs grid/list */}
