@@ -18,7 +18,8 @@ const VibePicker = lazy(() => import('@/components/VibePicker').then(m => ({ def
 
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { FeelingMap, Song, Vibe } from '@/types';
-import songsData from '@/data/songs.json';
+// Unified songs come from DB now
+import { useAllSongs } from '@/hooks/useAllSongs';
 import logo from '@/assets/logo.png';
 import { useFavorites } from '@/hooks/useFavorites';
 import { motion } from 'framer-motion';
@@ -44,7 +45,7 @@ const Index = () => {
   const { favorites } = useFavorites();
   const prefersReducedMotion = usePrefersReducedMotion();
 
-  const songs: Song[] = songsData;
+  const { songs } = useAllSongs();
 
   useEffect(() => {
     let unsub: (() => void) | null = null;

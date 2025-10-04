@@ -1,4 +1,3 @@
-import songsData from '@/data/songs.json';
 import { Category, CategorySong, FeelingMap } from '@/types';
 import {
   CATEGORIES_STORAGE_KEY,
@@ -115,25 +114,7 @@ export const seedZurichChoirForExistingSongsV1 = () => {
   let favoritesChanged = false;
   let categorySongsChanged = false;
 
-  songsData.forEach(song => {
-    const isFavorite = favorites.some(
-      fav => (fav.id && fav.id === song.id) || (fav.title === song.title && fav.artist === song.artist)
-    );
-
-    if (!isFavorite) {
-      favorites.push({ ...song } as FeelingMap);
-      favoritesChanged = true;
-    }
-
-    const isLinked = categorySongs.some(
-      entry => entry.categoryId === zurichId && entry.songId === song.id
-    );
-
-    if (!isLinked) {
-      categorySongs.push({ categoryId: zurichId, songId: song.id });
-      categorySongsChanged = true;
-    }
-  });
+  // Removed automatic seeding of legacy static songs. Future: optional DB-based seed.
 
   if (favoritesChanged) {
     persist(FAVORITES_STORAGE_KEY, favorites);

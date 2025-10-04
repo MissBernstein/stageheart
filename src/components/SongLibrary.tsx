@@ -6,15 +6,7 @@ import { Search, Shuffle, Grid, List, Plus } from 'lucide-react';
 import jukeboxIcon from '@/assets/jukeboxicon.png';
 import { Input } from '@/components/ui/input';
 import { Song } from '@/types';
-// Lazy-load static songs when the modal mounts to shave initial bundle weight
-let staticSongsCache: Song[] | null = null;
-async function loadStaticSongs(): Promise<Song[]> {
-  if (staticSongsCache) return staticSongsCache;
-  const mod = await import('@/data/songs.json');
-  staticSongsCache = (mod.default || []) as Song[];
-  return staticSongsCache;
-}
-import { useRemoteSongs } from '@/hooks/useRemoteSongs';
+import { useAllSongs } from '@/hooks/useAllSongs';
 import { getCanonicalThemes } from '@/lib/themes';
 
 // Helper function to translate themes
@@ -78,17 +70,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const prefersReducedMotion = usePrefersReducedMotion();
   
-  const { remoteSongs, loading: remoteLoading, error: remoteError } = useRemoteSongs();
-  const [staticSongs, setStaticSongs] = useState<Song[]>([]);
-  const [includeRemote, setIncludeRemote] = useState(true);
-  useEffect(() => { loadStaticSongs().then(setStaticSongs); }, []);
-  const songs: Song[] = useMemo(() => {
-    const base = staticSongs;
-    if (!includeRemote) return base;
-    const existingIds = new Set(base.map(s => s.id));
-    const additions = remoteSongs.filter(r => !existingIds.has(r.id));
-    return [...base, ...additions];
-  }, [staticSongs, remoteSongs, includeRemote]);
+  const { songs, loading: remoteLoading, error: remoteError } = useAllSongs();
 
   const themes = useMemo(() => getCanonicalThemes(), []);
 
@@ -239,14 +221,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
                     {t('library.addNewSong', 'Add new song')}
                   </AnimatedButton>
                 </Link>
-                <AnimatedButton
-                  variant={includeRemote ? 'secondary' : 'outline'}
-                  size="sm"
-                  onClick={() => setIncludeRemote(r => !r)}
-                  aria-pressed={includeRemote}
-                >
-                  {includeRemote ? t('library.hideRemote', 'Hide remote') : t('library.showRemote', 'Show remote')}
-                </AnimatedButton>
+                {/* Remote toggle removed: all songs unified in DB now */}
               </div>
             </div>
             
@@ -254,10 +229,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
               <span>{t('library.count', { count: filteredSongs.length, total: songs.length })}</span>
               {remoteLoading && <span className="animate-pulse">{t('common.loading')}</span>}
               {remoteError && <span className="text-destructive/80">API: {remoteError}</span>}
-              {!remoteLoading && remoteSongs.length > 0 && (
-                <span className="text-card-foreground/50">+{remoteSongs.length} {t('library.remote', 'remote')}</span>
-              )}
-              {!remoteLoading && includeRemote && remoteSongs.some(s => s.isNew) && (
+              {!remoteLoading && songs.some(s => s.isNew) && (
                 <span className="text-emerald-500/80">{t('library.newBadgeLegend', '🆕 = added recently')}</span>
               )}
               <span className="sr-only" aria-live="polite">{statusMsg}</span>
