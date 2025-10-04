@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
-    "migrate:themes": "tsx scripts/migrateThemes.ts"
+    "migrate:themes": "tsx scripts/migrateThemes.ts",
+    "optimize:images": "tsx scripts/optimizeImages.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -86,6 +87,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "^5.4.19",
-    "vitest": "^2.1.4"
+  "vitest": "^2.1.4",
+  "sharp": "^0.33.5"
   }
 }
