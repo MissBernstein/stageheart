@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
   generateWarmupPlan,
-  WARMUP_VIBE_OPTIONS,
+  WARMUP_VIBE_LABELS,
+  WarmupVibe,
 } from '../warmupGenerator';
 
-const getVibeId = (label: string) =>
-  WARMUP_VIBE_OPTIONS.find(option => option.label === label)?.id ?? 'bright_playful';
+// Helper to look up the vibe id by its English label (used in legacy expectations)
+const getVibeId = (label: string): WarmupVibe => {
+  const entry = Object.entries(WARMUP_VIBE_LABELS).find(([, l]) => l === label);
+  return (entry?.[0] as WarmupVibe) ?? 'bright_playful';
+};
 
 describe('generateWarmupPlan', () => {
   it('uses default range when voice type is null', () => {
