@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -6,7 +6,14 @@ import { Search, Shuffle, Grid, List, Plus } from 'lucide-react';
 import jukeboxIcon from '@/assets/jukeboxicon.png';
 import { Input } from '@/components/ui/input';
 import { Song } from '@/types';
-import songsData from '@/data/songs.json';
+// Lazy-load static songs when the modal mounts to shave initial bundle weight
+let staticSongsCache: Song[] | null = null;
+async function loadStaticSongs(): Promise<Song[]> {
+  if (staticSongsCache) return staticSongsCache;
+  const mod = await import('@/data/songs.json');
+  staticSongsCache = (mod.default || []) as Song[];
+  return staticSongsCache;
+}
 import { useRemoteSongs } from '@/hooks/useRemoteSongs';
 import { getCanonicalThemes } from '@/lib/themes';
 
@@ -72,12 +79,16 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
   const prefersReducedMotion = usePrefersReducedMotion();
   
   const { remoteSongs, loading: remoteLoading, error: remoteError } = useRemoteSongs();
+  const [staticSongs, setStaticSongs] = useState<Song[]>([]);
+  const [includeRemote, setIncludeRemote] = useState(true);
+  useEffect(() => { loadStaticSongs().then(setStaticSongs); }, []);
   const songs: Song[] = useMemo(() => {
-    // Merge static songs first (canonical ordering) then remote additions
-    const existingIds = new Set(songsData.map(s => s.id));
+    const base = staticSongs;
+    if (!includeRemote) return base;
+    const existingIds = new Set(base.map(s => s.id));
     const additions = remoteSongs.filter(r => !existingIds.has(r.id));
-    return [...songsData, ...additions];
-  }, [remoteSongs]);
+    return [...base, ...additions];
+  }, [staticSongs, remoteSongs, includeRemote]);
 
   const themes = useMemo(() => getCanonicalThemes(), []);
 
@@ -108,12 +119,33 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
     exit: { opacity: 0, y: -8, transition: { duration: motionDur.fast / 1000, ease: motionEase.exit } },
   };
 
-  // Lock background scroll while modal open
+  // Accessibility: lock scroll, focus trap & ESC close
+  const containerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prev; };
-  }, []);
+    const firstFocusable = () => containerRef.current?.querySelector<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { onClose(); }
+      if (e.key === 'Tab' && containerRef.current) {
+        const focusables = Array.from(containerRef.current.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(el => !el.hasAttribute('disabled'));
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    setTimeout(() => firstFocusable()?.focus(), 0);
+    return () => { window.removeEventListener('keydown', handleKey); document.body.style.overflow = prev; };
+  }, [onClose]);
+
+  // Live region for status updates
+  const [statusMsg, setStatusMsg] = useState('');
+  useEffect(() => {
+    setStatusMsg(t('library.count', { count: filteredSongs.length, total: songs.length }));
+  }, [filteredSongs.length, songs.length, t]);
 
   return createPortal(
     <MotionIfOkay>
@@ -122,13 +154,15 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
         animate={prefersReducedMotion ? undefined : fadeInUp.animate}
         exit={prefersReducedMotion ? undefined : fadeInUp.exit}
         className="fixed inset-0 z-[999] overflow-y-auto min-h-screen w-screen bg-background/95 backdrop-blur-sm"
+        role="dialog" aria-modal="true" aria-labelledby="song-library-title"
+        ref={containerRef}
       >
         <div className="container mx-auto px-4 py-8">
           <div className="bg-card/95 rounded-3xl shadow-card border border-card-border/70 max-w-6xl mx-auto">
           {/* Header */}
           <div className="p-6 border-b border-card-border">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold text-card-foreground flex items-center gap-3">
+              <h2 id="song-library-title" className="text-2xl font-semibold text-card-foreground flex items-center gap-3">
                 <img src={jukeboxIcon} alt="Jukebox Icon" className="w-16 h-16 object-contain" />
                 {t('library.title')}
               </h2>
@@ -139,7 +173,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
                 className="h-10 w-10 text-lg text-card-foreground/60 hover:text-card-foreground"
               >
                 <span aria-hidden>×</span>
-                <span className="sr-only">Close library</span>
+                <span className="sr-only">{t('library.close', 'Close library')}</span>
               </AnimatedButton>
             </div>
             
@@ -202,9 +236,17 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
                     size="sm"
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Add new song
+                    {t('library.addNewSong', 'Add new song')}
                   </AnimatedButton>
                 </Link>
+                <AnimatedButton
+                  variant={includeRemote ? 'secondary' : 'outline'}
+                  size="sm"
+                  onClick={() => setIncludeRemote(r => !r)}
+                  aria-pressed={includeRemote}
+                >
+                  {includeRemote ? t('library.hideRemote', 'Hide remote') : t('library.showRemote', 'Show remote')}
+                </AnimatedButton>
               </div>
             </div>
             
@@ -213,8 +255,12 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
               {remoteLoading && <span className="animate-pulse">{t('common.loading')}</span>}
               {remoteError && <span className="text-destructive/80">API: {remoteError}</span>}
               {!remoteLoading && remoteSongs.length > 0 && (
-                <span className="text-card-foreground/50">+{remoteSongs.length} remote</span>
+                <span className="text-card-foreground/50">+{remoteSongs.length} {t('library.remote', 'remote')}</span>
               )}
+              {!remoteLoading && includeRemote && remoteSongs.some(s => s.isNew) && (
+                <span className="text-emerald-500/80">{t('library.newBadgeLegend', '🆕 = added recently')}</span>
+              )}
+              <span className="sr-only" aria-live="polite">{statusMsg}</span>
             </div>
           </div>
           
@@ -241,7 +287,10 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
                       <div className="mb-3 flex items-start gap-3">
                         <span className="text-2xl">{song.visual.split(' ')[0]}</span>
                         <div className="flex-1 min-w-0">
-                          <h3 className="line-clamp-1 font-medium text-card-foreground">{song.title}</h3>
+                          <h3 className="line-clamp-1 font-medium text-card-foreground flex items-center gap-2">
+                            {song.title}
+                            {song.isRemote && song.isNew && <span className="text-[11px] rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1 py-0.5 leading-none">🆕</span>}
+                          </h3>
                           <p className="line-clamp-1 text-sm text-card-foreground/70">{song.artist}</p>
                         </div>
                       </div>
@@ -283,7 +332,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
                           <span className="text-xl">{song.visual.split(' ')[0]}</span>
                           <div className="min-w-0 flex-1">
                             <div className="mb-1 flex items-center gap-2">
-                              <h3 className="font-medium text-card-foreground">{song.title}</h3>
+                              <h3 className="font-medium text-card-foreground flex items-center gap-2">{song.title} {song.isRemote && song.isNew && <span className="text-[11px] rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1 py-0.5 leading-none">🆕</span>}</h3>
                               <span className="text-sm text-card-foreground/70">{t('common.by', 'by')} {song.artist}</span>
                             </div>
                             <p className="mb-2 text-sm text-card-foreground/60">{song.summary}</p>

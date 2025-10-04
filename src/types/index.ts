@@ -8,6 +8,10 @@ export interface Song {
   core_feelings: string[];
   access_ideas: string[];
   visual: string;
+  // Optional metadata (remote songs)
+  created_at?: string; // ISO timestamp (remote only)
+  isRemote?: boolean;
+  isNew?: boolean; // computed client-side (e.g., created within last X days)
 }
 
 export interface Vibe {
