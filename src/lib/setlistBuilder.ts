@@ -1,5 +1,5 @@
-import songsData from '@/data/songs.json';
 import { Song } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
 
 export type SetlistSource = 'library' | 'favorites' | 'open';
 
@@ -49,8 +49,27 @@ const normalizeSong = (song: Song): SetlistItem => ({
   moodTag: song.theme,
 });
 
-const pickLibrarySongs = (count: number): SetlistItem[] => {
-  return songsData.slice(0, count).map(normalizeSong);
+const fetchLibrarySongs = async (): Promise<Song[]> => {
+  const { data, error } = await supabase
+    .from('songs')
+    .select('id,title,artist,feeling_cards ( summary, theme, core_feelings, access_ideas, visual )')
+    .limit(1000);
+  if (error) throw error;
+  return (data as any[]).map(r => ({
+    id: r.id,
+    title: r.title,
+    artist: r.artist,
+    summary: r.feeling_cards?.summary || '',
+    theme: r.feeling_cards?.theme || 'Unknown',
+    core_feelings: r.feeling_cards?.core_feelings || [],
+    access_ideas: r.feeling_cards?.access_ideas || [],
+    visual: r.feeling_cards?.visual || '🎵',
+  } as Song));
+};
+
+const pickLibrarySongs = async (count: number): Promise<SetlistItem[]> => {
+  const library = await fetchLibrarySongs();
+  return library.slice(0, count).map(normalizeSong);
 };
 
 const fetchFavoriteSongs = async (): Promise<Song[]> => {
@@ -86,8 +105,9 @@ const buildFavoritesSetlist = async (count: number): Promise<{ items: SetlistIte
   return { items: trimmed };
 };
 
-const buildOpenSetlist = (count: number): SetlistItem[] => {
-  const librarySlice = songsData.slice(0, Math.min(count, songsData.length)).map(normalizeSong);
+const buildOpenSetlist = async (count: number): Promise<SetlistItem[]> => {
+  const library = await fetchLibrarySongs();
+  const librarySlice = library.slice(0, Math.min(count, library.length)).map(normalizeSong);
   if (librarySlice.length >= count) return librarySlice;
 
   const extrasNeeded = count - librarySlice.length;
@@ -113,9 +133,9 @@ export const buildSetlist = async (request: SetlistRequest): Promise<SetlistResp
     items = favoritesResult.items;
     note = favoritesResult.note;
   } else if (source === 'open') {
-    items = buildOpenSetlist(clampedCount);
+    items = await buildOpenSetlist(clampedCount);
   } else {
-    items = pickLibrarySongs(clampedCount);
+    items = await pickLibrarySongs(clampedCount);
   }
 
   const arcSummary = 'A dynamic emotional arc moving from connection to uplift.';

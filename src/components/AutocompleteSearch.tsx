@@ -4,7 +4,7 @@ import musicalNotesIcon from '@/assets/musicalnotesicon.png';
 import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Input } from '@/components/ui/input';
 import { Song } from '@/types';
-import songsData from '@/data/songs.json';
+import { useAllSongs } from '@/hooks/useAllSongs';
 
 interface AutocompleteSearchProps {
   onSearch: (title: string, artist: string) => void;
@@ -22,7 +22,7 @@ export const AutocompleteSearch = ({ onSearch, onSelectSong, isLoading }: Autoco
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
-  const songs: Song[] = songsData;
+  const { songs } = useAllSongs();
 
   const searchSongs = (query: string) => {
     if (!query.trim()) {

@@ -12,6 +12,7 @@
     "test": "vitest",
     "migrate:themes": "tsx scripts/migrateThemes.ts",
     "optimize:images": "tsx scripts/optimizeImages.ts"
+    ,"migrate:local-songs": "tsx scripts/migrateLocalSongsToDb.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
