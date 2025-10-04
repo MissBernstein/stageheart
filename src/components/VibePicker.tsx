@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -13,6 +14,7 @@ interface VibePickerProps {
 
 export const VibePicker = ({ onVibeSelect, songTitle, artist }: VibePickerProps) => {
   const [selectedVibeId, setSelectedVibeId] = useState<string>('');
+  const { t } = useTranslation();
   const vibes: Vibe[] = vibesData;
 
   const handleGenerate = () => {
@@ -27,22 +29,21 @@ export const VibePicker = ({ onVibeSelect, songTitle, artist }: VibePickerProps)
       <div className="bg-card rounded-3xl p-8 shadow-card border border-card-border">
         <div className="text-center mb-6">
           <h3 className="text-xl font-semibold text-card-foreground mb-2">
-            I don't know that one yet!
+            {t('vibePicker.unknownTitle')}
           </h3>
           <p className="text-muted-foreground">
-            No worries — pick a vibe for <strong>"{songTitle}"</strong>
-            {artist && ` by ${artist}`} and I'll still help:
+            {t('vibePicker.unknownSubtitle', { song: songTitle, artist: artist ? ` ${t('common.by')} ${artist}` : '' })}
           </p>
         </div>
 
         <div className="space-y-4">
           <div>
             <label htmlFor="vibe" className="block text-sm font-medium text-card-foreground mb-2">
-              Choose a vibe
+              {t('vibePicker.chooseLabel')}
             </label>
             <Select value={selectedVibeId} onValueChange={setSelectedVibeId}>
               <SelectTrigger className="h-12 text-lg bg-input border-input-border">
-                <SelectValue placeholder="Select how this song feels..." />
+                <SelectValue placeholder={t('vibePicker.placeholder') || ''} />
               </SelectTrigger>
               <SelectContent className="bg-card border-card-border">
                 {vibes.map((vibe) => (
@@ -51,7 +52,7 @@ export const VibePicker = ({ onVibeSelect, songTitle, artist }: VibePickerProps)
                     value={vibe.id}
                     className="text-lg py-3 hover:bg-primary-soft"
                   >
-                    {vibe.label}
+                    {t(`vibes.${vibe.id}`, vibe.label)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -63,17 +64,17 @@ export const VibePicker = ({ onVibeSelect, songTitle, artist }: VibePickerProps)
             disabled={!selectedVibeId}
             className="w-full h-12 text-lg font-semibold bg-primary hover:bg-primary-hover text-primary-foreground rounded-2xl transition-all duration-200"
           >
-            Generate Vibe-Based Map
+            {t('vibePicker.generate')}
           </AnimatedButton>
         </div>
 
         <p className="text-xs text-muted-foreground text-center mt-4">
-          This will be a vibe-based map (no specific lyrics analysis)
+          {t('vibePicker.note')}
         </p>
 
         <div className="text-center mt-4">
           <Link to="/add" className="text-sm text-primary hover:text-primary-hover underline">
-            Or submit a new song
+            {t('vibePicker.submitNew')}
           </Link>
         </div>
       </div>

@@ -26,13 +26,11 @@ import { useTranslation } from 'react-i18next';
 import {
   generateWarmupPlan,
   WARMUP_VIBE_OPTIONS,
-  WARMUP_VIBE_LABELS,
   WarmupVibe,
   VoiceType,
   Technique,
   WarmupRequest,
   WarmupPlan,
-  TECHNIQUE_LABELS,
 } from '@/lib/warmupGenerator';
 import {
   buildSetlist,
@@ -272,17 +270,21 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
 
     const request = lastWarmupRequestRef.current;
 
-    const techniqueSummary = (req?: WarmupRequest) =>
-      req && req.techniques.length
-        ? req.techniques.map(tech => TECHNIQUE_LABELS[tech]).join(', ')
-        : 'None';
+    const techniqueSummary = (req?: WarmupRequest) => {
+      if (!req || !req.techniques.length) return 'None';
+      return req.techniques
+        .map(tech => (tech === 'belting' ? t('prep.belting') : t('prep.headVoice')))
+        .join(', ');
+    };
 
     const requestSection = request
       ? `
         <section style="margin-bottom:16px;">
           <h2 style="font-size:16px;margin-bottom:6px;">Criteria</h2>
           <ul style="padding-left:18px;margin:0;">
-            <li><strong>Vibe:</strong> ${WARMUP_VIBE_LABELS[request.vibe]}</li>
+            <li><strong>Vibe:</strong> ${t(
+              WARMUP_VIBE_OPTIONS.find(o => o.id === request.vibe)?.labelKey || ''
+            )}</li>
             <li><strong>Voice Type:</strong> ${request.voiceType ? request.voiceType : 'Unspecified'}</li>
             <li><strong>Techniques:</strong> ${techniqueSummary(request)}</li>
           </ul>
@@ -309,12 +311,12 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
           </style>
         </head>
         <body>
-          <h1>AI Warm-up Routine</h1>
+          <h1>${t('prep.export.title', 'AI Warm-up Routine')}</h1>
           ${requestSection}
-          ${buildList('Physical Warm-ups', warmupData.physicalWarmups)}
-          ${buildList('Vocal Warm-ups', warmupData.vocalWarmups)}
-          ${buildList('Mental Focus', warmupData.emotionalPrep)}
-          <p><strong>Total Duration:</strong> ${warmupData.duration} minutes</p>
+          ${buildList(t('prep.export.physical', 'Physical Warm-ups'), warmupData.physicalWarmups)}
+          ${buildList(t('prep.export.vocal', 'Vocal Warm-ups'), warmupData.vocalWarmups)}
+          ${buildList(t('prep.export.mental', 'Mental Focus'), warmupData.emotionalPrep)}
+          <p><strong>${t('prep.export.totalDuration', 'Total Duration')}:</strong> ${warmupData.duration} ${t('prep.export.minutes', 'minutes')}</p>
         </body>
       </html>
     `;
@@ -385,8 +387,8 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
   const generateWarmup = async () => {
     if (!selectedVibe) {
       toast({
-        title: 'Pick a vibe',
-        description: 'Choose one of the vibe tiles to unlock the warm-up generator.',
+        title: t('prep.warmup.pickVibeTitle', 'Pick a vibe'),
+        description: t('prep.warmup.pickVibeDesc', 'Choose one of the vibe tiles to unlock the warm-up generator.'),
         variant: 'default',
       });
       return;
@@ -657,13 +659,13 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                 </div>
               ) : (
                 <div className="space-y-6">
-                  <div className="text-center pb-4 space-y-4">
+                  <div className="text-center pb-2 space-y-3">
                     <AnimatedButton
                       variant="ghost"
                       onClick={() => setCurrentTool('menu')}
-                      className="flex items-center gap-2 mx-auto"
+                      className="flex items-center gap-2 mx-auto -mt-2"
                     >
-                      ← Back to Tools
+                      ← {t('prep.backToTools')}
                     </AnimatedButton>
                     <div className="flex items-center gap-3">
                       {(() => {

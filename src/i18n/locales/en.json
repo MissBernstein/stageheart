@@ -86,6 +86,19 @@
   "prep": {
     "title": "Performance Prep Tools",
     "preparingFor": "Preparing for",
+  "backToTools": "Back to Tools",
+    "warmup": {
+      "pickVibeTitle": "Pick a vibe",
+      "pickVibeDesc": "Choose one of the vibe tiles to unlock the warm-up generator."
+    },
+    "export": {
+      "title": "AI Warm-up Routine",
+      "physical": "Physical Warm-ups",
+      "vocal": "Vocal Warm-ups",
+      "mental": "Mental Focus",
+      "totalDuration": "Total Duration",
+      "minutes": "minutes"
+    },
     "tips": {
       "tempo": "Drag to set BPM. Tap to match a tempo.",
       "beats": "Choose how many beats are in a measure.",
@@ -300,5 +313,29 @@
     "retry": "Try again",
     "enterSongTagline": "Enter a song and I'll map its feelings.",
     "searchAnotherSong": "← Search another song"
+  }
+  ,
+  "vibePicker": {
+    "unknownTitle": "I don't know that one yet!",
+    "unknownSubtitle": "No worries — pick a vibe for \"{{song}}\"{{artist}} and I'll still help:",
+    "chooseLabel": "Choose a vibe",
+    "placeholder": "Select how this song feels...",
+    "generate": "Generate Vibe-Based Map",
+    "note": "This will be a vibe-based map (no specific lyrics analysis)",
+    "submitNew": "Or submit a new song"
+  },
+  "vibes": {
+    "playful": "Playful",
+    "hopeful": "Hopeful",
+    "sad": "Sad",
+    "angry": "Angry",
+    "romantic": "Romantic",
+    "contemplative": "Contemplative",
+    "epic": "Epic / Anthemic",
+    "groovy": "Groovy",
+    "spiritual": "Spiritual",
+    "nostalgic": "Nostalgic",
+    "empowering": "Empowering",
+    "lullaby": "Lullaby"
   }
 }

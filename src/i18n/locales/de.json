@@ -86,6 +86,19 @@
   "prep": {
     "title": "Aufführungs-Vorbereitung",
     "preparingFor": "Vorbereitung für",
+  "backToTools": "Zurück zu den Tools",
+    "warmup": {
+      "pickVibeTitle": "Wähle eine Stimmung",
+      "pickVibeDesc": "Wähle eine der Stimmungs-Kacheln, um den Aufwärm-Generator freizuschalten."
+    },
+    "export": {
+      "title": "KI Aufwärm-Routine",
+      "physical": "Körperliches Aufwärmen",
+      "vocal": "Stimmliches Aufwärmen",
+      "mental": "Mentale Fokussierung",
+      "totalDuration": "Gesamtdauer",
+      "minutes": "Minuten"
+    },
     "tips": {
       "tempo": "Ziehe, um BPM einzustellen. Tippe, um ein Tempo zu übernehmen.",
       "beats": "Wähle, wie viele Schläge ein Takt hat.",
@@ -273,5 +286,29 @@
     "retry": "Nochmal versuchen",
     "enterSongTagline": "Gib einen Song ein und ich kartiere seine Gefühle.",
     "searchAnotherSong": "← Nach einem anderen Lied suchen"
+  }
+  ,
+  "vibePicker": {
+    "unknownTitle": "Den kenne ich noch nicht!",
+    "unknownSubtitle": "Kein Problem — wähle eine Stimmung für \"{{song}}\"{{artist}} und ich helfe dir trotzdem:",
+    "chooseLabel": "Wähle eine Stimmung",
+    "placeholder": "Wähle, wie sich dieses Lied anfühlt...",
+    "generate": "Stimmungsbasierte Karte erzeugen",
+    "note": "Dies wird eine stimmungsbasierte Karte (keine spezifische Textanalyse)",
+    "submitNew": "Oder ein neues Lied einreichen"
+  },
+  "vibes": {
+    "playful": "Verspielt",
+    "hopeful": "Hoffnungsvoll",
+    "sad": "Traurig",
+    "angry": "Wütend",
+    "romantic": "Romantisch",
+    "contemplative": "Kontemplativ",
+    "epic": "Episch / Hymnisch",
+    "groovy": "Groovig",
+    "spiritual": "Spirituell",
+    "nostalgic": "Nostalgisch",
+    "empowering": "Stärkend",
+    "lullaby": "Wiegenlied"
   }
 }

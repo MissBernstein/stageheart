@@ -1,4 +1,6 @@
-import { WarmupRequest, WARMUP_VIBE_LABELS, TECHNIQUE_LABELS } from '@/lib/warmupGenerator';
+import { WarmupRequest, WARMUP_VIBE_OPTIONS } from '@/lib/warmupGenerator';
+import { useTranslation } from 'react-i18next';
+import type { Technique } from '@/lib/warmupGenerator';
 
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
@@ -7,14 +9,18 @@ interface WarmupCriteriaPreviewProps {
 }
 
 export const WarmupCriteriaPreview = ({ request }: WarmupCriteriaPreviewProps) => {
-  const chips: string[] = [WARMUP_VIBE_LABELS[request.vibe]];
+  const { t } = useTranslation();
+  const vibeOption = WARMUP_VIBE_OPTIONS.find(o => o.id === request.vibe);
+  const chips: string[] = [vibeOption ? t(vibeOption.labelKey) : request.vibe];
 
   if (request.voiceType) {
     chips.push(capitalize(request.voiceType));
   }
 
-  request.techniques.forEach(technique => {
-    chips.push(TECHNIQUE_LABELS[technique]);
+  request.techniques.forEach((technique: Technique) => {
+    // technique translation keys already exist (e.g., prep.belting, prep.headVoice)
+    const key = technique === 'belting' ? 'prep.belting' : 'prep.headVoice';
+    chips.push(t(key));
   });
 
   return (
