@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,10 +7,11 @@ import { useToast } from '@/hooks/use-toast';
 import { Heart } from 'lucide-react';
 import { AutocompleteSearch } from '@/components/AutocompleteSearch';
 import { SongLibrary } from '@/components/SongLibrary';
-import { FeelingJourney } from '@/components/FeelingJourney';
-import { PerformancePrepTools } from '@/components/PerformancePrepTools';
-import { FeelingsCard } from '@/components/FeelingsCard';
-import { VibePicker } from '@/components/VibePicker';
+// Lazy-loaded feature modules to reduce initial bundle size
+const FeelingJourney = lazy(() => import('@/components/FeelingJourney').then(m => ({ default: m.FeelingJourney })));
+const PerformancePrepTools = lazy(() => import('@/components/PerformancePrepTools').then(m => ({ default: m.PerformancePrepTools })));
+const FeelingsCard = lazy(() => import('@/components/FeelingsCard').then(m => ({ default: m.FeelingsCard })));
+const VibePicker = lazy(() => import('@/components/VibePicker').then(m => ({ default: m.VibePicker })));
 
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { FeelingMap, Song, Vibe } from '@/types';
@@ -315,20 +316,24 @@ const Index = () => {
 
           {/* Vibe Picker */}
           {showVibePicker && (
-            <VibePicker
-              onVibeSelect={handleVibeSelect}
-              songTitle={searchQuery.title}
-              artist={searchQuery.artist}
-            />
+            <Suspense fallback={<div className="py-10 text-center text-muted-foreground">{t('common.loading')}</div>}>
+              <VibePicker
+                onVibeSelect={handleVibeSelect}
+                songTitle={searchQuery.title}
+                artist={searchQuery.artist}
+              />
+            </Suspense>
           )}
 
           {/* Feeling Journey */}
           {showJourney && (
-            <FeelingJourney 
-              onSelectSong={handleSelectSong}
-              onClose={() => setShowJourney(false)}
-              songs={songs}
-            />
+            <Suspense fallback={<div className="py-10 text-center text-muted-foreground">{t('common.loading')}</div>}>
+              <FeelingJourney 
+                onSelectSong={handleSelectSong}
+                onClose={() => setShowJourney(false)}
+                songs={songs}
+              />
+            </Suspense>
           )}
 
           {/* Song Library */}
@@ -341,21 +346,25 @@ const Index = () => {
 
           {/* Performance Prep Tools */}
           {showPrepTools && (
-            <PerformancePrepTools 
-              currentSong={currentMap ? songs.find(s => s.id === currentMap.id) : undefined}
-              onClose={() => setShowPrepTools(false)}
-              songs={songs}
-            />
+            <Suspense fallback={<div className="py-10 text-center text-muted-foreground">{t('common.loading')}</div>}>
+              <PerformancePrepTools 
+                currentSong={currentMap ? songs.find(s => s.id === currentMap.id) : undefined}
+                onClose={() => setShowPrepTools(false)}
+                songs={songs}
+              />
+            </Suspense>
           )}
 
           {/* Feelings Card */}
           {currentMap && (
-            <div className="space-y-4">
-              <FeelingsCard
-                feelingMap={currentMap}
-                onOpenPrepTools={() => setShowPrepTools(true)}
-              />
-            </div>
+            <Suspense fallback={<div className="py-10 text-center text-muted-foreground">{t('common.loading')}</div>}>
+              <div className="space-y-4">
+                <FeelingsCard
+                  feelingMap={currentMap}
+                  onOpenPrepTools={() => setShowPrepTools(true)}
+                />
+              </div>
+            </Suspense>
           )}
 
           {/* Reset button */}
