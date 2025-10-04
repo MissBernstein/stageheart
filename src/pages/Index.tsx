@@ -1,8 +1,11 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Session } from '@supabase/supabase-js';
+// Dynamic import of supabase to keep heavy client out of initial bundle
+import type { Database } from '@/integrations/supabase/types';
+type Session = import('@supabase/supabase-js').Session;
+type SupabaseClientType = import('@supabase/supabase-js').SupabaseClient<Database>;
+let supabase: SupabaseClientType | null = null;
 import { useToast } from '@/hooks/use-toast';
 import { Heart } from 'lucide-react';
 import { AutocompleteSearch } from '@/components/AutocompleteSearch';
@@ -44,28 +47,51 @@ const Index = () => {
   const songs: Song[] = songsData;
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setSession(session);
-      if (!session) {
-        navigate('/auth');
+    let unsub: (() => void) | null = null;
+    let mounted = true;
+    (async () => {
+      if (!supabase) {
+        const mod = await import('@/integrations/supabase/client');
+        supabase = mod.supabase;
       }
-      setLoading(false);
-    });
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!supabase) return;
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+        if (!mounted) return;
+        setSession(newSession);
+        if (!newSession) navigate('/auth');
+        setLoading(false);
+      });
+      unsub = () => subscription.unsubscribe();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!mounted) return;
       setSession(session);
-      if (!session) {
-        navigate('/auth');
-      }
+      if (!session) navigate('/auth');
       setLoading(false);
-    });
+    })();
 
-    return () => subscription.unsubscribe();
+    // Idle-time prefetch of commonly accessed feature bundles
+    if (typeof window !== 'undefined') {
+      const schedule = (cb: () => void) => (window as any).requestIdleCallback ? (window as any).requestIdleCallback(cb, { timeout: 3000 }) : setTimeout(cb, 1500);
+      schedule(() => {
+        // Fire and forget dynamic imports to warm the cache
+        import('@/components/PerformancePrepTools');
+        import('@/components/FeelingJourney');
+        import('@/components/FeelingsCard');
+        import('@/components/VibePicker');
+        import('@/components/MusicPlayer');
+        // Supabase already dynamically imported above; ensure cached
+        import('@/integrations/supabase/client');
+      });
+    }
+    return () => { mounted = false; if (unsub) unsub(); };
   }, [navigate]);
 
   const handleLogout = async () => {
+    if (!supabase) {
+      const mod = await import('@/integrations/supabase/client');
+      supabase = mod.supabase;
+    }
+    if (!supabase) return;
     const { error } = await supabase.auth.signOut();
     if (error) {
       toast({
