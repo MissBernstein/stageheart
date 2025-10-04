@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Search, Shuffle, Grid, List } from 'lucide-react';
+import { Search, Shuffle, Grid, List, Plus } from 'lucide-react';
 import jukeboxIcon from '@/assets/jukeboxicon.png';
 import { Input } from '@/components/ui/input';
 import { Song } from '@/types';
@@ -188,6 +189,15 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
                   <Shuffle className="w-4 h-4 mr-2" />
                   {t('library.surpriseMe')}
                 </AnimatedButton>
+                <Link to="/add">
+                  <AnimatedButton
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add new song
+                  </AnimatedButton>
+                </Link>
               </div>
             </div>
             

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Vibe } from '@/types';
@@ -69,6 +70,12 @@ export const VibePicker = ({ onVibeSelect, songTitle, artist }: VibePickerProps)
         <p className="text-xs text-muted-foreground text-center mt-4">
           This will be a vibe-based map (no specific lyrics analysis)
         </p>
+
+        <div className="text-center mt-4">
+          <Link to="/add" className="text-sm text-primary hover:text-primary-hover underline">
+            Or submit a new song
+          </Link>
+        </div>
       </div>
     </div>
   );
