@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Song } from '@/types';
 import { useAllSongs } from '@/hooks/useAllSongs';
 import { getCanonicalThemes } from '@/lib/themes';
+import { searchSongs } from '@/lib/songUtils';
 
 // Helper function to translate themes
 const getThemeTranslationKey = (theme: string): string => {
@@ -52,21 +53,21 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
 
   const themes = useMemo(() => getCanonicalThemes(), []);
 
-  const filteredSongs = songs.filter(song => {
-    const query = searchQuery.toLowerCase();
-    const themeText = (song.theme_detail ?? song.theme).toLowerCase();
-    const searchMatch = !searchQuery ||
-      song.title.toLowerCase().includes(query) ||
-      song.artist.toLowerCase().includes(query) ||
-      themeText.includes(query) ||
-      song.core_feelings.some(feeling => 
-        feeling.toLowerCase().includes(query)
-      );
+  const filteredSongs = useMemo(() => {
+    let filtered = songs;
     
-    const themeMatch = !selectedTheme || song.theme === selectedTheme;
+    // Apply search filter using improved search logic
+    if (searchQuery) {
+      filtered = searchSongs(filtered, searchQuery);
+    }
     
-    return searchMatch && themeMatch;
-  });
+    // Apply theme filter
+    if (selectedTheme) {
+      filtered = filtered.filter(song => song.theme === selectedTheme);
+    }
+    
+    return filtered;
+  }, [songs, searchQuery, selectedTheme]);
 
   const handleRandomSong = () => {
     const randomSong = songs[Math.floor(Math.random() * songs.length)];

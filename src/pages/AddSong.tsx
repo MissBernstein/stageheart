@@ -6,22 +6,42 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAllSongs } from '@/hooks/useAllSongs';
+import { validateSongSubmission, generateSongSlug } from '@/lib/songUtils';
 
 export default function AddSong() {
   const navigate = useNavigate();
+  const { songs } = useAllSongs();
   const [artist, setArtist] = useState('');
   const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
+    setValidationErrors([]);
+
+    // Validate with improved duplicate checking
+    const validation = validateSongSubmission(artist, title, songs);
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      return;
+    }
+
     setLoading(true);
 
     try {
+      // Generate the improved slug for submission
+      const slug = generateSongSlug(artist, title);
+      
       const { data, error } = await supabase.functions.invoke('submit-song', {
-        body: { artist, title }
+        body: { 
+          artist: artist.trim(), 
+          title: title.trim(),
+          slug // Send the improved slug
+        }
       });
 
       if (error) throw error;
@@ -85,7 +105,7 @@ export default function AddSong() {
                 />
               </div>
 
-              <Button type="submit" disabled={loading} className="w-full">
+              <Button type="submit" disabled={loading || validationErrors.length > 0} className="w-full">
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -96,6 +116,17 @@ export default function AddSong() {
                 )}
               </Button>
             </form>
+
+            {validationErrors.length > 0 && (
+              <div className="mt-4 p-4 bg-red-50 text-red-800 border border-red-200 rounded-lg">
+                <h3 className="font-semibold mb-2">Please fix these issues:</h3>
+                <ul className="space-y-1">
+                  {validationErrors.map((error, index) => (
+                    <li key={index} className="text-sm">• {error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {message && (
               <div className={`mt-4 p-3 rounded text-sm ${
