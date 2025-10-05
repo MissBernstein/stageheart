@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.feeling-journey]
 verify_jwt = false
+
+[functions.migrate-legacy-songs]
+verify_jwt = false

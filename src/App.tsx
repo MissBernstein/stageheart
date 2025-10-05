@@ -10,6 +10,7 @@ import Favorites from "./pages/Favorites";
 import NotFound from "./pages/NotFound";
 import AddSong from "./pages/AddSong";
 import AdminSubmissions from "./pages/AdminSubmissions";
+import MigrateLegacySongs from "./pages/MigrateLegacySongs";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
               <Route path="/favorites" element={<Favorites />} />
               <Route path="/add" element={<AddSong />} />
               <Route path="/admin/submissions" element={<AdminSubmissions />} />
+              <Route path="/admin/migrate" element={<MigrateLegacySongs />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
