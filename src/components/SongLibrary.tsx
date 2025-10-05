@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { translateFeeling } from '@/lib/i18nFeeling';
 import { Search, Shuffle, Grid, List, Plus } from 'lucide-react';
 import jukeboxIcon from '@/assets/jukeboxicon.png';
 import { Input } from '@/components/ui/input';
@@ -28,29 +29,6 @@ const getThemeTranslationKey = (theme: string): string => {
   return themeMap[theme] || theme;
 };
 
-// Helper function to translate feelings
-const getFeelingTranslationKey = (feeling: string): string => {
-  const feelingMap: Record<string, string> = {
-    'deep empathy': 'songContent.feelingCards.deepEmpathy',
-    'warm reassurance': 'songContent.feelingCards.warmReassurance',
-    'quiet strength': 'songContent.feelingCards.quietStrength',
-    'playful groove': 'songContent.feelingCards.playfulGroove',
-    'cheeky frustration': 'songContent.feelingCards.cheekyFrustration',
-    'joy': 'songContent.feelingCards.joy',
-    'celebration': 'songContent.feelingCards.celebration',
-    "i've learned": 'songContent.feelingCards.ivelearned',
-    'gentle awe': 'songContent.feelingCards.gentleAwe',
-    'quiet surrender': 'songContent.feelingCards.quietSurrender',
-    'playful sass': 'songContent.feelingCards.playfulSass',
-    'undercurrent': 'songContent.feelingCards.undercurrent',
-    'warm trust': 'songContent.feelingCards.warmTrust',
-    'rising hope': 'songContent.feelingCards.risingHope',
-    'tender longing': 'songContent.feelingCards.tenderLonging',
-    'vulnerable hope': 'songContent.feelingCards.vulnerableHope'
-  };
-  const key = feelingMap[feeling.toLowerCase()];
-  return key ? key : feeling;
-};
 import { AnimatedButton } from '@/ui/AnimatedButton';
 import { AnimatedListItem } from '@/ui/AnimatedListItem';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -273,7 +251,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
                             key={index}
                             className="rounded-full bg-emotion-bg px-2 py-1 text-xs text-emotion-foreground"
                           >
-                            {t(getFeelingTranslationKey(feeling))}
+                            {translateFeeling(t, feeling)}
                           </span>
                         ))}
                         {song.core_feelings.length > 2 && (
@@ -314,7 +292,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
                                   key={index}
                                   className="rounded-full bg-emotion-bg px-2 py-1 text-xs text-emotion-foreground"
                                 >
-                                  {t(getFeelingTranslationKey(feeling))}
+                                  {translateFeeling(t, feeling)}
                                 </span>
                               ))}
                             </div>

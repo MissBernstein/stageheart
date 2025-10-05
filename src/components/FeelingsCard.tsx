@@ -1,30 +1,7 @@
 import { Heart, CheckCircle2, Pencil, Trash2, Plus } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-
-// Helper function to translate feelings
-const getFeelingTranslationKey = (feeling: string): string => {
-  const feelingMap: Record<string, string> = {
-    'deep empathy': 'songContent.feelingCards.deepEmpathy',
-    'warm reassurance': 'songContent.feelingCards.warmReassurance',
-    'quiet strength': 'songContent.feelingCards.quietStrength',
-    'playful groove': 'songContent.feelingCards.playfulGroove',
-    'cheeky frustration': 'songContent.feelingCards.cheekyFrustration',
-    'joy': 'songContent.feelingCards.joy',
-    'celebration': 'songContent.feelingCards.celebration',
-    "i've learned": 'songContent.feelingCards.ivelearned',
-    'gentle awe': 'songContent.feelingCards.gentleAwe',
-    'quiet surrender': 'songContent.feelingCards.quietSurrender',
-    'playful sass': 'songContent.feelingCards.playfulSass',
-    'undercurrent': 'songContent.feelingCards.undercurrent',
-    'warm trust': 'songContent.feelingCards.warmTrust',
-    'rising hope': 'songContent.feelingCards.risingHope',
-    'tender longing': 'songContent.feelingCards.tenderLonging',
-    'vulnerable hope': 'songContent.feelingCards.vulnerableHope'
-  };
-  const key = feelingMap[feeling.toLowerCase()];
-  return key ? key : feeling;
-};
+import { translateFeeling } from '@/lib/i18nFeeling';
 import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -384,18 +361,25 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
           )}
         </div>
 
-        {/* Summary / Missing Content Fallback */}
-        {feelingMap.summary ? (
-          <div className="mb-6">
-            <p className="text-lg text-card-foreground leading-relaxed italic">
-              {feelingMap.summary}
-            </p>
-          </div>
-        ) : (
-          <div className="mb-6 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-amber-700 dark:text-amber-300 text-sm">
-            {t('songContent.missing', 'Song feeling content missing or not yet restored.')}
-          </div>
-        )}
+        {/* Summary / Missing Content Fallback (with translation attempt) */}
+        {(() => {
+          if (feelingMap.summary) {
+            const summaryKey = `songContent.summaries.${feelingMap.id}`;
+            const translated = t(summaryKey, feelingMap.summary);
+            return (
+              <div className="mb-6">
+                <p className="text-lg text-card-foreground leading-relaxed italic">
+                  {translated === summaryKey ? feelingMap.summary : translated}
+                </p>
+              </div>
+            );
+          }
+          return (
+            <div className="mb-6 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-amber-700 dark:text-amber-300 text-sm">
+              {t('songContent.missing', 'Song feeling content missing or not yet restored.')}
+            </div>
+          );
+        })()}
 
         {/* Theme */}
         {(feelingMap.theme_detail || feelingMap.theme) && (
@@ -406,7 +390,11 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
             </h3>
             {feelingMap.theme_detail && (
               <p className="text-muted-foreground font-medium">
-                {feelingMap.theme_detail}
+                {(() => {
+                  const key = `songContent.themeDetail.${feelingMap.id}`;
+                  const translated = t(key, feelingMap.theme_detail!);
+                  return translated === key ? feelingMap.theme_detail : translated;
+                })()}
               </p>
             )}
             {feelingMap.theme && (
@@ -463,7 +451,7 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                     className="inline-flex items-center gap-2 px-4 py-2 bg-emotion-bg text-emotion-text border border-emotion-border rounded-full text-sm font-medium shadow-emotion transition-all duration-200"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
-                    <span>{item.isCustom ? item.text : t(getFeelingTranslationKey(item.text))}</span>
+                    <span>{item.isCustom ? item.text : translateFeeling(t, item.text)}</span>
                     <button
                       type="button"
                       onClick={() => {
@@ -582,7 +570,13 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                   >
                     <div className="flex gap-3">
                       <div className="w-2 h-2 bg-tip-icon rounded-full mt-2 flex-shrink-0" />
-                      <p className="text-tip-text leading-relaxed">{item.text}</p>
+                      <p className="text-tip-text leading-relaxed">
+                        {(() => {
+                          const key = `songContent.accessIdeas.${feelingMap.id}_${index}`;
+                          const translated = t(key, item.text);
+                          return translated === key ? item.text : translated;
+                        })()}
+                      </p>
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
@@ -704,7 +698,11 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                       style={{ animationDelay: `${index * 100}ms` }}
                     >
                       <p className="text-tip-text text-lg font-medium flex-1">
-                        {item.text}
+                        {(() => {
+                          const key = `songContent.visualCues.${feelingMap.id}_${index}`;
+                          const translated = t(key, item.text);
+                          return translated === key ? item.text : translated;
+                        })()}
                       </p>
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
