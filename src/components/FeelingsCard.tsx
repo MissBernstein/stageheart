@@ -384,12 +384,16 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
           )}
         </div>
 
-        {/* Summary */}
-        {feelingMap.summary && (
+        {/* Summary / Missing Content Fallback */}
+        {feelingMap.summary ? (
           <div className="mb-6">
             <p className="text-lg text-card-foreground leading-relaxed italic">
               {feelingMap.summary}
             </p>
+          </div>
+        ) : (
+          <div className="mb-6 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-amber-700 dark:text-amber-300 text-sm">
+            {t('songContent.missing', 'Song feeling content missing or not yet restored.')}
           </div>
         )}
 

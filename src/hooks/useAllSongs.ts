@@ -2,20 +2,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Song } from '@/types';
 
-interface Row {
-  id: string;
-  title: string;
-  artist: string;
-  created_at: string;
-  feeling_cards: {
-    summary: string;
-    theme: string;
-    core_feelings: string[];
-    access_ideas: string[];
-    visual: string | null;
-    created_at: string;
-  } | null;
-}
+// Relaxed row typing to tolerate variation in Supabase nested select return shape (object or array)
+type RowAny = Record<string, any> & { id: string; title: string; artist: string; created_at: string };
 
 export function useAllSongs() {
   const [songs, setSongs] = useState<Song[]>([]);
@@ -36,19 +24,23 @@ export function useAllSongs() {
           .select('id,title,artist,created_at,feeling_cards ( summary, theme, core_feelings, access_ideas, visual, created_at )')
           .limit(2000);
         if (error) throw error;
-        const mapped: Song[] = (data as Row[]).map(r => ({
-          id: r.id,
+        const mapped: Song[] = (data as RowAny[]).map(r => {
+          const fcRaw = (r as any).feeling_cards;
+          const fc = Array.isArray(fcRaw) ? fcRaw[0] : fcRaw;
+          return {
+            id: r.id,
             title: r.title,
             artist: r.artist,
-            summary: r.feeling_cards?.summary || '',
-            theme: r.feeling_cards?.theme || 'Unknown',
-            core_feelings: r.feeling_cards?.core_feelings || [],
-            access_ideas: r.feeling_cards?.access_ideas || [],
-            visual: r.feeling_cards?.visual || '🎵',
+            summary: fc?.summary || '',
+            theme: fc?.theme || 'Unknown',
+            core_feelings: Array.isArray(fc?.core_feelings) ? fc.core_feelings : [],
+            access_ideas: Array.isArray(fc?.access_ideas) ? fc.access_ideas : [],
+            visual: (typeof fc?.visual === 'string' && fc.visual) ? fc.visual : '🎵',
             theme_detail: undefined,
-            created_at: r.feeling_cards?.created_at || r.created_at,
+            created_at: fc?.created_at || r.created_at,
             isRemote: true,
-        }));
+          } as Song;
+        });
         if (!cancelled) {
           setSongs(mapped);
           try { sessionStorage.setItem('all-songs-v1', JSON.stringify(mapped)); } catch {}

@@ -81,13 +81,13 @@ const Auth = () => {
             toast({
               title: 'Login failed',
               description: 'Invalid email or password. Please try again.',
-              variant: 'destructive',
+              variant: 'error',
             });
           } else {
             toast({
               title: 'Error',
               description: error.message,
-              variant: 'destructive',
+              variant: 'error',
             });
           }
         } else {
@@ -101,7 +101,7 @@ const Auth = () => {
           toast({
             title: 'Error',
             description: 'Please enter a display name.',
-            variant: 'destructive',
+            variant: 'error',
           });
           setLoading(false);
           return;
@@ -123,13 +123,13 @@ const Auth = () => {
             toast({
               title: 'Account exists',
               description: 'This email is already registered. Please login instead.',
-              variant: 'destructive',
+              variant: 'error',
             });
           } else {
             toast({
               title: 'Error',
               description: error.message,
-              variant: 'destructive',
+              variant: 'error',
             });
           }
         } else {
@@ -144,7 +144,7 @@ const Auth = () => {
         toast({
           title: 'Validation Error',
           description: error.errors[0].message,
-          variant: 'destructive',
+          variant: 'error',
         });
       }
     } finally {

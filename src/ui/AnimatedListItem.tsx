@@ -20,9 +20,9 @@ interface AnimatedListItemProps extends HTMLAttributes<HTMLLIElement> {
 
 export const AnimatedListItem = forwardRef<HTMLLIElement, AnimatedListItemProps>(({ children, style, ...props }, ref) => {
   const prefersReducedMotion = usePrefersReducedMotion();
-  const layoutTransition = prefersReducedMotion
-    ? { layout: { duration: 0 } }
-    : { layout: { type: 'spring', stiffness: springSoft.stiffness, damping: springSoft.damping } };
+  const layoutTransition: any = prefersReducedMotion
+    ? { duration: 0 }
+    : { type: 'spring', stiffness: springSoft.stiffness, damping: springSoft.damping };
 
   return (
     <motion.li
@@ -33,7 +33,7 @@ export const AnimatedListItem = forwardRef<HTMLLIElement, AnimatedListItemProps>
       initial={prefersReducedMotion ? false : 'initial'}
       animate={prefersReducedMotion ? undefined : 'animate'}
       exit={prefersReducedMotion ? undefined : 'exit'}
-      transition={layoutTransition}
+  transition={layoutTransition}
       {...props}
     >
       {children}
