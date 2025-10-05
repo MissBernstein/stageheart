@@ -1,5 +1,6 @@
 export interface Song {
   id: string;
+  slug?: string; // canonical slug for translation key mapping
   title: string;
   artist: string;
   summary: string;

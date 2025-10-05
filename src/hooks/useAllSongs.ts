@@ -21,7 +21,7 @@ export function useAllSongs() {
       try {
         const { data, error } = await supabase
           .from('songs')
-          .select('id,title,artist,created_at,feeling_cards ( summary, theme, core_feelings, access_ideas, visual, created_at )')
+          .select('id,slug,title,artist,created_at,feeling_cards ( summary, theme, core_feelings, access_ideas, visual, created_at )')
           .limit(2000);
         if (error) throw error;
         const mapped: Song[] = (data as RowAny[]).map(r => {
@@ -29,6 +29,7 @@ export function useAllSongs() {
           const fc = Array.isArray(fcRaw) ? fcRaw[0] : fcRaw;
           return {
             id: r.id,
+            slug: (r as any).slug || undefined,
             title: r.title,
             artist: r.artist,
             summary: fc?.summary || '',

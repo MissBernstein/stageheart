@@ -13,7 +13,8 @@
     "migrate:themes": "tsx scripts/migrateThemes.ts",
     "optimize:images": "tsx scripts/optimizeImages.ts"
     ,"migrate:local-songs": "tsx scripts/migrateLocalSongsToDb.ts"
-    ,"i18n:sync": "tsx scripts/i18nSync.ts"
+  ,"i18n:sync": "tsx scripts/i18nSync.ts"
+  ,"i18n:fill-de": "tsx scripts/i18nFillDe.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

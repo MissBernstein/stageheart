@@ -2,6 +2,7 @@ import { Heart, CheckCircle2, Pencil, Trash2, Plus } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { translateFeeling } from '@/lib/i18nFeeling';
+import { translateNarrative } from '@/lib/i18nDebug';
 import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -362,24 +363,17 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
         </div>
 
         {/* Summary / Missing Content Fallback (with translation attempt) */}
-        {(() => {
-          if (feelingMap.summary) {
-            const summaryKey = `songContent.summaries.${feelingMap.id}`;
-            const translated = t(summaryKey, feelingMap.summary);
-            return (
-              <div className="mb-6">
-                <p className="text-lg text-card-foreground leading-relaxed italic">
-                  {translated === summaryKey ? feelingMap.summary : translated}
-                </p>
-              </div>
-            );
-          }
-          return (
-            <div className="mb-6 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-amber-700 dark:text-amber-300 text-sm">
-              {t('songContent.missing', 'Song feeling content missing or not yet restored.')}
-            </div>
-          );
-        })()}
+        {feelingMap.summary ? (
+          <div className="mb-6">
+            <p className="text-lg text-card-foreground leading-relaxed italic">
+              {translateNarrative(t, `songContent.summaries.${feelingMap.slug || feelingMap.id}`, feelingMap.summary)}
+            </p>
+          </div>
+        ) : (
+          <div className="mb-6 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-amber-700 dark:text-amber-300 text-sm">
+            {t('songContent.missing', 'Song feeling content missing or not yet restored.')}
+          </div>
+        )}
 
         {/* Theme */}
         {(feelingMap.theme_detail || feelingMap.theme) && (
@@ -390,11 +384,7 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
             </h3>
             {feelingMap.theme_detail && (
               <p className="text-muted-foreground font-medium">
-                {(() => {
-                  const key = `songContent.themeDetail.${feelingMap.id}`;
-                  const translated = t(key, feelingMap.theme_detail!);
-                  return translated === key ? feelingMap.theme_detail : translated;
-                })()}
+                {translateNarrative(t, `songContent.themeDetail.${feelingMap.slug || feelingMap.id}`, feelingMap.theme_detail)}
               </p>
             )}
             {feelingMap.theme && (
@@ -571,11 +561,7 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                     <div className="flex gap-3">
                       <div className="w-2 h-2 bg-tip-icon rounded-full mt-2 flex-shrink-0" />
                       <p className="text-tip-text leading-relaxed">
-                        {(() => {
-                          const key = `songContent.accessIdeas.${feelingMap.id}_${index}`;
-                          const translated = t(key, item.text);
-                          return translated === key ? item.text : translated;
-                        })()}
+                        {translateNarrative(t, `songContent.accessIdeas.${feelingMap.slug || feelingMap.id}_${index}`, item.text)}
                       </p>
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -698,11 +684,7 @@ ${visualSection}${vibeSuffix}${personalNotesSection}`;
                       style={{ animationDelay: `${index * 100}ms` }}
                     >
                       <p className="text-tip-text text-lg font-medium flex-1">
-                        {(() => {
-                          const key = `songContent.visualCues.${feelingMap.id}_${index}`;
-                          const translated = t(key, item.text);
-                          return translated === key ? item.text : translated;
-                        })()}
+                        {translateNarrative(t, `songContent.visualCues.${feelingMap.slug || feelingMap.id}_${index}`, item.text)}
                       </p>
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
