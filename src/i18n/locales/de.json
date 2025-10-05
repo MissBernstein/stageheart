@@ -264,6 +264,34 @@
     "unconditionalSupportComfort": "Bedingungslose Unterstützung & Trost",
     "yearningReflection": "Sehnsucht & Reflektion"
   },
+  "songContent": {
+    "coreFeelingsLabel": "Grundgefühle",
+    "accessIdeasLabel": "Zugangs-Ideen",
+    "visualCuesLabel": "Visuelle Hinweise",
+    "exampleText": {
+      "title": "Songtitel eingeben...",
+      "artist": "Künstlername eingeben..."
+    },
+    "missing": "Song-Gefühlsinhalte fehlen oder wurden noch nicht wiederhergestellt.",
+    "feelingCards": {
+      "deepEmpathy": "tiefe Empathie",
+      "warmReassurance": "warme Beruhigung",
+      "quietStrength": "stille Stärke",
+      "playfulGroove": "verspielter Groove",
+      "cheekyFrustration": "freche Frustration",
+      "joy": "Freude",
+      "celebration": "Feier",
+      "ivelearned": "ich habe gelernt",
+      "gentleAwe": "sanfte Ehrfurcht",
+      "quietSurrender": "stilles Loslassen",
+      "playfulSass": "verspielte Frechheit",
+      "undercurrent": "Unterströmung",
+      "warmTrust": "warmes Vertrauen",
+      "risingHope": "aufkeimende Hoffnung",
+      "tenderLonging": "zärtliche Sehnsucht",
+      "vulnerableHope": "verletzliche Hoffnung"
+    }
+  },
   "favorites": {
     "title": "Gespeicherte Gefühls-Landkarten",
     "categoryDeleted": "Kategorie gelöscht",

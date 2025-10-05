@@ -272,6 +272,7 @@
       "title": "Enter song title...",
       "artist": "Enter artist name..."
     },
+    "missing": "Song feeling content missing or not yet restored.",
     "feelingCards": {
       "deepEmpathy": "deep empathy",
       "warmReassurance": "warm reassurance",
