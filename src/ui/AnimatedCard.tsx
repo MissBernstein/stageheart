@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { motionDur, motionEase } from './motion';
 import { usePrefersReducedMotion } from './usePrefersReducedMotion';
 
-type AnimatedCardProps = React.ComponentProps<typeof Card>;
+type AnimatedCardProps = Omit<React.ComponentProps<typeof Card>, 'onAnimationStart' | 'onDrag' | 'onDragStart' | 'onDragEnd'>;
 
 const MotionCard = motion(Card);
 

@@ -8,7 +8,7 @@ import { usePrefersReducedMotion } from './usePrefersReducedMotion';
 
 const MotionButton = motion(Button);
 
-interface AnimatedButtonProps extends ButtonProps {
+interface AnimatedButtonProps extends Omit<ButtonProps, 'onAnimationStart' | 'onDrag' | 'onDragStart' | 'onDragEnd'> {
   isLoading?: boolean;
   loadingText?: string;
 }

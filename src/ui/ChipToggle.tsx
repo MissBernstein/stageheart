@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { motionDur, motionEase } from './motion';
 import { usePrefersReducedMotion } from './usePrefersReducedMotion';
 
-interface ChipToggleProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ChipToggleProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onAnimationStart' | 'onDrag' | 'onDragStart' | 'onDragEnd'> {
   isActive?: boolean;
 }
 

@@ -33,15 +33,22 @@ Deno.serve(async (req) => {
 
     // Step 2: Backfill data
     console.log('Backfilling data...')
-    const { error: backfillError } = await supabase
+    const { data: songsNeedingBackfill } = await supabase
       .from('songs')
-      .update({ 
-        song_title: supabase.sql`COALESCE(song_title, title)`,
-        artist: supabase.sql`COALESCE(artist, 'Unknown Artist')`
-      })
+      .select('id, title, artist')
       .is('song_title', null)
 
-    if (backfillError) throw backfillError
+    if (songsNeedingBackfill && songsNeedingBackfill.length > 0) {
+      for (const song of songsNeedingBackfill) {
+        await supabase
+          .from('songs')
+          .update({ 
+            song_title: song.title,
+            artist: song.artist || 'Unknown Artist'
+          })
+          .eq('id', song.id)
+      }
+    }
 
     // Step 3: Update slugs to use artist+title
     console.log('Updating slugs...')
@@ -112,11 +119,12 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Migration failed:', error)
+    const errorMsg = error instanceof Error ? error.message : 'Migration failed'
     
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message || 'Migration failed' 
+        error: errorMsg
       }),
       {
         status: 500,

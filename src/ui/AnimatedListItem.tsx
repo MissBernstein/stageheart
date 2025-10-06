@@ -14,7 +14,7 @@ const variants = {
   exit: { opacity: 0, y: -6, transition: { duration: motionDur.fast / 1000, ease: motionEase.exit } },
 };
 
-interface AnimatedListItemProps extends HTMLAttributes<HTMLLIElement> {
+interface AnimatedListItemProps extends Omit<HTMLAttributes<HTMLLIElement>, 'onAnimationStart' | 'onDrag' | 'onDragStart' | 'onDragEnd'> {
   index?: number;
 }
 

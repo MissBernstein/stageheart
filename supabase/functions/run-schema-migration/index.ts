@@ -51,7 +51,8 @@ Deno.serve(async (req) => {
       
       console.log('✅ New columns added successfully')
     } catch (error) {
-      console.log('⚠️ Column addition may have failed (might already exist):', error.message)
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+      console.log('⚠️ Column addition may have failed (might already exist):', errorMsg)
     }
 
     // Step 3: Backfill data using direct updates
@@ -120,7 +121,8 @@ Deno.serve(async (req) => {
       
       console.log('✅ Indexes created')
     } catch (error) {
-      console.log('⚠️ Index creation may have failed (might already exist):', error.message)
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+      console.log('⚠️ Index creation may have failed (might already exist):', errorMsg)
     }
 
     // Validation
@@ -148,12 +150,14 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('❌ Migration failed:', error)
+    const errorMsg = error instanceof Error ? error.message : 'Migration failed'
+    const errorDetails = error instanceof Error ? error.toString() : String(error)
     
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message || 'Migration failed',
-        details: error.toString()
+        error: errorMsg,
+        details: errorDetails
       }, null, 2),
       {
         status: 500,
