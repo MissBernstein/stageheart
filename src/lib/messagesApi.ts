@@ -1,4 +1,5 @@
-// Mock messages API abstraction (client-side only)
+// @keep - Mock messages API abstraction (client-side only)
+// KEEP: integration-pending - Will be replaced with real Supabase API calls
 export type MessageType = 'dm' | 'meet' | 'comment' | 'system';
 
 export interface MessageRecord {

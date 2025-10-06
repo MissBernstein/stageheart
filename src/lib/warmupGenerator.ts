@@ -1,3 +1,4 @@
+// @keep - Warmup generation logic for performance prep features
 export type WarmupVibe =
   | 'bright_playful'
   | 'warm_emotional'

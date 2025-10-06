@@ -1,3 +1,4 @@
+// @keep - Supabase generated types for backend integration
 export type Json =
   | string
   | number

@@ -1,5 +1,5 @@
-// Mockable voices/profile data access layer (no Supabase required yet)
-// When Supabase is available, swap internals while keeping function signatures stable.
+// @keep - Mockable voices/profile data access layer (no Supabase required yet)
+// KEEP: integration-pending - When Supabase is available, swap internals while keeping function signatures stable.
 import { Recording, UserProfile } from '@/types/voices';
 
 // In-memory mock DB (can be mutated for optimistic UI demos)
