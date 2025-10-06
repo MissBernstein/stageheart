@@ -370,7 +370,7 @@ const Index = () => {
         <div className="fixed inset-0 bg-background" />
         
         {/* Main content */}
-        <div className="relative z-10 container mx-auto px-4 py-4 md:py-8">
+  <div className="relative z-10 container mx-auto px-4 py-4 md:py-8">
         <div className="space-y-8 md:space-y-12">
           {/* Navigation */}
           <div className="flex justify-between items-start mb-4 md:mb-6">
@@ -543,6 +543,15 @@ const Index = () => {
           )}
     </div>
     </div>
+    {/* Footer legal links */}
+    <footer className="relative z-10 mt-8 pb-8 px-4">
+      <div className="container mx-auto">
+        <p className="text-[11px] text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
+          <a href="/terms" className="underline underline-offset-2 hover:text-foreground">Terms of Use</a>
+          <a href="/privacy" className="underline underline-offset-2 hover:text-foreground">Privacy Policy</a>
+        </p>
+      </div>
+    </footer>
   </motion.div>
   {showSettings && <SettingsModal onClose={() => setShowSettings(false)} returnFocusRef={settingsReturnRef} />}
   {showUserProfile && <UserProfileModal userId={session!.user.id} onClose={() => setShowUserProfile(false)} returnFocusRef={profileReturnRef} />}

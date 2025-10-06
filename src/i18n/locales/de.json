@@ -33,6 +33,55 @@
     "startOver": "Von vorne beginnen",
     "favorites": "Favoriten"
   },
+  "legal": {
+    "termsTitle": "Stageheart — Nutzungsbedingungen",
+    "privacyTitle": "Stageheart — Datenschutzerklärung",
+    "lastUpdated": "Zuletzt aktualisiert: {{date}}",
+    "introTerms": "Willkommen bei Stageheart. Durch das Erstellen eines Kontos oder Hochladen von Audio stimmst du diesen Bedingungen zu.",
+    "introPrivacy": "Diese frühe Version erklärt, was wir speichern und warum. Sie wird mit dem Funktionsumfang wachsen.",
+    "sections": {
+      "terms": {
+        "purposeTitle": "1. Zweck",
+        "purposeBody": "Stageheart ist ein Tool für Sänger*innen zum Üben, Teilen und Entdecken von Stimmen. Wir verkaufen oder verteilen deine Aufnahmen nicht außerhalb der App.",
+        "responsibilityTitle": "2. Deine Verantwortung für Inhalte",
+        "responsibilityBody1": "Du behältst alle Rechte an dem Audio, das du erstellst und hochlädst.",
+        "responsibilityBody2": "Mit dem Hochladen bestätigst du, dass du alle Teile deiner Aufnahme rechtmäßig nutzen darfst – inklusive Instrumental-, Karaoke- oder Backing-Tracks.",
+        "responsibilityBody3": "Wenn du Material Dritter verwendest (z. B. Karaoke), bist du verantwortlich dafür, die nötige Erlaubnis oder Lizenz zu besitzen.",
+        "licenseTitle": "3. Lizenz an Stageheart",
+        "licenseBody": "Du räumst Stageheart eine nicht-exklusive, weltweite, kostenlose Lizenz ein, dein Audio innerhalb der App zu speichern, zu streamen und anzuzeigen, damit die Funktionen wie vorgesehen arbeiten. Wir verkaufen oder unterlizenzieren deine Inhalte nicht.",
+        "takedownTitle": "4. Urheberrecht & Entfernung",
+        "takedownBody": "Wenn jemand glaubt, dass sein Urheberrecht verletzt wurde, kann er uns unter {{email}} kontaktieren. Wir prüfen dies und können Inhalte entfernen.",
+        "sharingTitle": "5. Privat vs. Öffentlich",
+        "sharingBody": "Du entscheidest, ob deine Aufnahmen privat oder öffentlich (\"Voices\") sind. Öffentlich bedeutet: Alle auf Stageheart können sie anhören.",
+        "prohibitedTitle": "6. Verbotene Nutzung",
+        "prohibitedBody": "Lade keine illegalen, anstößigen oder rechtsverletzenden Inhalte hoch. Wir können Aufnahmen entfernen oder Konten sperren, wenn wir Verstöße vermuten.",
+        "liabilityTitle": "7. Haftung",
+        "liabilityBody": "Stageheart wird \"wie gesehen\" bereitgestellt. Wir garantieren keine ununterbrochene Verfügbarkeit und haften nicht für Urheberrechtsansprüche bezüglich deiner Inhalte.",
+        "lawTitle": "8. Schweizer Recht",
+        "lawBody": "Diese Bedingungen unterliegen Schweizer Recht. Gerichtsstand ist Aargau."
+      },
+      "privacy": {
+        "collectTitle": "1. Was wir erheben",
+        "collectList1": "Kontodaten: E-Mail, Anzeigename, grundlegende Profileinstellungen.",
+        "collectList2": "Favoriten & Kategorien: lokal und/oder in unserer Datenbank gespeichert zur Personalisierung.",
+        "collectList3": "Aufnahmen (\"Voices\"): Wenn du sie veröffentlichst oder speicherst, behalten wir das Audio für die Wiedergabe in der App.",
+        "collectList4": "Nachrichten: Zur Zustellung und Anzeige direkter Nachrichten.",
+        "notCollectTitle": "2. Was wir NICHT erheben",
+        "notCollectBody": "Keine Werbe-Tracking-Pixel, kein Verkauf persönlicher Daten, keine verhaltensbasierten Analytics Dritter in dieser Phase.",
+        "retentionTitle": "3. Speicherung & Aufbewahrung",
+        "retentionBody": "Daten bleiben solange du dein Konto behältst. Lösch-Anfragen (kommt bald) entfernen Inhalte nach kurzer Sicherheitsfrist.",
+        "securityTitle": "4. Sicherheit",
+        "securityBody": "Wir nutzen verwaltete Supabase-Infrastruktur. Kein System ist perfekt – lade keine sensiblen Informationen hoch.",
+        "choicesTitle": "5. Deine Wahlmöglichkeiten",
+        "choicesList1": "Aufnahmen privat halten oder veröffentlichen.",
+        "choicesList2": "Aufnahmen entfernen, die nicht mehr verfügbar sein sollen.",
+        "choicesList3": "Konto exportieren / löschen (kommt bald).",
+        "contactTitle": "6. Kontakt",
+        "contactBody": "Fragen? E-Mail an {{email}}."
+      }
+    },
+    "footerHelp": "Fragen? Schreibe an {{email}}"
+  },
   "feelingMap": {
     "title": "Gefühls-Landkarte",
     "summary": "Zusammenfassung",

@@ -138,9 +138,10 @@ export default function AddSong() {
               </div>
             )}
 
-            <p className="mt-6 text-xs text-muted-foreground">
-              We only store the title and artist to generate a feeling-first card. 
-              No lyrics or media files are uploaded.
+            <p className="mt-6 text-xs text-muted-foreground space-y-1">
+              <span className="block">We only store the title and artist to generate a feeling-first card. No lyrics or media files are uploaded.</span>
+              <span className="block">By submitting, you confirm you have the right to request this song.
+                {' '}<a href="/terms" className="underline underline-offset-2">Read full Terms</a>.</span>
             </p>
           </CardContent>
         </Card>

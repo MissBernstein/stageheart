@@ -8,6 +8,8 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Favorites from "./pages/Favorites";
 import NotFound from "./pages/NotFound";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 import AddSong from "./pages/AddSong";
 import AdminSubmissions from "./pages/AdminSubmissions";
 import MigrateLegacySongs from "./pages/MigrateLegacySongs";
@@ -16,6 +18,7 @@ import { VoicesApp } from "./VoicesApp";
 import { AuthProvider } from "./hooks/useAuth";
 import { PlayerProvider } from "./hooks/usePlayer";
 import { UnreadMessagesProvider } from "./hooks/useUnreadMessages";
+import { CombinedLegalBanner } from "./components/CombinedLegalBanner";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +40,8 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/privacy" element={<Privacy />} />
                   <Route path="/favorites" element={<Favorites />} />
                   <Route path="/add" element={<AddSong />} />
                   <Route path="/admin/submissions" element={<AdminSubmissions />} />
@@ -47,6 +52,7 @@ const App = () => (
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+                <CombinedLegalBanner />
               </BrowserRouter>
             </ToastProvider>
           </TooltipProvider>

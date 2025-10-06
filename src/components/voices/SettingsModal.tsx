@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ModalShell } from './ModalShell';
-import { X, Save, Shield, Bell, UserCog, SlidersHorizontal, Volume2, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { X, Save, Shield, Bell, UserCog, SlidersHorizontal, Volume2, Trash2, AlertTriangle, CheckCircle2, ScrollText } from 'lucide-react';
+import { TERMS_VERSION, PRIVACY_VERSION, getTermsAcceptance, getPrivacyAcceptance, recordTermsAcceptance, recordPrivacyAcceptance, needsTermsReacceptance, needsPrivacyReacceptance } from '@/lib/legal';
 import messagesIcon from '@/assets/messagesicon.png';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 
 interface SettingsModalProps { onClose: () => void; returnFocusRef?: React.RefObject<HTMLElement>; }
 
-type TabKey = 'profile' | 'privacy' | 'notifications' | 'playback' | 'account';
+type TabKey = 'profile' | 'privacy' | 'notifications' | 'playback' | 'account' | 'legal';
 
 const LS_KEY = 'stageheart_user_settings_v1';
 const PERSONA_SUGGESTIONS = [
@@ -152,6 +153,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
           </Button>
           <Button variant="ghost" size="icon" onClick={onClose} className="h-10 w-10"><X /><span className="sr-only">Close settings</span></Button>
         </div>
+        <div className="absolute bottom-2 right-6 text-[10px] text-card-foreground/50 flex items-center gap-3">
+          <a href="/terms" className="underline underline-offset-2 hover:text-card-foreground/80">Terms</a>
+          <a href="/privacy" className="underline underline-offset-2 hover:text-card-foreground/80">Privacy</a>
+        </div>
       </div>
       <div ref={liveRegionRef} aria-live="polite" className="sr-only" />
       <div className="flex flex-1 min-h-0">
@@ -161,6 +166,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
           <TabButton k="privacy" icon={<Shield className="w-4 h-4" />} label="Privacy" />
             <TabButton k="notifications" icon={<Bell className="w-4 h-4" />} label="Notifications" />
           <TabButton k="playback" icon={<Volume2 className="w-4 h-4" />} label="Playback" />
+          <TabButton k="legal" icon={<ScrollText className="w-4 h-4" />} label="Legal" />
           <TabButton k="account" icon={<SlidersHorizontal className="w-4 h-4" />} label="Account" />
         </div>
         {/* Content */}
@@ -285,6 +291,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
               </div>
             </section>
           )}
+          {tab === 'legal' && (
+            <section className="space-y-6" aria-labelledby="legal-heading">
+              <div className="space-y-1">
+                <h3 id="legal-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">LEGAL CONSENTS</h3>
+                <p className="text-xs text-card-foreground/60">Review or manage your current acceptance status.</p>
+              </div>
+              <LegalConsentPanel />
+            </section>
+          )}
         </div>
       </div>
     </ModalShell>
@@ -353,6 +368,56 @@ const ProceduralAvatar: React.FC<{ seed: string; className?: string; }> = ({ see
         <circle cx={30} cy={30} r={18} stroke="white" strokeWidth={1} opacity={0.18} fill="none" />
         <circle cx={30} cy={30} r={9} stroke="white" strokeWidth={0.8} opacity={0.22} fill="none" />
       </svg>
+    </div>
+  );
+};
+
+// Legal consent panel component
+const LegalConsentPanel: React.FC = () => {
+  const [termsRec, setTermsRec] = React.useState(getTermsAcceptance());
+  const [privacyRec, setPrivacyRec] = React.useState(getPrivacyAcceptance());
+  const [needsTerms, setNeedsTerms] = React.useState(needsTermsReacceptance());
+  const [needsPrivacy, setNeedsPrivacy] = React.useState(needsPrivacyReacceptance());
+
+  const acceptAll = () => {
+    if (needsTerms) recordTermsAcceptance(TERMS_VERSION);
+    if (needsPrivacy) recordPrivacyAcceptance(PRIVACY_VERSION);
+    refresh();
+  };
+  const revokeAll = () => {
+    try { localStorage.removeItem('stageheart_terms_acceptance_v1'); } catch {}
+    try { localStorage.removeItem('stageheart_privacy_acceptance_v1'); } catch {}
+    refresh();
+  };
+  const refresh = () => {
+    setTermsRec(getTermsAcceptance());
+    setPrivacyRec(getPrivacyAcceptance());
+    setNeedsTerms(needsTermsReacceptance());
+    setNeedsPrivacy(needsPrivacyReacceptance());
+  };
+
+  const row = (label: string, version: string, rec: any, needs: boolean) => (
+    <div className="flex flex-col gap-1 rounded-xl border border-card-border/60 bg-input/30 p-4">
+      <div className="flex items-center gap-2">
+        <p className="text-xs font-medium text-card-foreground/80">{label}</p>
+        {needs && <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600">Needs acceptance</span>}
+        {!needs && rec && <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Accepted</span>}
+      </div>
+      <p className="text-[10px] text-card-foreground/60">Current version: <span className="font-mono">{version}</span></p>
+      <p className="text-[10px] text-card-foreground/60">Accepted at: {rec?.acceptedAt ? new Date(rec.acceptedAt).toLocaleString() : '—'}</p>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4">
+      {row('Terms of Use', TERMS_VERSION, termsRec, needsTerms)}
+      {row('Privacy Policy', PRIVACY_VERSION, privacyRec, needsPrivacy)}
+      <div className="flex flex-wrap gap-3 pt-2">
+        <button onClick={acceptAll} disabled={!needsTerms && !needsPrivacy} className="text-xs px-4 py-1.5 rounded-full bg-primary text-primary-foreground disabled:opacity-50">Accept Current</button>
+        <button onClick={revokeAll} className="text-xs px-4 py-1.5 rounded-full bg-destructive/80 text-destructive-foreground hover:bg-destructive">Revoke</button>
+        <button onClick={refresh} className="text-xs px-4 py-1.5 rounded-full bg-input/60 text-card-foreground hover:bg-input/70">Refresh</button>
+      </div>
+      <p className="text-[10px] text-card-foreground/50 leading-snug">Revoking clears local acceptance locally; you may be prompted again. Server sync is attempted automatically upon acceptance (silent).</p>
     </div>
   );
 };

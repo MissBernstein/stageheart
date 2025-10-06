@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { recordTermsAcceptance, getTermsAcceptance, TERMS_VERSION, recordPrivacyAcceptance, PRIVACY_VERSION } from '@/lib/legal';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import logo from '@/assets/logo.png';
@@ -21,12 +22,17 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [accepted, setAccepted] = useState(false);
 
   // Load remember me preference on component mount
   useEffect(() => {
     const savedRememberMe = localStorage.getItem('rememberMe');
     if (savedRememberMe === 'true') {
       setRememberMe(true);
+    }
+    const acceptedRecord = getTermsAcceptance();
+    if (acceptedRecord && (acceptedRecord.version === TERMS_VERSION || TERMS_VERSION.startsWith(acceptedRecord.version))) {
+      setAccepted(true);
     }
   }, []);
   const navigate = useNavigate();
@@ -133,6 +139,8 @@ const Auth = () => {
             });
           }
         } else {
+          recordTermsAcceptance(TERMS_VERSION);
+          recordPrivacyAcceptance(PRIVACY_VERSION);
           toast({
             title: 'Account created!',
             description: 'Welcome to Stage Heart.',
@@ -163,7 +171,7 @@ const Auth = () => {
           </p>
         </div>
 
-        <form onSubmit={handleAuth} className="space-y-4">
+  <form onSubmit={handleAuth} className="space-y-4" aria-describedby="auth-legal-note">
           {!isLogin && (
             <div className="space-y-2">
               <Label htmlFor="displayName">Display Name</Label>
@@ -249,10 +257,19 @@ const Auth = () => {
           <Button
             type="submit"
             className="w-full"
-            disabled={loading}
+            disabled={loading || (!isLogin && !accepted)}
           >
             {loading ? 'Loading...' : isLogin ? 'Sign In' : 'Sign Up'}
           </Button>
+          {!isLogin && (
+            <p id="auth-legal-note" className="text-[11px] leading-snug text-muted-foreground text-center px-2">
+              <span className="block mb-1">By signing up you agree to the <a href="/terms" className="underline underline-offset-2 hover:text-foreground">Terms of Use</a> and acknowledge the <a href="/privacy" className="underline underline-offset-2 hover:text-foreground">Privacy Policy</a>.</span>
+              <span className="flex items-start justify-center gap-2 mt-1">
+                <Checkbox id="accept" checked={accepted} onCheckedChange={(c)=> setAccepted(c===true)} />
+                <label htmlFor="accept" className="text-[11px] text-left cursor-pointer select-none">I have read and accept the Terms.</label>
+              </span>
+            </p>
+          )}
         </form>
 
         <div className="text-center">
