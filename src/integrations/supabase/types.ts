@@ -120,22 +120,37 @@ export type Database = {
           artist: string
           created_at: string
           id: string
+          is_cover: boolean | null
+          parent_song_id: string | null
+          public_id: string | null
           slug: string
+          song_title: string | null
           title: string
+          version_label: string | null
         }
         Insert: {
           artist: string
           created_at?: string
           id?: string
+          is_cover?: boolean | null
+          parent_song_id?: string | null
+          public_id?: string | null
           slug: string
+          song_title?: string | null
           title: string
+          version_label?: string | null
         }
         Update: {
           artist?: string
           created_at?: string
           id?: string
+          is_cover?: boolean | null
+          parent_song_id?: string | null
+          public_id?: string | null
           slug?: string
+          song_title?: string | null
           title?: string
+          version_label?: string | null
         }
         Relationships: []
       }
