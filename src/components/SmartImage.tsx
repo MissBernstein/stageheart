@@ -1,3 +1,4 @@
+// @keep - Smart image component with WebP optimization for future performance improvements
 import React, { useState } from 'react';
 
 interface SmartImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {

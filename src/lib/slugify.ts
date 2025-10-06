@@ -1,3 +1,5 @@
+// @deprecated - Unused utility function
+// Safe to remove in next cleanup pass
 export const slugify = (s: string): string =>
   s.toLowerCase()
     .normalize('NFKD')
