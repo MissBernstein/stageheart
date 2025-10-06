@@ -1,6 +1,7 @@
 // Main discovery page for voice recordings
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Play, Heart, MessageCircle, Share2 } from 'lucide-react';
+import voicesIcon from '../assets/feelingjourneyicon.png';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useToast } from '../components/ui/Toast';
@@ -136,62 +137,39 @@ export const VoicesPage: React.FC = () => {
         padding: theme.spacing.lg,
       }}
     >
-      {/* Header */}
-      <div style={{ marginBottom: theme.spacing.xl }}>
-        <h1
-          style={{
-            fontSize: theme.typography.sizes['2xl'],
-            fontWeight: theme.typography.weights.bold,
-            color: theme.colors.text.primary,
-            marginBottom: theme.spacing.sm,
-          }}
-        >
-          Discover Voices
-        </h1>
-        <p
-          style={{
-            fontSize: theme.typography.sizes.lg,
-            color: theme.colors.text.secondary,
-            marginBottom: theme.spacing.lg,
-          }}
-        >
-          Listen to authentic voice recordings and connect with their creators
-        </p>
-
-        {/* Search and Filters */}
-        <div
-          style={{
-            display: 'flex',
-            gap: theme.spacing.sm,
-            alignItems: 'center',
-            marginBottom: theme.spacing.lg,
-          }}
-        >
-          <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
-            <Search
-              size={20}
-              style={{
-                position: 'absolute',
-                left: theme.spacing.sm,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: theme.colors.text.muted,
-              }}
-            />
+      {/* Compact Header with Icon & Search */}
+      <div style={{ marginBottom: theme.spacing.lg }}>
+        <div style={{ display:'flex', alignItems:'center', gap: theme.spacing.sm, marginBottom: theme.spacing.sm }}>
+          <img src={voicesIcon} alt="Voices" style={{ width: 40, height: 40, objectFit:'contain', filter:'drop-shadow(0 1px 2px rgba(0,0,0,0.1))' }} />
+          <div>
+            <h1 style={{
+              fontSize: theme.typography.sizes['2xl'],
+              fontWeight: theme.typography.weights.bold,
+              color: theme.colors.text.primary,
+              margin:0
+            }}>Discover Voices</h1>
+            <p style={{
+              fontSize: theme.typography.sizes.sm,
+              color: theme.colors.text.secondary,
+              margin:0
+            }}>Listen to authentic voice recordings and connect with their creators</p>
+          </div>
+        </div>
+        <div style={{
+          display:'flex',
+          gap: theme.spacing.sm,
+          alignItems:'center'
+        }}>
+          <div style={{ position:'relative', flex:1, maxWidth:'420px' }}>
+            <Search size={20} style={{ position:'absolute', left: theme.spacing.sm, top:'50%', transform:'translateY(-50%)', color: theme.colors.text.muted }} />
             <Input
               placeholder="Search voices, moods, or creators..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                paddingLeft: '40px',
-              }}
+              onChange={(e)=> setSearchQuery(e.target.value)}
+              style={{ paddingLeft:'40px' }}
             />
           </div>
-          
-          <Button
-            variant="outline"
-            onClick={() => setShowFilters(!showFilters)}
-          >
+          <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
             <Filter size={16} />
             Filters
           </Button>

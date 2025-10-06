@@ -1,7 +1,6 @@
 // Main layout component for the Voices & Profiles feature
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import { Navigation } from './Navigation';
 import { SkipToContent } from './SkipToContent';
 import { AudioPlayer } from '../audio/AudioPlayer.tsx';
 import { useAuth } from '../../hooks/useAuth';
@@ -34,7 +33,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <SkipToContent />
-      <Navigation />
       
       <main
         id="main-content"

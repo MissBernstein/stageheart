@@ -13,38 +13,44 @@ import AdminSubmissions from "./pages/AdminSubmissions";
 import MigrateLegacySongs from "./pages/MigrateLegacySongs";
 import SimpleMigration from "./pages/SimpleMigration";
 import { VoicesApp } from "./VoicesApp";
+import { AuthProvider } from "./hooks/useAuth";
+import { PlayerProvider } from "./hooks/usePlayer";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="dark"
-      enableSystem={false}
-      disableTransitionOnChange
-      forcedTheme="dark"
-    >
-      <TooltipProvider>
-        <ToastProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/favorites" element={<Favorites />} />
-              <Route path="/add" element={<AddSong />} />
-              <Route path="/admin/submissions" element={<AdminSubmissions />} />
-              <Route path="/admin/migrate" element={<MigrateLegacySongs />} />
-              <Route path="/admin/simple-migration" element={<SimpleMigration />} />
-              {/* Voices & Profiles Feature - accessible at /app/* */}
-              <Route path="/app/*" element={<VoicesApp />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </ToastProvider>
-      </TooltipProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <PlayerProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+          forcedTheme="dark"
+        >
+          <TooltipProvider>
+            <ToastProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/favorites" element={<Favorites />} />
+                  <Route path="/add" element={<AddSong />} />
+                  <Route path="/admin/submissions" element={<AdminSubmissions />} />
+                  <Route path="/admin/migrate" element={<MigrateLegacySongs />} />
+                  <Route path="/admin/simple-migration" element={<SimpleMigration />} />
+                  {/* Voices & Profiles Feature - accessible at /app/* */}
+                  <Route path="/app/*" element={<VoicesApp />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </ToastProvider>
+          </TooltipProvider>
+        </ThemeProvider>
+      </PlayerProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

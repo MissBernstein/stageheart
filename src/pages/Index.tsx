@@ -15,8 +15,10 @@ const FeelingJourney = lazy(() => import('@/components/FeelingJourney').then(m =
 const PerformancePrepTools = lazy(() => import('@/components/PerformancePrepTools').then(m => ({ default: m.PerformancePrepTools })));
 const FeelingsCard = lazy(() => import('@/components/FeelingsCard').then(m => ({ default: m.FeelingsCard })));
 const VibePicker = lazy(() => import('@/components/VibePicker').then(m => ({ default: m.VibePicker })));
-import { MessagesPopover } from '@/components/voices/MessagesPopover';
 import { ProfileBadge } from '@/components/voices/ProfileBadge';
+import { Mic2 } from 'lucide-react';
+import { VoicesLibraryModal } from '@/components/voices/VoicesLibraryModal';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { FeelingMap, Song, Vibe } from '@/types';
@@ -46,6 +48,11 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { favorites } = useFavorites();
   const prefersReducedMotion = usePrefersReducedMotion();
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [showMessagePulse, setShowMessagePulse] = useState(true);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  // Voices modal state MUST be declared before any early returns to preserve hook order
+  const [showVoices, setShowVoices] = useState(false);
 
   const { songs } = useAllSongs();
 
@@ -89,6 +96,52 @@ const Index = () => {
     return () => { mounted = false; if (unsub) unsub(); };
   }, [navigate]);
 
+  // Fetch unread messages count (lightweight aggregate) & subscribe
+  useEffect(() => {
+    let mounted = true;
+    let channel: any;
+    (async () => {
+      if (!supabase) {
+        const mod = await import('@/integrations/supabase/client');
+        supabase = mod.supabase;
+      }
+      if (!supabase || !session) return;
+      // Initial count (assuming a view or table voice_messages with read_at null)
+      try {
+        const sb: any = supabase; // narrow to any to avoid deep type instantiation issues on wide union
+        const { count, error } = await sb
+          .from('messages')
+          .select('id', { count: 'exact', head: true })
+          .eq('recipient_user_id', session.user.id)
+          .is('read_at', null);
+        if (!error && mounted && typeof count === 'number') setUnreadMessages(count);
+      } catch { /* silent */ }
+      // Realtime subscription
+      try {
+        channel = supabase.channel('unread-messages')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `recipient_user_id=eq.${session.user.id}` }, async () => {
+            const sb2: any = supabase;
+            const { count } = await sb2
+              .from('messages')
+              .select('id', { count: 'exact', head: true })
+              .eq('recipient_user_id', session.user.id)
+              .is('read_at', null);
+            if (mounted && typeof count === 'number') setUnreadMessages(count);
+          })
+          .subscribe();
+      } catch { /* silent */ }
+    })();
+    return () => { mounted = false; if (channel) supabase?.removeChannel(channel); };
+  }, [session]);
+
+  // When profile menu opens (messages inside), fade out pulse after a short delay
+  useEffect(() => {
+    if (profileMenuOpen && showMessagePulse) {
+      const t = setTimeout(() => setShowMessagePulse(false), 1200);
+      return () => clearTimeout(t);
+    }
+  }, [profileMenuOpen, showMessagePulse]);
+
   const handleLogout = async () => {
     if (!supabase) {
       const mod = await import('@/integrations/supabase/client');
@@ -97,16 +150,9 @@ const Index = () => {
     if (!supabase) return;
     const { error } = await supabase.auth.signOut();
     if (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to log out. Please try again.',
-        variant: 'error',
-      });
+      toast({ title: 'Failed to log out', description: 'Please try again.', variant: 'error' });
     } else {
-      toast({
-        title: 'Logged out',
-        description: 'You have been successfully logged out.',
-      });
+      toast({ title: 'Logged out', description: 'You have been successfully logged out.' });
       navigate('/auth');
     }
   };
@@ -221,6 +267,7 @@ const Index = () => {
     setSearchQuery({ title: '', artist: '' });
   };
 
+
   const handleBrandClick = () => {
     if (currentMap || showVibePicker || showLibrary || showJourney || showPrepTools) {
       handleReset();
@@ -245,21 +292,19 @@ const Index = () => {
         <div className="space-y-8 md:space-y-12">
           {/* Navigation */}
           <div className="flex justify-between items-start mb-4 md:mb-6">
-            <div className="flex-1 flex justify-start items-start pt-2 gap-2">
-              <AnimatedButton
-                variant="secondary"
-                className="relative h-10 w-10 md:h-12 md:w-12 flex items-center justify-center bg-card hover:bg-muted border border-card-border rounded-2xl shadow-card p-0"
-                onClick={() => navigate('/favorites')}
-              >
-                <Heart className="w-4 h-4 md:w-5 md:h-5 text-star" />
-                <span className="sr-only">Favorites</span>
-                {favorites.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-star text-white text-xs rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center text-[10px] md:text-xs">
-                    {favorites.length}
-                  </span>
-                )}
-              </AnimatedButton>
-              <MessagesPopover onOpenInbox={() => navigate('/app/inbox')} />
+            <div className="flex-1 flex justify-start items-start pt-2 gap-3">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AnimatedButton
+                    onClick={() => setShowVoices(true)}
+                    className="h-10 w-10 md:h-12 md:w-auto md:px-4 flex items-center justify-center bg-primary/90 hover:bg-primary text-primary-foreground rounded-2xl shadow-card border border-primary/40 text-xs md:text-sm font-medium gap-2"
+                  >
+                    <Mic2 className="w-4 h-4" />
+                    <span className="hidden md:inline">Discover Voices</span>
+                  </AnimatedButton>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="md:hidden">Discover Voices</TooltipContent>
+              </Tooltip>
             </div>
             <div className="flex-1 flex justify-end items-start gap-2 md:gap-3 pt-2">
               <LanguageToggle />
@@ -267,7 +312,12 @@ const Index = () => {
                 displayName={session?.user?.user_metadata?.display_name || session?.user?.email?.split('@')[0]}
                 email={session?.user?.email}
                 avatarUrl={session?.user?.user_metadata?.avatar_url}
+                favoritesCount={favorites.length}
+                unreadMessagesCount={showMessagePulse ? unreadMessages : 0}
+                onNavigateFavorites={() => navigate('/favorites')}
+                onNavigateInbox={() => navigate('/app/inbox')}
                 onLogout={handleLogout}
+                onOpenChange={(open) => setProfileMenuOpen(open)}
               />
             </div>
           </div>
@@ -315,12 +365,6 @@ const Index = () => {
                 className="px-4 py-2 md:px-6 md:py-2.5 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-sm md:text-base font-medium"
               >
                 Performance Prep
-              </AnimatedButton>
-              <AnimatedButton
-                onClick={() => navigate('/app')}
-                className="px-4 py-2 md:px-6 md:py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full transition-colors text-sm md:text-base font-medium border-2 border-primary/20"
-              >
-                🎙️ Voices & Profiles (NEW)
               </AnimatedButton>
               <AnimatedButton
                 onClick={handleRandomSong}
@@ -416,6 +460,9 @@ const Index = () => {
         </div>
         </div>
       </motion.div>
+      {showVoices && (
+        <VoicesLibraryModal onClose={() => setShowVoices(false)} />
+      )}
     </MotionIfOkay>
   );
 };
