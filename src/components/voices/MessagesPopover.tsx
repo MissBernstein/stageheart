@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, MailOpen, Mail, Reply } from 'lucide-react';
 import messagesIcon from '@/assets/messagesicon.png';
 import {
@@ -47,17 +48,21 @@ export const MessagesPopover: React.FC<MessagesPopoverProps> = ({ messages = moc
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button
-          className="relative h-10 w-10 md:h-12 md:w-12 flex items-center justify-center bg-card hover:bg-muted border border-card-border rounded-2xl shadow-card focus:outline-none focus:ring-2 focus:ring-primary/40"
+        <motion.button
+          whileHover={{ y: -2, scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="relative h-10 w-10 md:h-12 md:w-12 flex items-center justify-center bg-card hover:bg-muted border border-card-border rounded-2xl shadow-card focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
         >
           <img src={messagesIcon} alt="Messages" className="w-4 h-4 md:w-5 md:h-5" />
           <span className="sr-only">Messages</span>
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center text-[10px] md:text-xs">
+            <motion.span layoutId="messagesBadge" className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center text-[10px] md:text-xs"
+              initial={{ scale:0.6, opacity:0 }} animate={{ scale:1, opacity:1 }} transition={{ type:'spring', stiffness:220, damping:18 }}
+            >
               {unreadCount}
-            </span>
+            </motion.span>
           )}
-        </button>
+        </motion.button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="start" sideOffset={8}>
         <div className="p-3 border-b flex items-center justify-between">
@@ -84,28 +89,40 @@ export const MessagesPopover: React.FC<MessagesPopoverProps> = ({ messages = moc
           ) : (
             <ScrollArea className="h-full">
               <ul className="divide-y">
-                {messages.map(m => (
-                  <li key={m.id} className="p-3 hover:bg-muted/40 transition flex flex-col gap-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium flex items-center gap-1">
-                        {m.unread ? <Mail className="w-3 h-3 text-primary" /> : <Reply className="w-3 h-3 text-muted-foreground" />}
-                        {m.fromDisplay}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">{m.createdAt}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {m.snippet}
-                    </p>
-                  </li>
-                ))}
+                <AnimatePresence initial={false}>
+                  {messages.map((m,i) => (
+                    <motion.li
+                      key={m.id}
+                      layout
+                      initial={{ opacity:0, y:4 }}
+                      animate={{ opacity:1, y:0 }}
+                      exit={{ opacity:0, y:-4 }}
+                      transition={{ duration:0.18, delay: i*0.03 }}
+                      className="p-3 hover:bg-muted/40 transition flex flex-col gap-1"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium flex items-center gap-1">
+                          {m.unread ? <Mail className="w-3 h-3 text-primary" /> : <Reply className="w-3 h-3 text-muted-foreground" />}
+                          {m.fromDisplay}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">{m.createdAt}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {m.snippet}
+                      </p>
+                    </motion.li>
+                  ))}
+                </AnimatePresence>
               </ul>
             </ScrollArea>
           )}
         </div>
         <div className="p-3 border-t flex justify-end">
-          <Button size="sm" variant="secondary" onClick={onOpenInbox}>
+          <motion.div whileHover={{ y:-1 }} whileTap={{ scale:0.97 }}>
+            <Button size="sm" variant="secondary" onClick={onOpenInbox}>
             Go to Inbox
-          </Button>
+            </Button>
+          </motion.div>
         </div>
       </PopoverContent>
     </Popover>

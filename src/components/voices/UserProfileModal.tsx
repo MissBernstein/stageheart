@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
 import { ModalShell } from './ModalShell';
 import { X, Share2, Mail, Link as LinkIcon, Globe2, Loader2, Heart } from 'lucide-react';
@@ -7,6 +8,7 @@ import { incrementPlay } from '@/lib/voicesApi';
 import { useVoiceFavorites } from '@/hooks/useVoiceFavorites';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Recording, UserProfile } from '@/types/voices';
 import { getUserProfile, listRecordingsByUser } from '@/lib/voicesApi';
 import { usePlayer } from '@/hooks/usePlayer';
@@ -59,30 +61,62 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
   <ModalShell titleId="user-profile-title" onClose={onClose} className="max-w-5xl" contentClassName="" returnFocusRef={returnFocusRef}>
       <div className="p-6 border-b border-card-border flex items-start justify-between gap-6">
               <div className="flex items-start gap-5">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center text-3xl font-semibold text-card-foreground">
+                <motion.div layoutId={`avatar-${userId}`} className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center text-3xl font-semibold text-card-foreground shadow-inner"
+                  initial={!prefersReducedMotion ? { opacity:0, scale:0.85, y:8 } : false}
+                  animate={!prefersReducedMotion ? { opacity:1, scale:1, y:0 } : {}}
+                  transition={{ duration:0.35, ease:[0.22,0.72,0.28,0.99] }}
+                >
                   {profile?.display_name?.charAt(0) || '?' }
-                </div>
+                </motion.div>
                 <div className="space-y-2">
-                  <h2 id="user-profile-title" className="text-2xl font-semibold leading-tight">{profile?.display_name || 'Loading…'}</h2>
-                  {profile?.about && <p className="text-sm text-card-foreground/70 max-w-prose">{profile.about}</p>}
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {profile?.fav_genres?.slice(0,4).map(g => <span key={g} className="text-[10px] uppercase tracking-wide px-2 py-1 rounded-full bg-input/40 text-card-foreground/70">{g}</span>)}
-                    {profile?.favorite_artists?.slice(0,2).map(a => <span key={a} className="text-[10px] px-2 py-1 rounded-full bg-input/40 text-card-foreground/70">{a}</span>)}
-                  </div>
+                  <motion.h2 id="user-profile-title" className="text-2xl font-semibold leading-tight"
+                    initial={!prefersReducedMotion ? { opacity:0, y:6 } : false}
+                    animate={!prefersReducedMotion ? { opacity:1, y:0 } : {}}
+                    transition={{ duration:0.3, delay:0.05 }}
+                  >{profile?.display_name || 'Loading…'}</motion.h2>
+                  {profile?.about && (
+                    <motion.p className="text-sm text-card-foreground/70 max-w-prose"
+                      initial={!prefersReducedMotion ? { opacity:0, y:6 } : false}
+                      animate={!prefersReducedMotion ? { opacity:1, y:0 } : {}}
+                      transition={{ duration:0.35, delay:0.1 }}
+                    >{profile.about}</motion.p>
+                  )}
+                  <motion.div className="flex flex-wrap gap-2 pt-1"
+                    initial={!prefersReducedMotion ? { opacity:0 } : false}
+                    animate={!prefersReducedMotion ? { opacity:1 } : {}}
+                    transition={{ duration:0.4, delay:0.15 }}
+                  >
+                    <AnimatePresence>
+                      {profile?.fav_genres?.slice(0,4).map(g => (
+                        <motion.span key={g} className="text-[10px] uppercase tracking-wide px-2 py-1 rounded-full bg-input/40 text-card-foreground/70"
+                          initial={{ opacity:0, y:4, scale:0.9 }} animate={{ opacity:1, y:0, scale:1 }} exit={{ opacity:0, scale:0.9 }} transition={{ duration:0.18 }}
+                        >{g}</motion.span>
+                      ))}
+                      {profile?.favorite_artists?.slice(0,2).map(a => (
+                        <motion.span key={a} className="text-[10px] px-2 py-1 rounded-full bg-input/40 text-card-foreground/70"
+                          initial={{ opacity:0, y:4, scale:0.9 }} animate={{ opacity:1, y:0, scale:1 }} exit={{ opacity:0, scale:0.9 }} transition={{ duration:0.18, delay:0.02 }}
+                        >{a}</motion.span>
+                      ))}
+                    </AnimatePresence>
+                  </motion.div>
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9"><X className="w-4 h-4" /><span className="sr-only">Close</span></Button>
+                <AnimatedButton variant="ghost" size="icon" onClick={onClose} className="h-9 w-9"><X className="w-4 h-4" /><span className="sr-only">Close</span></AnimatedButton>
               </div>
   </div>
   <div className="p-6 space-y-10">
               {/* Contact & Links */}
-              <section className="space-y-3">
+              <motion.section className="space-y-3"
+                initial={!prefersReducedMotion ? { opacity:0, y:12 } : false}
+                animate={!prefersReducedMotion ? { opacity:1, y:0 } : {}}
+                transition={{ duration:0.4, ease:[0.22,0.72,0.28,0.99] }}
+              >
                 <h3 className="text-sm font-semibold tracking-wide text-card-foreground/70">CONNECT</h3>
                 <div className="flex flex-wrap gap-3">
-                  <Button variant="outline" size="sm" className="gap-2"><img src={messagesIcon} alt="Message" className="w-4 h-4" />Message</Button>
-                  <Button variant="outline" size="sm" className="gap-2"><Mail className="w-4 h-4" />Email</Button>
-                  <Button variant="outline" size="sm" className="gap-2"><Share2 className="w-4 h-4" />Share</Button>
+                  <AnimatedButton variant="outline" size="sm" className="gap-2"><img src={messagesIcon} alt="Message" className="w-4 h-4" />Message</AnimatedButton>
+                  <AnimatedButton variant="outline" size="sm" className="gap-2"><Mail className="w-4 h-4" />Email</AnimatedButton>
+                  <AnimatedButton variant="outline" size="sm" className="gap-2"><Share2 className="w-4 h-4" />Share</AnimatedButton>
                 </div>
                 {profile?.profile_note_to_listeners && (
                   <p className="text-xs text-card-foreground/60 max-w-prose leading-relaxed bg-input/30 rounded-xl p-3">{profile.profile_note_to_listeners}</p>
@@ -90,18 +124,21 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
                 {profile?.links && profile.links.length > 0 && (
                   <div className="flex flex-wrap gap-2 pt-1">
                     {profile.links.map(l => (
-                      <a key={l.url} href={l.url} target="_blank" rel="noreferrer" className="text-xs inline-flex items-center gap-1 px-2 py-1 rounded-full bg-input/40 hover:bg-input/50 transition text-card-foreground/70">
+                      <motion.a key={l.url} href={l.url} target="_blank" rel="noreferrer" className="text-xs inline-flex items-center gap-1 px-2 py-1 rounded-full bg-input/40 hover:bg-input/50 transition text-card-foreground/70"
+                        whileHover={!prefersReducedMotion ? { y:-2, scale:1.05 } : undefined}
+                        whileTap={!prefersReducedMotion ? { scale:0.96 } : undefined}
+                      >
                         {l.type === 'website' && <Globe2 className="w-3 h-3" />}
                         {l.type !== 'website' && <LinkIcon className="w-3 h-3" />}
                         <span className="truncate max-w-[120px]">{new URL(l.url).hostname.replace('www.','')}</span>
-                      </a>
+                      </motion.a>
                     ))}
                   </div>
                 )}
-              </section>
+              </motion.section>
 
               {/* Recordings */}
-              <section className="space-y-4">
+              <motion.section className="space-y-4" initial={!prefersReducedMotion ? { opacity:0, y:16 } : false} animate={!prefersReducedMotion ? { opacity:1, y:0 } : {}} transition={{ duration:0.45 }}>
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                   <h3 className="text-sm font-semibold tracking-wide text-card-foreground/70">RECORDINGS ({filtered.length})</h3>
                 </div>
@@ -110,7 +147,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
                     <div className="col-span-full flex items-center gap-2 text-sm text-card-foreground/60"><Loader2 className="w-4 h-4 animate-spin" /> Loading recordings…</div>
                   )}
                   {!loadingRecs && filtered.map(r => (
-                    <div key={r.id} className="p-4 pt-6 rounded-xl border border-card-border/60 bg-card/70 backdrop-blur-sm hover:bg-card/80 transition group relative">
+                    <motion.div key={r.id} className="p-4 pt-6 rounded-xl border border-card-border/60 bg-card/70 backdrop-blur-sm hover:bg-card/80 transition group relative"
+                      initial={!prefersReducedMotion ? { opacity:0, y:8, scale:0.98 } : false}
+                      animate={!prefersReducedMotion ? { opacity:1, y:0, scale:1 } : {}}
+                      transition={{ duration:0.35 }}
+                    >
                       <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition">
                         <button onClick={()=> toggleFavorite(r.id)} className="h-7 w-7 inline-flex items-center justify-center rounded-full hover:bg-input/40">
                           <Heart className={`w-3.5 h-3.5 ${isFavorite(r.id)?'fill-accent text-accent':''}`} />
@@ -126,14 +167,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
                           <h4 className="font-semibold text-card-foreground text-sm leading-tight truncate">{r.title}</h4>
                           <p className="text-[10px] text-card-foreground/60">{Math.round((r.duration_sec||0)/60)} min • {r.plays_count} plays</p>
                         </div>
-                        <Button size="icon" variant="ghost" onClick={() => { if (currentRecording?.id === r.id && isPlaying) { pause(); } else { loadRecording(r); play(); incrementPlay(r.id); r.plays_count += 1; } }} className="h-8 w-8">
+                        <AnimatedButton size="icon" variant="ghost" onClick={() => { if (currentRecording?.id === r.id && isPlaying) { pause(); } else { loadRecording(r); play(); incrementPlay(r.id); r.plays_count += 1; } }} className="h-8 w-8">
                           {currentRecording?.id === r.id && isPlaying ? (
                             <PauseIcon />
                           ) : (
                             <PlayIcon />
                           )}
                           <span className="sr-only">{currentRecording?.id === r.id && isPlaying ? 'Pause' : 'Play'}</span>
-                        </Button>
+                        </AnimatedButton>
                       </div>
                       {r.mood_tags && (
                         <div className="flex flex-wrap gap-1 mt-2">
@@ -142,13 +183,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
                           ))}
                         </div>
                       )}
-                    </div>
+                    </motion.div>
                   ))}
                   {!loadingRecs && filtered.length === 0 && (
                     <div className="col-span-full text-center text-xs text-card-foreground/60 py-8">No recordings match your search.</div>
                   )}
                 </div>
-              </section>
+              </motion.section>
       </div>
     </ModalShell>
   );

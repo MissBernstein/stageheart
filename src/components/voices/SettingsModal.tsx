@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ModalShell } from './ModalShell';
 import { X, Save, Shield, Bell, UserCog, SlidersHorizontal, Volume2, Trash2, AlertTriangle, CheckCircle2, ScrollText } from 'lucide-react';
 import { TERMS_VERSION, PRIVACY_VERSION, getTermsAcceptance, getPrivacyAcceptance, recordTermsAcceptance, recordPrivacyAcceptance, needsTermsReacceptance, needsPrivacyReacceptance } from '@/lib/legal';
 import messagesIcon from '@/assets/messagesicon.png';
+import settingsIcon from '@/assets/settingsicon.png';
 import { Button } from '@/components/ui/button';
+import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
@@ -134,24 +137,32 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
   };
 
   const TabButton: React.FC<{ k: TabKey; icon: React.ReactNode; label: string; }>=({ k, icon, label }) => (
-    <button
+    <motion.button
+      whileHover={{ y: -2, scale: 1.02 }}
+      whileTap={{ scale: 0.97 }}
       onClick={()=> setTab(k)}
-      className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition border ${tab===k ? 'bg-primary/70 text-primary-foreground border-primary' : 'bg-input/40 border-input-border text-card-foreground/60 hover:text-card-foreground'}`}
-    >{icon}<span>{label}</span></button>
+      className={`relative w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition border overflow-hidden ${tab===k ? 'bg-primary/70 text-primary-foreground border-primary shadow-sm' : 'bg-input/40 border-input-border text-card-foreground/60 hover:text-card-foreground'}`}
+    >
+      {tab===k && <motion.span layoutId="settingsTabGlow" className="absolute inset-0 bg-primary/30" style={{ mixBlendMode: 'overlay' }} initial={false} transition={{ duration: 0.3 }} />}
+      <span className="relative z-10 flex items-center gap-2">{icon}<span>{label}</span></span>
+    </motion.button>
   );
 
   return (
   <ModalShell titleId="settings-title" onClose={onClose} className="max-w-5xl flex flex-col h-[82vh]" contentClassName="flex flex-col h-full" returnFocusRef={returnFocusRef}>
       <div className="p-6 border-b border-card-border flex items-start justify-between gap-4">
         <div className="space-y-1">
-          <h2 id="settings-title" className="text-2xl font-semibold flex items-center gap-3"><SlidersHorizontal className="w-6 h-6" /> Settings</h2>
+          <h2 id="settings-title" className="text-2xl font-semibold flex items-center gap-3">
+            <img src={settingsIcon} alt="Settings" className="w-10 h-10 object-contain" />
+            <span>Settings</span>
+          </h2>
           <p className="text-xs text-card-foreground/60">Profile • Privacy • Notifications • Playback • Account</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" onClick={save} disabled={saving || !isDirty || Object.keys(errors).length>0} className="h-8 text-[11px] flex items-center gap-1">
+          <AnimatedButton size="sm" variant="outline" onClick={save} disabled={saving || !isDirty || Object.keys(errors).length>0} className="h-8 text-[11px] flex items-center gap-1">
             {saving ? 'Saving…' : (<><Save className="w-3 h-3" /> {isDirty ? 'Save' : 'Saved'}</> )}
-          </Button>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-10 w-10"><X /><span className="sr-only">Close settings</span></Button>
+          </AnimatedButton>
+          <AnimatedButton variant="ghost" size="icon" onClick={onClose} className="h-10 w-10"><X /><span className="sr-only">Close settings</span></AnimatedButton>
         </div>
         <div className="absolute bottom-2 right-6 text-[10px] text-card-foreground/50 flex items-center gap-3">
           <a href="/terms" className="underline underline-offset-2 hover:text-card-foreground/80">Terms</a>
@@ -170,9 +181,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
           <TabButton k="account" icon={<SlidersHorizontal className="w-4 h-4" />} label="Account" />
         </div>
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-10">
+        <div className="flex-1 overflow-y-auto p-6 space-y-10 relative">
+          <AnimatePresence mode="wait" initial={false}>
           {tab === 'profile' && (
-            <section className="space-y-6" aria-labelledby="profile-heading">
+            <motion.section key="profile" className="space-y-6" aria-labelledby="profile-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
               <div className="space-y-1">
                 <h3 id="profile-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">PROFILE</h3>
                 <p className="text-xs text-card-foreground/60">Control what listeners see about you.</p>
@@ -196,15 +208,37 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
                 <div className="space-y-2 md:col-span-2">
                   <label className="text-xs font-medium uppercase tracking-wide text-card-foreground/60">Persona Tags</label>
                   <div className="flex flex-wrap gap-2">
-                    {personaTags.map(tag => (
-                      <button key={tag} onClick={()=> setPersonaTags(prev => prev.filter(t => t!==tag))} className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] flex items-center gap-1 hover:bg-primary/30">
-                        {tag} <span aria-hidden>×</span>
-                        <span className="sr-only">Remove {tag}</span>
-                      </button>
-                    ))}
-                    {PERSONA_SUGGESTIONS.filter(s => !personaTags.includes(s)).slice(0,3).map(s => (
-                      <button key={s} onClick={()=> setPersonaTags(prev => [...prev, s])} className="px-2 py-0.5 rounded-full bg-input/50 text-[10px] text-card-foreground/70 hover:text-card-foreground hover:bg-input/60">+ {s}</button>
-                    ))}
+                    <AnimatePresence>
+                      {personaTags.map(tag => (
+                        <motion.button
+                          key={tag}
+                          onClick={()=> setPersonaTags(prev => prev.filter(t => t!==tag))}
+                          className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] flex items-center gap-1 hover:bg-primary/30"
+                          initial={{opacity:0,scale:0.85}}
+                          animate={{opacity:1,scale:1}}
+                          exit={{opacity:0,scale:0.8}}
+                          transition={{duration:0.18}}
+                        >
+                          {tag} <span aria-hidden>×</span>
+                          <span className="sr-only">Remove {tag}</span>
+                        </motion.button>
+                      ))}
+                    </AnimatePresence>
+                    <AnimatePresence>
+                      {PERSONA_SUGGESTIONS.filter(s => !personaTags.includes(s)).slice(0,3).map(s => (
+                        <motion.button
+                          key={s}
+                          onClick={()=> setPersonaTags(prev => [...prev, s])}
+                          className="px-2 py-0.5 rounded-full bg-input/50 text-[10px] text-card-foreground/70 hover:text-card-foreground hover:bg-input/60"
+                          whileHover={{y:-2,scale:1.05}}
+                          whileTap={{scale:0.95}}
+                          initial={{opacity:0,y:4}}
+                          animate={{opacity:1,y:0}}
+                          exit={{opacity:0,y:-4}}
+                          transition={{duration:0.2}}
+                        >+ {s}</motion.button>
+                      ))}
+                    </AnimatePresence>
                   </div>
                 </div>
                 <div className="md:col-span-3 space-y-2">
@@ -213,10 +247,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
                   <p className="text-[10px] text-card-foreground/50 text-right">{bio.length}/500</p>
                 </div>
               </div>
-            </section>
+            </motion.section>
           )}
           {tab === 'privacy' && (
-            <section className="space-y-6" aria-labelledby="privacy-heading">
+            <motion.section key="privacy" className="space-y-6" aria-labelledby="privacy-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
               <div className="space-y-1">
                 <h3 id="privacy-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">PRIVACY & CONTACT</h3>
                 <p className="text-xs text-card-foreground/60">Tune how people can reach you or request a meet.</p>
@@ -231,10 +265,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
                   description="Helps reduce spam meet requests." value={meetRequireRecording} onChange={setMeetRequireRecording}
                 />
               </div>
-            </section>
+            </motion.section>
           )}
           {tab === 'notifications' && (
-            <section className="space-y-6" aria-labelledby="notif-heading">
+            <motion.section key="notif" className="space-y-6" aria-labelledby="notif-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
               <div className="space-y-1">
                 <h3 id="notif-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">NOTIFICATIONS</h3>
                 <p className="text-xs text-card-foreground/60">Choose which events trigger notifications.</p>
@@ -243,10 +277,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
                 <ToggleRow label="New messages" description="Notify me when I receive a new message" value={notifyNewMessages} onChange={setNotifyNewMessages} />
                 <ToggleRow label="Favorites activity" description="Notify me when someone favorites my recording" value={notifyFavorites} onChange={setNotifyFavorites} />
               </div>
-            </section>
+            </motion.section>
           )}
           {tab === 'playback' && (
-            <section className="space-y-6" aria-labelledby="playback-heading">
+            <motion.section key="playback" className="space-y-6" aria-labelledby="playback-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
               <div className="space-y-1">
                 <h3 id="playback-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">PLAYBACK & EXPERIENCE</h3>
                 <p className="text-xs text-card-foreground/60">Default listening preferences.</p>
@@ -266,10 +300,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
                   </select>
                 </div>
               </div>
-            </section>
+            </motion.section>
           )}
           {tab === 'account' && (
-            <section className="space-y-6" aria-labelledby="account-heading">
+            <motion.section key="account" className="space-y-6" aria-labelledby="account-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
               <div className="space-y-1">
                 <h3 id="account-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">ACCOUNT & DANGER ZONE</h3>
                 <p className="text-xs text-card-foreground/60">Manage your account lifecycle.</p>
@@ -289,17 +323,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
                   </div>
                 )}
               </div>
-            </section>
+            </motion.section>
           )}
           {tab === 'legal' && (
-            <section className="space-y-6" aria-labelledby="legal-heading">
+            <motion.section key="legal" className="space-y-6" aria-labelledby="legal-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
               <div className="space-y-1">
                 <h3 id="legal-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">LEGAL CONSENTS</h3>
                 <p className="text-xs text-card-foreground/60">Review or manage your current acceptance status.</p>
               </div>
               <LegalConsentPanel />
-            </section>
+            </motion.section>
           )}
+          </AnimatePresence>
         </div>
       </div>
     </ModalShell>

@@ -10,6 +10,7 @@ interface PlayerContextType {
   duration: number;
   volume: number;
   isLoading: boolean;
+  audioLevel: number; // 0-1 approximate loudness
   
   // Actions
   loadRecording: (recording: Recording) => void;
@@ -40,9 +41,56 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [isLoading, setIsLoading] = useState(false);
   const [queue, setQueue] = useState<Recording[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [audioLevel, setAudioLevel] = useState(0);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const dataArrayRef = useRef<Uint8Array | null>(null);
+  const rafRef = useRef<number | null>(null);
+
+  const stopAnalyser = () => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  };
+
+  const startAnalyser = () => {
+    if (!audioRef.current) return;
+    try {
+      if (!audioCtxRef.current) {
+        const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+        audioCtxRef.current = new Ctx();
+      }
+      if (!analyserRef.current) {
+        const source = audioCtxRef.current.createMediaElementSource(audioRef.current);
+        analyserRef.current = audioCtxRef.current.createAnalyser();
+        analyserRef.current.fftSize = 256;
+        source.connect(analyserRef.current);
+        analyserRef.current.connect(audioCtxRef.current.destination);
+        dataArrayRef.current = new Uint8Array(analyserRef.current.frequencyBinCount);
+      }
+      if (audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume().catch(()=>{});
+      }
+      const tick = () => {
+        if (!analyserRef.current || !dataArrayRef.current) return;
+        const buf = new Uint8Array(analyserRef.current.frequencyBinCount);
+        analyserRef.current.getByteFrequencyData(buf);
+        let sum = 0;
+        for (let i=0;i<buf.length;i++) sum += buf[i];
+        const avg = sum / buf.length / 255; // 0-1
+        setAudioLevel(avg);
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      stopAnalyser();
+      tick();
+    } catch (e) {
+      // Fail silently (some browsers block without gesture)
+    }
+  };
 
   // Initialize audio element
   useEffect(() => {
@@ -58,9 +106,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setDuration(audio.duration || 0);
     };
     const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
+    const handlePause = () => { setIsPlaying(false); stopAnalyser(); };
     const handleEnded = () => {
       setIsPlaying(false);
+      stopAnalyser();
       skipToNext();
     };
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
@@ -97,7 +146,9 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const play = useCallback(() => {
     if (!audioRef.current) return;
-    audioRef.current.play().catch(console.error);
+    audioRef.current.play().then(() => {
+      startAnalyser();
+    }).catch(console.error);
   }, []);
 
   const pause = useCallback(() => {
@@ -169,6 +220,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setQueue([]);
     setCurrentIndex(0);
     setCurrentRecording(null);
+    stopAnalyser();
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.src = '';
@@ -182,6 +234,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     duration,
     volume,
     isLoading,
+  audioLevel,
     queue,
     currentIndex,
     loadRecording,
