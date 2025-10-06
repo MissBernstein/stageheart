@@ -1,6 +1,7 @@
 // Main discovery page for voice recordings
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Play, Heart, MessageCircle, Share2 } from 'lucide-react';
+import { Search, Filter, Play, Heart, Share2 } from 'lucide-react';
+import messagesIcon from '../assets/messagesicon.png';
 import voicesIcon from '../assets/feelingjourneyicon.png';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -340,7 +341,7 @@ export const VoicesPage: React.FC = () => {
                   <Heart size={14} />
                 </Button>
                 <Button variant="ghost" size="sm">
-                  <MessageCircle size={14} />
+                  <img src={messagesIcon} alt="Messages" style={{ width:14, height:14 }} />
                 </Button>
                 <Button variant="ghost" size="sm">
                   <Share2 size={14} />

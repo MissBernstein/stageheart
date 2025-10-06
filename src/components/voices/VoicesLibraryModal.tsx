@@ -1,9 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import { motion } from 'framer-motion';
-import { fadeInUp } from '@/ui/motion';
-import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
-import { MotionIfOkay } from '@/ui/MotionIfOkay';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Filter, Play, X, User2, Heart, Share2 } from 'lucide-react';
@@ -16,13 +11,13 @@ import { usePlayer } from '@/hooks/usePlayer';
 import { Recording } from '@/types/voices';
 import { listVoices } from '@/lib/voicesApi';
 import { theme } from '@/styles/theme';
+import { ModalShell } from './ModalShell';
 
 interface VoicesLibraryModalProps {
   onClose: () => void;
 }
 
 export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose }) => {
-  const prefersReducedMotion = usePrefersReducedMotion();
   const { loadRecording, currentRecording, isPlaying, play, pause } = usePlayer();
   const navigate = useNavigate();
   const { favorites, isFavorite, toggleFavorite } = useVoiceFavorites();
@@ -50,28 +45,11 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose 
     return recs;
   }, [recordings, searchQuery]);
 
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', handleKey);
-    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', handleKey); };
-  }, [onClose]);
+  // Focus trap handled by ModalShell now
 
-  return createPortal(
-    <MotionIfOkay>
-      <motion.div
-        initial={prefersReducedMotion ? false : fadeInUp.initial}
-        animate={prefersReducedMotion ? undefined : fadeInUp.animate}
-        exit={prefersReducedMotion ? undefined : fadeInUp.exit}
-        className="fixed inset-0 z-[998] overflow-y-auto min-h-screen w-screen bg-background/95 backdrop-blur-sm"
-        role="dialog" aria-modal="true" aria-labelledby="voices-library-title"
-        ref={containerRef}
-      >
-        <div className="container mx-auto px-4 py-8">
-          <div className="bg-card/95 rounded-3xl shadow-card border border-card-border/70 max-w-5xl mx-auto">
-            <div className="p-6 border-b border-card-border">
+  return (
+    <ModalShell titleId="voices-library-title" onClose={onClose} className="max-w-5xl" contentClassName="">
+      <div className="p-6 border-b border-card-border">
               <div className="flex items-center justify-between mb-4">
                 <h2 id="voices-library-title" className="text-2xl font-semibold text-card-foreground flex items-center gap-3">
                   <img src={voicesIcon} alt="Voices Icon" className="w-14 h-14 object-contain" />
@@ -115,7 +93,7 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose 
                 )}
               </div>
             </div>
-            <div className="p-6 grid gap-4 md:grid-cols-2">
+      <div className="p-6 grid gap-4 md:grid-cols-2">
               {filtered.map(r => (
                 <div key={r.id} className="rounded-xl border border-card-border/60 bg-card/70 p-4 backdrop-blur-sm hover:bg-card/80 transition group relative">
                   <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
@@ -159,12 +137,8 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose 
               {!loading && filtered.length === 0 && (
                 <div className="col-span-full text-center text-sm text-card-foreground/60 py-12">No voices match your search.</div>
               )}
-            </div>
-          </div>
-        </div>
-      </motion.div>
-    </MotionIfOkay>,
-    document.body
+      </div>
+    </ModalShell>
   );
 };
 

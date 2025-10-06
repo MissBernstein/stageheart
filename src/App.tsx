@@ -15,6 +15,7 @@ import SimpleMigration from "./pages/SimpleMigration";
 import { VoicesApp } from "./VoicesApp";
 import { AuthProvider } from "./hooks/useAuth";
 import { PlayerProvider } from "./hooks/usePlayer";
+import { UnreadMessagesProvider } from "./hooks/useUnreadMessages";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <PlayerProvider>
+        <UnreadMessagesProvider>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -49,6 +51,7 @@ const App = () => (
             </ToastProvider>
           </TooltipProvider>
         </ThemeProvider>
+        </UnreadMessagesProvider>
       </PlayerProvider>
     </AuthProvider>
   </QueryClientProvider>

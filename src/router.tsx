@@ -9,6 +9,7 @@ import { UserProfileModal } from './components/voices/UserProfileModal';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SettingsPage } from './pages/SettingsPage';
 import { InboxPage } from './pages/InboxPage';
+import { InboxModal } from './components/voices/InboxModal';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { AuthGuard } from './components/auth/AuthGuard';
 
@@ -17,6 +18,7 @@ export const VoicesRouter: React.FC = () => {
   const navigate = useNavigate();
   // Detect if profile modal should be shown
   const profileMatch = /\/app\/p\/(.+)$/.exec(location.pathname);
+  const inboxMatch = /\/app\/inbox$/.exec(location.pathname);
   const userId = profileMatch ? decodeURIComponent(profileMatch[1]) : null;
   return (
     <Layout>
@@ -34,6 +36,9 @@ export const VoicesRouter: React.FC = () => {
           userId={userId}
           onClose={() => navigate('/app/voices', { replace: true })}
         />
+      )}
+      {inboxMatch && (
+        <InboxModal onClose={() => navigate('/app/voices', { replace: true })} />
       )}
     </Layout>
   );

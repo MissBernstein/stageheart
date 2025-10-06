@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { MessageCircle, Loader2, MailOpen, Mail, Reply } from 'lucide-react';
+import { Loader2, MailOpen, Mail, Reply } from 'lucide-react';
+import messagesIcon from '@/assets/messagesicon.png';
 import {
   Popover,
   PopoverTrigger,
@@ -49,7 +50,7 @@ export const MessagesPopover: React.FC<MessagesPopoverProps> = ({ messages = moc
         <button
           className="relative h-10 w-10 md:h-12 md:w-12 flex items-center justify-center bg-card hover:bg-muted border border-card-border rounded-2xl shadow-card focus:outline-none focus:ring-2 focus:ring-primary/40"
         >
-          <MessageCircle className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+          <img src={messagesIcon} alt="Messages" className="w-4 h-4 md:w-5 md:h-5" />
           <span className="sr-only">Messages</span>
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center text-[10px] md:text-xs">
@@ -61,7 +62,7 @@ export const MessagesPopover: React.FC<MessagesPopoverProps> = ({ messages = moc
       <PopoverContent className="w-80 p-0" align="start" sideOffset={8}>
         <div className="p-3 border-b flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <MessageCircle className="w-4 h-4 text-primary" />
+            <img src={messagesIcon} alt="Messages" className="w-4 h-4" />
             <h4 className="text-sm font-semibold">Messages</h4>
           </div>
           <Button size="sm" variant="ghost" onClick={onOpenInbox} className="text-xs">

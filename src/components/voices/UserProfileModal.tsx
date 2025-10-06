@@ -1,10 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { createPortal } from 'react-dom';
-import { motion } from 'framer-motion';
-import { fadeInUp } from '@/ui/motion';
-import { MotionIfOkay } from '@/ui/MotionIfOkay';
 import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
-import { X, Share2, Mail, MessageCircle, Link as LinkIcon, Globe2, Loader2, Heart } from 'lucide-react';
+import { ModalShell } from './ModalShell';
+import { X, Share2, Mail, Link as LinkIcon, Globe2, Loader2, Heart } from 'lucide-react';
+import messagesIcon from '@/assets/messagesicon.png';
 import { incrementPlay } from '@/lib/voicesApi';
 import { useVoiceFavorites } from '@/hooks/useVoiceFavorites';
 import { useToast } from '@/hooks/use-toast';
@@ -56,18 +54,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
 
   const filtered = recordings; // no search filtering needed
 
-  return createPortal(
-    <MotionIfOkay>
-      <motion.div
-        initial={prefersReducedMotion ? false : fadeInUp.initial}
-        animate={prefersReducedMotion ? undefined : fadeInUp.animate}
-        exit={prefersReducedMotion ? undefined : fadeInUp.exit}
-        className="fixed inset-0 z-[999] bg-background/95 backdrop-blur-sm overflow-y-auto"
-        role="dialog" aria-modal="true" aria-labelledby="user-profile-title"
-      >
-        <div className="container mx-auto px-4 py-10">
-          <div className="bg-card/95 rounded-3xl shadow-card border border-card-border/70 max-w-5xl mx-auto">
-            <div className="p-6 border-b border-card-border flex items-start justify-between gap-6">
+  return (
+    <ModalShell titleId="user-profile-title" onClose={onClose} className="max-w-5xl" contentClassName="">
+      <div className="p-6 border-b border-card-border flex items-start justify-between gap-6">
               <div className="flex items-start gap-5">
                 <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center text-3xl font-semibold text-card-foreground">
                   {profile?.display_name?.charAt(0) || '?' }
@@ -84,13 +73,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
               <div className="flex gap-2">
                 <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9"><X className="w-4 h-4" /><span className="sr-only">Close</span></Button>
               </div>
-            </div>
-            <div className="p-6 space-y-10">
+  </div>
+  <div className="p-6 space-y-10">
               {/* Contact & Links */}
               <section className="space-y-3">
                 <h3 className="text-sm font-semibold tracking-wide text-card-foreground/70">CONNECT</h3>
                 <div className="flex flex-wrap gap-3">
-                  <Button variant="outline" size="sm" className="gap-2"><MessageCircle className="w-4 h-4" />Message</Button>
+                  <Button variant="outline" size="sm" className="gap-2"><img src={messagesIcon} alt="Message" className="w-4 h-4" />Message</Button>
                   <Button variant="outline" size="sm" className="gap-2"><Mail className="w-4 h-4" />Email</Button>
                   <Button variant="outline" size="sm" className="gap-2"><Share2 className="w-4 h-4" />Share</Button>
                 </div>
@@ -159,12 +148,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
                   )}
                 </div>
               </section>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-    </MotionIfOkay>,
-    document.body
+      </div>
+    </ModalShell>
   );
 };
 

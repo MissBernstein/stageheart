@@ -32,6 +32,7 @@ import { fadeInUp } from '@/ui/motion';
 import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
 import { MotionIfOkay } from '@/ui/MotionIfOkay';
 import { Link } from 'react-router-dom';
+import { useUnreadMessagesStore } from '@/hooks/useUnreadMessages';
 
 const Index = () => {
   const { t } = useTranslation();
@@ -48,7 +49,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { favorites } = useFavorites();
   const prefersReducedMotion = usePrefersReducedMotion();
-  const [unreadMessages, setUnreadMessages] = useState(0);
+  const { unread: unreadMessages, setUnread: setUnreadMessages } = useUnreadMessagesStore();
   const [showMessagePulse, setShowMessagePulse] = useState(true);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   // Voices modal state MUST be declared before any early returns to preserve hook order
