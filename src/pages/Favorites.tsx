@@ -93,7 +93,7 @@ export default function Favorites() {
           >
             <motion.button
               type="button"
-              onClick={() => navigate(`/?song=${encodeURIComponent(song.id)}`)}
+              onClick={() => navigate(`/?song=${encodeURIComponent(`${song.title} - ${song.artist}`)}`)}
               className="w-full text-left flex items-center justify-between px-5 py-4 hover:bg-card/75 focus:outline-none focus:ring-2 focus:ring-primary/50"
               whileHover={hoverLift}
               whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}

@@ -93,15 +93,47 @@ const Index = () => {
   // When songs list arrives, fulfill pending selection
   useEffect(() => {
     if (pendingOpenSongIdRef.current && songs.length) {
-      let target = songs.find(s => s.id === pendingOpenSongIdRef.current);
-      // Fallback: some favorites may have legacy ids; attempt fuzzy title match
+      const targetId = pendingOpenSongIdRef.current;
+      
+      let target = songs.find(s => s.id === targetId);
+      
+      // Multiple fallback attempts for legacy favorites
       if (!target) {
-        const legacy = pendingOpenSongIdRef.current.toLowerCase().replace(/[-_]/g,' ');
-        target = songs.find(s => s.title.toLowerCase() === legacy || s.slug === pendingOpenSongIdRef.current);
+        // Try by slug
+        target = songs.find(s => s.slug === targetId);
       }
+      
+      if (!target) {
+        // Try fuzzy title match (replace dashes/underscores with spaces)
+        const fuzzyId = targetId.toLowerCase().replace(/[-_]/g, ' ');
+        target = songs.find(s => s.title.toLowerCase() === fuzzyId);
+      }
+      
+      if (!target) {
+        // Try partial title match
+        const searchTerm = targetId.toLowerCase().replace(/[-_]/g, ' ');
+        target = songs.find(s => 
+          s.title.toLowerCase().includes(searchTerm) || 
+          searchTerm.includes(s.title.toLowerCase())
+        );
+      }
+      
+      if (!target) {
+        // Try to parse as "title - artist" or "title by artist" format
+        const titleArtistMatch = targetId.match(/^(.+?)(?:\s*[-–—]\s*|\s+by\s+)(.+)$/i);
+        if (titleArtistMatch) {
+          const [, title, artist] = titleArtistMatch;
+          target = songs.find(s => 
+            s.title.toLowerCase().trim() === title.toLowerCase().trim() &&
+            s.artist.toLowerCase().trim() === artist.toLowerCase().trim()
+          );
+        }
+      }
+      
       if (target) {
         setCurrentMap({ ...target, isVibeBasedMap: false });
       }
+      
       pendingOpenSongIdRef.current = null;
     }
   }, [songs]);
