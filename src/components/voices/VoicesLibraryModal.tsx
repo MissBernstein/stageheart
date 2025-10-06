@@ -15,9 +15,10 @@ import { ModalShell } from './ModalShell';
 
 interface VoicesLibraryModalProps {
   onClose: () => void;
+  returnFocusRef?: React.RefObject<HTMLElement>;
 }
 
-export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose }) => {
+export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose, returnFocusRef }) => {
   const { loadRecording, currentRecording, isPlaying, play, pause } = usePlayer();
   const navigate = useNavigate();
   const { favorites, isFavorite, toggleFavorite } = useVoiceFavorites();
@@ -48,7 +49,7 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose 
   // Focus trap handled by ModalShell now
 
   return (
-    <ModalShell titleId="voices-library-title" onClose={onClose} className="max-w-5xl" contentClassName="">
+  <ModalShell titleId="voices-library-title" onClose={onClose} className="max-w-5xl" contentClassName="" returnFocusRef={returnFocusRef}>
       <div className="p-6 border-b border-card-border">
               <div className="flex items-center justify-between mb-4">
                 <h2 id="voices-library-title" className="text-2xl font-semibold text-card-foreground flex items-center gap-3">

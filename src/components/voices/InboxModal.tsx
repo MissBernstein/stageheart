@@ -11,9 +11,9 @@ import { listMessages, markAllMessagesRead, markMessageRead, markMessagesRead, M
 
 type InboxItem = MessageRecord;
 
-interface InboxModalProps { onClose: () => void; }
+interface InboxModalProps { onClose: () => void; returnFocusRef?: React.RefObject<HTMLElement>; }
 
-export const InboxModal: React.FC<InboxModalProps> = ({ onClose }) => {
+export const InboxModal: React.FC<InboxModalProps> = ({ onClose, returnFocusRef }) => {
   const prefersReducedMotion = usePrefersReducedMotion();
   const { toast } = useToast();
   const [items, setItems] = useState<InboxItem[]>([]);
@@ -89,7 +89,7 @@ export const InboxModal: React.FC<InboxModalProps> = ({ onClose }) => {
   };
 
   return (
-    <ModalShell titleId="inbox-title" onClose={onClose} className="max-w-6xl flex flex-col h-[80vh]" contentClassName="flex flex-col h-full">
+    <ModalShell titleId="inbox-title" onClose={onClose} className="max-w-6xl flex flex-col h-[80vh]" contentClassName="flex flex-col h-full" returnFocusRef={returnFocusRef}>
       <div className="p-6 border-b border-card-border flex items-start justify-between gap-4">
               <div className="space-y-1">
                 <h2 id="inbox-title" className="text-2xl font-semibold flex items-center gap-2"><img src={messagesIcon} alt="Messages" className="w-8 h-8 rounded-xl" /> Messages</h2>

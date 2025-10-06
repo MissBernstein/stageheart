@@ -23,6 +23,7 @@ interface ProfileBadgeProps {
   onNavigateInbox?: () => void;
   onOpenChange?: (open: boolean) => void;
   onOpenSettings?: () => void;
+  onOpenMyProfile?: () => void;
 }
 
 export const ProfileBadge: React.FC<ProfileBadgeProps> = ({
@@ -36,6 +37,7 @@ export const ProfileBadge: React.FC<ProfileBadgeProps> = ({
   onNavigateInbox,
   onOpenChange,
   onOpenSettings,
+  onOpenMyProfile,
 }) => {
   const navigate = useNavigate();
   const initial = (displayName || email || '?').charAt(0).toUpperCase();
@@ -74,7 +76,7 @@ export const ProfileBadge: React.FC<ProfileBadgeProps> = ({
           {email && <span className="text-[11px] text-muted-foreground truncate">{email}</span>}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate('/app/p/me')} className="gap-2 cursor-pointer">
+        <DropdownMenuItem onClick={() => { onOpenMyProfile ? onOpenMyProfile() : navigate('/app/p/me'); }} className="gap-2 cursor-pointer">
           <User className="w-4 h-4" />
           <span>My Voice Profile</span>
         </DropdownMenuItem>

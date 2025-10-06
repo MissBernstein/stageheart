@@ -12,6 +12,7 @@ export interface ModalShellProps {
   className?: string;           // wrapper panel classes
   contentClassName?: string;    // inner scrolling area classes
   initialFocusRef?: React.RefObject<HTMLElement>;
+  returnFocusRef?: React.RefObject<HTMLElement>; // explicit element to restore focus to on close
   ariaLabel?: string;           // use when no visible heading
   backdropClassName?: string;
 }
@@ -29,6 +30,7 @@ export const ModalShell: React.FC<ModalShellProps> = ({
   className = '',
   contentClassName = '',
   initialFocusRef,
+  returnFocusRef,
   ariaLabel,
   backdropClassName = ''
 }) => {
@@ -42,6 +44,13 @@ export const ModalShell: React.FC<ModalShellProps> = ({
     previouslyFocused.current = document.activeElement as HTMLElement | null;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    const root = document.getElementById('root');
+    const prevAriaHidden = root?.getAttribute('aria-hidden');
+    const prevInert = (root as any)?.inert;
+    if (root) {
+      root.setAttribute('aria-hidden','true');
+      (root as any).inert = true;
+    }
 
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -79,12 +88,15 @@ export const ModalShell: React.FC<ModalShellProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKey, true);
       document.body.style.overflow = prevOverflow;
-      // Restore focus if still in document
-      if (previouslyFocused.current && document.contains(previouslyFocused.current)) {
-        previouslyFocused.current.focus({ preventScroll: true });
+      if (root) {
+        if (prevAriaHidden != null) root.setAttribute('aria-hidden', prevAriaHidden); else root.removeAttribute('aria-hidden');
+        (root as any).inert = prevInert;
       }
+      // Restore focus if still in document
+      const restore = returnFocusRef?.current || previouslyFocused.current;
+      if (restore && document.contains(restore)) restore.focus({ preventScroll: true });
     };
-  }, [onClose, initialFocusRef]);
+  }, [onClose, initialFocusRef, returnFocusRef]);
 
   const handleBackdrop = (e: React.MouseEvent) => {
     if (e.target === overlayRef.current) {
@@ -94,7 +106,7 @@ export const ModalShell: React.FC<ModalShellProps> = ({
 
   return createPortal(
     <MotionIfOkay>
-      <motion.div
+  <motion.div
         ref={overlayRef}
         onMouseDown={handleBackdrop}
         initial={prefersReducedMotion ? false : fadeInUp.initial}
@@ -106,15 +118,20 @@ export const ModalShell: React.FC<ModalShellProps> = ({
         aria-label={ariaLabel}
         className={`fixed inset-0 z-[1000] bg-background/95 backdrop-blur-sm overflow-y-auto ${backdropClassName}`}
       >
-        <div className="container mx-auto px-4 py-8">
-          <div
-            ref={panelRef}
-            className={`outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded-3xl bg-card/95 border border-card-border/70 shadow-card ${className}`}
-            tabIndex={-1}
-          >
-            <div className={contentClassName}>
-              {children}
-            </div>
+        <div className="w-full h-full flex flex-col items-center md:justify-center md:py-12 py-8 px-4">
+          <div className="w-full max-w-[1180px]">
+            <motion.div
+              ref={panelRef}
+              tabIndex={-1}
+              initial={prefersReducedMotion ? undefined : { opacity: 0, y: 12, scale: 0.98 }}
+              animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0, scale: 1, transition: { duration: 0.22, ease: [0.16,0.8,0.24,1] } }}
+              exit={prefersReducedMotion ? undefined : { opacity: 0, y: 8, scale: 0.985, transition: { duration: 0.15 } }}
+              className={`outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded-3xl bg-card/95 border border-card-border/70 shadow-card mx-auto ${className}`}
+            >
+              <div className={contentClassName}>
+                {children}
+              </div>
+            </motion.div>
           </div>
         </div>
       </motion.div>

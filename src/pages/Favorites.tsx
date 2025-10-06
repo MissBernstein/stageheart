@@ -91,8 +91,10 @@ export default function Favorites() {
             key={song.id}
             className="group overflow-hidden rounded-2xl border border-card-border/60 bg-card/60"
           >
-            <motion.div
-              className="flex items-center justify-between px-5 py-4 hover:bg-card/75"
+            <motion.button
+              type="button"
+              onClick={() => navigate(`/?song=${encodeURIComponent(song.id)}`)}
+              className="w-full text-left flex items-center justify-between px-5 py-4 hover:bg-card/75 focus:outline-none focus:ring-2 focus:ring-primary/50"
               whileHover={hoverLift}
               whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
               transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
@@ -102,7 +104,7 @@ export default function Favorites() {
                 <p className="text-sm text-muted-foreground truncate">{song.artist}</p>
               </div>
               {renderSongActions(song)}
-            </motion.div>
+            </motion.button>
           </AnimatedListItem>
         ))}
       </AnimatePresence>

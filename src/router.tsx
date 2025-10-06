@@ -2,55 +2,31 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
-import { VoicesPage } from './pages/VoicesPage';
-import { VoiceProfilePage } from './pages/VoiceProfilePage';
-import { UserProfilePage } from './pages/UserProfilePage';
-import { UserProfileModal } from './components/voices/UserProfileModal';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { InboxPage } from './pages/InboxPage';
-import { InboxModal } from './components/voices/InboxModal';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { AuthGuard } from './components/auth/AuthGuard';
 
 export const VoicesRouter: React.FC = () => {
-  const location = useLocation();
   const navigate = useNavigate();
-  // Detect if profile modal should be shown
-  const profileMatch = /\/app\/p\/(.+)$/.exec(location.pathname);
-  const inboxMatch = /\/app\/inbox$/.exec(location.pathname);
-  const userId = profileMatch ? decodeURIComponent(profileMatch[1]) : null;
   return (
     <Layout>
-      <Routes>
-        <Route index element={<Navigate to="voices" replace />} />
-        <Route path="voices" element={<VoicesPage />} />
-        <Route path="voice/:recordingId" element={<VoiceProfilePage />} />
-        <Route path="p/:userId" element={<UserProfilePage />} />
-  {/* Legacy settings path retained to avoid 404; redirect to voices since settings now modal-driven */}
-  <Route path="settings" element={<Navigate to="/app/voices" replace />} />
-        <Route path="inbox" element={<AuthGuard><InboxPage /></AuthGuard>} />
+  <Routes>
+  {/* Legacy voice & profile pages removed; index now points to app inbox fallback */}
+  <Route index element={<Navigate to="/" replace />} />
+  {/* Redirect legacy settings to root (modal driven) */}
+  <Route path="settings" element={<Navigate to="/" replace />} />
+  {/* Redirect any legacy profile or voice deep links to root */}
+  <Route path="p/:userId" element={<Navigate to="/" replace />} />
+  <Route path="voice/:recordingId" element={<Navigate to="/" replace />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
-      {userId && (
-        <UserProfileModal
-          userId={userId}
-          onClose={() => navigate('/app/voices', { replace: true })}
-        />
-      )}
-      {inboxMatch && (
-        <InboxModal onClose={() => navigate('/app/voices', { replace: true })} />
-      )}
     </Layout>
   );
 };
 
 // Route definitions for navigation
 export const routes = {
-  voices: '/app/voices',
-  voice: (recordingId: string) => `/app/voice/${recordingId}`,
-  userProfile: (userId: string) => `/app/p/${userId}`,
-  myProfile: '/app/p/me',
-  // settings route retained for backward links but now opens modal elsewhere
+  // Minimal remaining routes (some legacy deep links retained for redirect behavior)
   settings: '/app/settings',
   inbox: '/app/inbox'
 } as const;

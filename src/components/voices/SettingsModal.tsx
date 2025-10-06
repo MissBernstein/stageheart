@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 
-interface SettingsModalProps { onClose: () => void; }
+interface SettingsModalProps { onClose: () => void; returnFocusRef?: React.RefObject<HTMLElement>; }
 
 type TabKey = 'profile' | 'privacy' | 'notifications' | 'playback' | 'account';
 
@@ -44,7 +44,7 @@ const defaultSettings: PersistedSettings = {
   language: 'en'
 };
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFocusRef }) => {
   const { toast } = useToast();
   const [tab, setTab] = useState<TabKey>('profile');
   const [displayName, setDisplayName] = useState(defaultSettings.displayName);
@@ -140,7 +140,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
   );
 
   return (
-    <ModalShell titleId="settings-title" onClose={onClose} className="max-w-5xl flex flex-col h-[82vh]" contentClassName="flex flex-col h-full">
+  <ModalShell titleId="settings-title" onClose={onClose} className="max-w-5xl flex flex-col h-[82vh]" contentClassName="flex flex-col h-full" returnFocusRef={returnFocusRef}>
       <div className="p-6 border-b border-card-border flex items-start justify-between gap-4">
         <div className="space-y-1">
           <h2 id="settings-title" className="text-2xl font-semibold flex items-center gap-3"><SlidersHorizontal className="w-6 h-6" /> Settings</h2>

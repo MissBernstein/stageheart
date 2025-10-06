@@ -1,6 +1,6 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 // Dynamic import of supabase to keep heavy client out of initial bundle
 import type { Database } from '@/integrations/supabase/types';
 type Session = import('@supabase/supabase-js').Session;
@@ -16,9 +16,11 @@ const PerformancePrepTools = lazy(() => import('@/components/PerformancePrepTool
 const FeelingsCard = lazy(() => import('@/components/FeelingsCard').then(m => ({ default: m.FeelingsCard })));
 const VibePicker = lazy(() => import('@/components/VibePicker').then(m => ({ default: m.VibePicker })));
 import { ProfileBadge } from '@/components/voices/ProfileBadge';
+import { UserProfileModal } from '@/components/voices/UserProfileModal';
 import { SettingsModal } from '@/components/voices/SettingsModal';
 import { Mic2 } from 'lucide-react';
 import { VoicesLibraryModal } from '@/components/voices/VoicesLibraryModal';
+import { InboxModal } from '@/components/voices/InboxModal';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 import { LanguageToggle } from '@/components/LanguageToggle';
@@ -38,6 +40,7 @@ import { useUnreadMessagesStore } from '@/hooks/useUnreadMessages';
 const Index = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,8 +59,52 @@ const Index = () => {
   // Voices modal state MUST be declared before any early returns to preserve hook order
   const [showVoices, setShowVoices] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showUserProfile, setShowUserProfile] = useState(false);
+  const [showInbox, setShowInbox] = useState(false);
 
   const { songs } = useAllSongs();
+
+  const voicesButtonRef = useRef<HTMLButtonElement|null>(null);
+  const settingsReturnRef = useRef<HTMLButtonElement|null>(null);
+  const inboxReturnRef = useRef<HTMLButtonElement|null>(null);
+  const profileReturnRef = useRef<HTMLButtonElement|null>(null);
+  const pendingOpenSongIdRef = useRef<string | null>(null);
+
+  // Capture requested song id via navigation state OR query parameter ?song=
+  useEffect(() => {
+    const search = location.search;
+    const params = new URLSearchParams(search);
+    const qSong = params.get('song');
+    const stateSong = (location.state as any)?.openSongId;
+    const songId = stateSong || qSong;
+    if (songId) {
+      pendingOpenSongIdRef.current = songId;
+      // Clean URL if query param used
+      if (qSong) {
+        params.delete('song');
+        const clean = `${location.pathname}${params.toString()?`?${params.toString()}`:''}`;
+        navigate(clean, { replace: true });
+      } else if (stateSong) {
+        navigate(location.pathname, { replace: true, state: {} });
+      }
+    }
+  }, [location.pathname, location.search, location.state, navigate]);
+
+  // When songs list arrives, fulfill pending selection
+  useEffect(() => {
+    if (pendingOpenSongIdRef.current && songs.length) {
+      let target = songs.find(s => s.id === pendingOpenSongIdRef.current);
+      // Fallback: some favorites may have legacy ids; attempt fuzzy title match
+      if (!target) {
+        const legacy = pendingOpenSongIdRef.current.toLowerCase().replace(/[-_]/g,' ');
+        target = songs.find(s => s.title.toLowerCase() === legacy || s.slug === pendingOpenSongIdRef.current);
+      }
+      if (target) {
+        setCurrentMap({ ...target, isVibeBasedMap: false });
+      }
+      pendingOpenSongIdRef.current = null;
+    }
+  }, [songs]);
 
   useEffect(() => {
     let unsub: (() => void) | null = null;
@@ -299,6 +346,7 @@ const Index = () => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <AnimatedButton
+                    ref={voicesButtonRef as any}
                     onClick={() => setShowVoices(true)}
                     className="h-10 w-10 md:h-12 md:w-auto md:px-4 flex items-center justify-center bg-primary/90 hover:bg-primary text-primary-foreground rounded-2xl shadow-card border border-primary/40 text-xs md:text-sm font-medium gap-2"
                   >
@@ -318,10 +366,10 @@ const Index = () => {
                 favoritesCount={favorites.length}
                 unreadMessagesCount={showMessagePulse ? unreadMessages : 0}
                 onNavigateFavorites={() => navigate('/favorites')}
-                onNavigateInbox={() => navigate('/app/inbox')}
-                onLogout={handleLogout}
-                onOpenChange={(open) => setProfileMenuOpen(open)}
+                onNavigateInbox={() => setShowInbox(true)}
                 onOpenSettings={() => setShowSettings(true)}
+                onOpenMyProfile={() => setShowUserProfile(true)}
+                // capture trigger refs via onOpenChange if needed
               />
             </div>
           </div>
@@ -461,13 +509,15 @@ const Index = () => {
               </button>
             </div>
           )}
-        </div>
-        </div>
-        {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
-      </motion.div>
-      {showVoices && (
-        <VoicesLibraryModal onClose={() => setShowVoices(false)} />
-      )}
+    </div>
+    </div>
+  </motion.div>
+  {showSettings && <SettingsModal onClose={() => setShowSettings(false)} returnFocusRef={settingsReturnRef} />}
+  {showUserProfile && <UserProfileModal userId={session!.user.id} onClose={() => setShowUserProfile(false)} returnFocusRef={profileReturnRef} />}
+  {showInbox && <InboxModal onClose={() => setShowInbox(false)} returnFocusRef={inboxReturnRef} />}
+  {showVoices && (
+    <VoicesLibraryModal onClose={() => setShowVoices(false)} returnFocusRef={voicesButtonRef} />
+  )}
     </MotionIfOkay>
   );
 };

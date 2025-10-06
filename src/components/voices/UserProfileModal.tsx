@@ -15,12 +15,13 @@ import { usePlayer } from '@/hooks/usePlayer';
 interface UserProfileModalProps {
   userId: string;
   onClose: () => void;
+  returnFocusRef?: React.RefObject<HTMLElement>;
   // Preload optional: if you pass a recording list we won't fetch again
   initialRecordings?: Recording[];
 }
 
 
-export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onClose, initialRecordings }) => {
+export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onClose, initialRecordings, returnFocusRef }) => {
   const prefersReducedMotion = usePrefersReducedMotion();
   const { loadRecording, currentRecording, isPlaying, play, pause } = usePlayer();
   const { isFavorite, toggleFavorite } = useVoiceFavorites();
@@ -55,7 +56,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
   const filtered = recordings; // no search filtering needed
 
   return (
-    <ModalShell titleId="user-profile-title" onClose={onClose} className="max-w-5xl" contentClassName="">
+  <ModalShell titleId="user-profile-title" onClose={onClose} className="max-w-5xl" contentClassName="" returnFocusRef={returnFocusRef}>
       <div className="p-6 border-b border-card-border flex items-start justify-between gap-6">
               <div className="flex items-start gap-5">
                 <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center text-3xl font-semibold text-card-foreground">
