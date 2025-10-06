@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      comments: {
+        Row: {
+          author_user_id: string
+          body: string
+          created_at: string | null
+          id: string
+          recording_id: string
+          state: Database["public"]["Enums"]["comment_state"] | null
+        }
+        Insert: {
+          author_user_id: string
+          body: string
+          created_at?: string | null
+          id?: string
+          recording_id: string
+          state?: Database["public"]["Enums"]["comment_state"] | null
+        }
+        Update: {
+          author_user_id?: string
+          body?: string
+          created_at?: string | null
+          id?: string
+          recording_id?: string
+          state?: Database["public"]["Enums"]["comment_state"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
+            referencedRelation: "recordings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feeling_cards: {
         Row: {
           access_ideas: string[]
@@ -55,6 +90,33 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          body: string
+          created_at: string | null
+          from_user_id: string
+          id: string
+          is_read: boolean | null
+          to_user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string | null
+          from_user_id: string
+          id?: string
+          is_read?: boolean | null
+          to_user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string | null
+          from_user_id?: string
+          id?: string
+          is_read?: boolean | null
+          to_user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -73,6 +135,154 @@ export type Database = {
           display_name?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      recording_meets: {
+        Row: {
+          id: string
+          listener_user_id: string
+          met_at: string | null
+          recording_id: string
+        }
+        Insert: {
+          id?: string
+          listener_user_id: string
+          met_at?: string | null
+          recording_id: string
+        }
+        Update: {
+          id?: string
+          listener_user_id?: string
+          met_at?: string | null
+          recording_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recording_meets_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
+            referencedRelation: "recordings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recording_reports: {
+        Row: {
+          created_at: string | null
+          id: string
+          reason: string
+          recording_id: string
+          reporter_user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          reason: string
+          recording_id: string
+          reporter_user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          reason?: string
+          recording_id?: string
+          reporter_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recording_reports_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
+            referencedRelation: "recordings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recordings: {
+        Row: {
+          comments_enabled: boolean | null
+          created_at: string | null
+          duration_sec: number | null
+          file_original_url: string | null
+          file_stream_url: string | null
+          filesize_bytes: number | null
+          format_original:
+            | Database["public"]["Enums"]["recording_format"]
+            | null
+          format_stream: Database["public"]["Enums"]["recording_format"] | null
+          id: string
+          is_signature: boolean | null
+          language: string | null
+          loudness_lufs: number | null
+          moderation_status:
+            | Database["public"]["Enums"]["moderation_status"]
+            | null
+          mood_tags: string[] | null
+          plays_count: number | null
+          reports_count: number | null
+          state: Database["public"]["Enums"]["recording_state"] | null
+          title: string
+          updated_at: string | null
+          user_id: string
+          voice_type: string | null
+          waveform_json_url: string | null
+        }
+        Insert: {
+          comments_enabled?: boolean | null
+          created_at?: string | null
+          duration_sec?: number | null
+          file_original_url?: string | null
+          file_stream_url?: string | null
+          filesize_bytes?: number | null
+          format_original?:
+            | Database["public"]["Enums"]["recording_format"]
+            | null
+          format_stream?: Database["public"]["Enums"]["recording_format"] | null
+          id?: string
+          is_signature?: boolean | null
+          language?: string | null
+          loudness_lufs?: number | null
+          moderation_status?:
+            | Database["public"]["Enums"]["moderation_status"]
+            | null
+          mood_tags?: string[] | null
+          plays_count?: number | null
+          reports_count?: number | null
+          state?: Database["public"]["Enums"]["recording_state"] | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+          voice_type?: string | null
+          waveform_json_url?: string | null
+        }
+        Update: {
+          comments_enabled?: boolean | null
+          created_at?: string | null
+          duration_sec?: number | null
+          file_original_url?: string | null
+          file_stream_url?: string | null
+          filesize_bytes?: number | null
+          format_original?:
+            | Database["public"]["Enums"]["recording_format"]
+            | null
+          format_stream?: Database["public"]["Enums"]["recording_format"] | null
+          id?: string
+          is_signature?: boolean | null
+          language?: string | null
+          loudness_lufs?: number | null
+          moderation_status?:
+            | Database["public"]["Enums"]["moderation_status"]
+            | null
+          mood_tags?: string[] | null
+          plays_count?: number | null
+          reports_count?: number | null
+          state?: Database["public"]["Enums"]["recording_state"] | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+          voice_type?: string | null
+          waveform_json_url?: string | null
         }
         Relationships: []
       }
@@ -187,20 +397,87 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles: {
+        Row: {
+          about: string | null
+          comments_enabled: boolean | null
+          contact_visibility:
+            | Database["public"]["Enums"]["profile_field_visibility"]
+            | null
+          created_at: string | null
+          display_name: string
+          dm_enabled: boolean | null
+          fav_genres: string[] | null
+          favorite_artists: string[] | null
+          groups: string[] | null
+          id: string
+          links: Json | null
+          profile_note_to_listeners: string | null
+          status: Database["public"]["Enums"]["user_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          about?: string | null
+          comments_enabled?: boolean | null
+          contact_visibility?:
+            | Database["public"]["Enums"]["profile_field_visibility"]
+            | null
+          created_at?: string | null
+          display_name: string
+          dm_enabled?: boolean | null
+          fav_genres?: string[] | null
+          favorite_artists?: string[] | null
+          groups?: string[] | null
+          id: string
+          links?: Json | null
+          profile_note_to_listeners?: string | null
+          status?: Database["public"]["Enums"]["user_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          about?: string | null
+          comments_enabled?: boolean | null
+          contact_visibility?:
+            | Database["public"]["Enums"]["profile_field_visibility"]
+            | null
+          created_at?: string | null
+          display_name?: string
+          dm_enabled?: boolean | null
+          fav_genres?: string[] | null
+          favorite_artists?: string[] | null
+          groups?: string[] | null
+          id?: string
+          links?: Json | null
+          profile_note_to_listeners?: string | null
+          status?: Database["public"]["Enums"]["user_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_recording_plays: {
+        Args: { recording_uuid: string }
+        Returns: undefined
+      }
     }
     Enums: {
+      comment_state: "pending" | "published" | "rejected"
+      link_type: "website" | "instagram" | "tiktok" | "email" | "other"
+      moderation_status: "clean" | "pending" | "flagged" | "blocked"
+      profile_field_visibility: "public" | "after_meet" | "private"
+      recording_format: "wav" | "m4a" | "mp3" | "opus"
+      recording_state: "private" | "unlisted" | "public"
       submission_status:
         | "QUEUED"
         | "PROCESSING"
         | "REVIEW"
         | "PUBLISHED"
         | "REJECTED"
+      user_status: "active" | "suspended"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -328,6 +605,12 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      comment_state: ["pending", "published", "rejected"],
+      link_type: ["website", "instagram", "tiktok", "email", "other"],
+      moderation_status: ["clean", "pending", "flagged", "blocked"],
+      profile_field_visibility: ["public", "after_meet", "private"],
+      recording_format: ["wav", "m4a", "mp3", "opus"],
+      recording_state: ["private", "unlisted", "public"],
       submission_status: [
         "QUEUED",
         "PROCESSING",
@@ -335,6 +618,7 @@ export const Constants = {
         "PUBLISHED",
         "REJECTED",
       ],
+      user_status: ["active", "suspended"],
     },
   },
 } as const
