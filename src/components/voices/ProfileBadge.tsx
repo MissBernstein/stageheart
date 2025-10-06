@@ -9,8 +9,7 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, User, Settings, Heart } from 'lucide-react';
-import messagesIcon from '@/assets/messagesicon.png';
+import { LogOut, User, Settings, Heart, Mail } from 'lucide-react';
 
 interface ProfileBadgeProps {
   displayName?: string | null;
@@ -84,7 +83,7 @@ export const ProfileBadge: React.FC<ProfileBadgeProps> = ({
           onClick={onNavigateInbox || (() => navigate('/app/inbox'))}
           className="gap-2 cursor-pointer"
         >
-          <img src={messagesIcon} alt="Messages" className="w-4 h-4" />
+          <Mail className="w-4 h-4" />
           <span className="flex-1">Messages</span>
           {unreadMessagesCount > 0 && (
             <span className="ml-auto bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-md font-medium">
