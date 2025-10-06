@@ -15,6 +15,8 @@ const FeelingJourney = lazy(() => import('@/components/FeelingJourney').then(m =
 const PerformancePrepTools = lazy(() => import('@/components/PerformancePrepTools').then(m => ({ default: m.PerformancePrepTools })));
 const FeelingsCard = lazy(() => import('@/components/FeelingsCard').then(m => ({ default: m.FeelingsCard })));
 const VibePicker = lazy(() => import('@/components/VibePicker').then(m => ({ default: m.VibePicker })));
+import { MessagesPopover } from '@/components/voices/MessagesPopover';
+import { ProfileBadge } from '@/components/voices/ProfileBadge';
 
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { FeelingMap, Song, Vibe } from '@/types';
@@ -243,7 +245,7 @@ const Index = () => {
         <div className="space-y-8 md:space-y-12">
           {/* Navigation */}
           <div className="flex justify-between items-start mb-4 md:mb-6">
-            <div className="flex-1 flex justify-start items-start pt-2">
+            <div className="flex-1 flex justify-start items-start pt-2 gap-2">
               <AnimatedButton
                 variant="secondary"
                 className="relative h-10 w-10 md:h-12 md:w-12 flex items-center justify-center bg-card hover:bg-muted border border-card-border rounded-2xl shadow-card p-0"
@@ -257,16 +259,16 @@ const Index = () => {
                   </span>
                 )}
               </AnimatedButton>
+              <MessagesPopover onOpenInbox={() => navigate('/app/inbox')} />
             </div>
             <div className="flex-1 flex justify-end items-start gap-2 md:gap-3 pt-2">
               <LanguageToggle />
-              <AnimatedButton
-                size="sm"
-                onClick={handleLogout}
-                className="rounded-full border border-card-border/60 bg-card/70 px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-medium text-card-foreground hover:bg-card/80 justify-center"
-              >
-                Logout
-              </AnimatedButton>
+              <ProfileBadge
+                displayName={session?.user?.user_metadata?.display_name || session?.user?.email?.split('@')[0]}
+                email={session?.user?.email}
+                avatarUrl={session?.user?.user_metadata?.avatar_url}
+                onLogout={handleLogout}
+              />
             </div>
           </div>
 
@@ -313,6 +315,12 @@ const Index = () => {
                 className="px-4 py-2 md:px-6 md:py-2.5 bg-secondary hover:bg-button-secondary-hover text-secondary-foreground rounded-full transition-colors text-sm md:text-base font-medium"
               >
                 Performance Prep
+              </AnimatedButton>
+              <AnimatedButton
+                onClick={() => navigate('/app')}
+                className="px-4 py-2 md:px-6 md:py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full transition-colors text-sm md:text-base font-medium border-2 border-primary/20"
+              >
+                🎙️ Voices & Profiles (NEW)
               </AnimatedButton>
               <AnimatedButton
                 onClick={handleRandomSong}

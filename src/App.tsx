@@ -12,6 +12,7 @@ import AddSong from "./pages/AddSong";
 import AdminSubmissions from "./pages/AdminSubmissions";
 import MigrateLegacySongs from "./pages/MigrateLegacySongs";
 import SimpleMigration from "./pages/SimpleMigration";
+import { VoicesApp } from "./VoicesApp";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,8 @@ const App = () => (
               <Route path="/admin/submissions" element={<AdminSubmissions />} />
               <Route path="/admin/migrate" element={<MigrateLegacySongs />} />
               <Route path="/admin/simple-migration" element={<SimpleMigration />} />
+              {/* Voices & Profiles Feature - accessible at /app/* */}
+              <Route path="/app/*" element={<VoicesApp />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
