@@ -7,7 +7,6 @@ import { VoiceProfilePage } from './pages/VoiceProfilePage';
 import { UserProfilePage } from './pages/UserProfilePage';
 import { UserProfileModal } from './components/voices/UserProfileModal';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { SettingsPage } from './pages/SettingsPage';
 import { InboxPage } from './pages/InboxPage';
 import { InboxModal } from './components/voices/InboxModal';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -27,7 +26,8 @@ export const VoicesRouter: React.FC = () => {
         <Route path="voices" element={<VoicesPage />} />
         <Route path="voice/:recordingId" element={<VoiceProfilePage />} />
         <Route path="p/:userId" element={<UserProfilePage />} />
-        <Route path="settings" element={<AuthGuard><SettingsPage /></AuthGuard>} />
+  {/* Legacy settings path retained to avoid 404; redirect to voices since settings now modal-driven */}
+  <Route path="settings" element={<Navigate to="/app/voices" replace />} />
         <Route path="inbox" element={<AuthGuard><InboxPage /></AuthGuard>} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
@@ -50,6 +50,7 @@ export const routes = {
   voice: (recordingId: string) => `/app/voice/${recordingId}`,
   userProfile: (userId: string) => `/app/p/${userId}`,
   myProfile: '/app/p/me',
+  // settings route retained for backward links but now opens modal elsewhere
   settings: '/app/settings',
   inbox: '/app/inbox'
 } as const;

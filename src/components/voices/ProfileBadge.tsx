@@ -22,6 +22,7 @@ interface ProfileBadgeProps {
   onNavigateFavorites?: () => void;
   onNavigateInbox?: () => void;
   onOpenChange?: (open: boolean) => void;
+  onOpenSettings?: () => void;
 }
 
 export const ProfileBadge: React.FC<ProfileBadgeProps> = ({
@@ -34,6 +35,7 @@ export const ProfileBadge: React.FC<ProfileBadgeProps> = ({
   onNavigateFavorites,
   onNavigateInbox,
   onOpenChange,
+  onOpenSettings,
 }) => {
   const navigate = useNavigate();
   const initial = (displayName || email || '?').charAt(0).toUpperCase();
@@ -100,7 +102,7 @@ export const ProfileBadge: React.FC<ProfileBadgeProps> = ({
             </span>
           )}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigate('/app/settings')} className="gap-2 cursor-pointer">
+        <DropdownMenuItem onClick={() => { onOpenSettings ? onOpenSettings() : navigate('/app/settings'); }} className="gap-2 cursor-pointer">
           <Settings className="w-4 h-4" />
           <span>Settings</span>
         </DropdownMenuItem>

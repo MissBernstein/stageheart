@@ -16,6 +16,7 @@ const PerformancePrepTools = lazy(() => import('@/components/PerformancePrepTool
 const FeelingsCard = lazy(() => import('@/components/FeelingsCard').then(m => ({ default: m.FeelingsCard })));
 const VibePicker = lazy(() => import('@/components/VibePicker').then(m => ({ default: m.VibePicker })));
 import { ProfileBadge } from '@/components/voices/ProfileBadge';
+import { SettingsModal } from '@/components/voices/SettingsModal';
 import { Mic2 } from 'lucide-react';
 import { VoicesLibraryModal } from '@/components/voices/VoicesLibraryModal';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
@@ -54,6 +55,7 @@ const Index = () => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   // Voices modal state MUST be declared before any early returns to preserve hook order
   const [showVoices, setShowVoices] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const { songs } = useAllSongs();
 
@@ -319,6 +321,7 @@ const Index = () => {
                 onNavigateInbox={() => navigate('/app/inbox')}
                 onLogout={handleLogout}
                 onOpenChange={(open) => setProfileMenuOpen(open)}
+                onOpenSettings={() => setShowSettings(true)}
               />
             </div>
           </div>
@@ -460,6 +463,7 @@ const Index = () => {
           )}
         </div>
         </div>
+        {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       </motion.div>
       {showVoices && (
         <VoicesLibraryModal onClose={() => setShowVoices(false)} />
