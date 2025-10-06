@@ -6,10 +6,15 @@ import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
 import { MotionIfOkay } from '@/ui/MotionIfOkay';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, Play, X } from 'lucide-react';
+import { Search, Filter, Play, X, User2, Heart, Share2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { incrementPlay } from '@/lib/voicesApi';
+import { useVoiceFavorites } from '@/hooks/useVoiceFavorites';
+import { useToast } from '@/hooks/use-toast';
 import voicesIcon from '@/assets/feelingjourneyicon.png';
 import { usePlayer } from '@/hooks/usePlayer';
 import { Recording } from '@/types/voices';
+import { listVoices } from '@/lib/voicesApi';
 import { theme } from '@/styles/theme';
 
 interface VoicesLibraryModalProps {
@@ -19,25 +24,30 @@ interface VoicesLibraryModalProps {
 export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose }) => {
   const prefersReducedMotion = usePrefersReducedMotion();
   const { loadRecording, currentRecording, isPlaying, play, pause } = usePlayer();
+  const navigate = useNavigate();
+  const { favorites, isFavorite, toggleFavorite } = useVoiceFavorites();
+  const { toast } = useToast();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [recordings, setRecordings] = useState<Recording[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeMood, setActiveMood] = useState<string | null>(null);
 
-  // Mock fetch
+  // Fetch via mock API layer
   useEffect(() => {
+    let active = true;
     setLoading(true);
-    setTimeout(() => {
-      setRecordings([{
-        id: 'demo1', user_id: 'u1', title: 'Morning Reflection', duration_sec: 182, mood_tags:['calm','contemplative'], voice_type:'soft', language:'en', is_signature:true, state:'public', comments_enabled:true, plays_count:42, reports_count:0, moderation_status:'clean', created_at:new Date().toISOString(), updated_at:new Date().toISOString(), user_profile:{ id:'u1', display_name:'Sarah M.', about:'Voice artist and storyteller', fav_genres:['indie'], favorite_artists:['Joni'], groups:[], links:[], contact_visibility:'after_meet', dm_enabled:true, comments_enabled:true, status:'active', created_at:new Date().toISOString(), updated_at:new Date().toISOString() }}]);
-      setLoading(false);
-    }, 400);
-  }, []);
+    listVoices({ mood: activeMood || undefined }).then(res => { if (active) setRecordings(res); }).finally(()=> active && setLoading(false));
+    return () => { active = false; };
+  }, [activeMood]);
 
   const filtered = useMemo(() => {
-    if (!searchQuery) return recordings;
-    return recordings.filter(r => r.title.toLowerCase().includes(searchQuery.toLowerCase()) || r.user_profile?.display_name?.toLowerCase().includes(searchQuery.toLowerCase()));
+    let recs = recordings;
+    if (searchQuery) {
+      recs = recs.filter(r => r.title.toLowerCase().includes(searchQuery.toLowerCase()) || r.user_profile?.display_name?.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
+    return recs;
   }, [recordings, searchQuery]);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -87,22 +97,48 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose 
                   <Filter className="w-4 h-4 mr-2" /> Filters
                 </Button>
               </div>
-              <div className="text-sm text-card-foreground/60 flex items-center gap-3">
+              <div className="text-sm text-card-foreground/60 flex items-center gap-3 flex-wrap">
                 {loading ? <span className="animate-pulse">Loading…</span> : <span>{filtered.length} voice{filtered.length===1?'':'s'}</span>}
                 {currentRecording && (
                   <span className="truncate max-w-[200px] text-xs">Now: {currentRecording.title}</span>
+                )}
+                {!loading && (
+                  <div className="flex gap-2 items-center text-xs">
+                    {Array.from(new Set(recordings.flatMap(r => r.mood_tags || []))).slice(0,6).map(tag => (
+                      <button
+                        key={tag}
+                        onClick={() => setActiveMood(m => m === tag ? null : tag)}
+                        className={`px-2 py-0.5 rounded-full border text-[10px] tracking-wide ${activeMood === tag ? 'bg-primary/60 border-primary text-primary-foreground' : 'bg-input/40 border-input-border text-card-foreground/60 hover:text-card-foreground'}`}
+                      >{tag}</button>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
             <div className="p-6 grid gap-4 md:grid-cols-2">
               {filtered.map(r => (
-                <div key={r.id} className="rounded-xl border border-card-border/60 bg-card/70 p-4 backdrop-blur-sm hover:bg-card/80 transition group">
+                <div key={r.id} className="rounded-xl border border-card-border/60 bg-card/70 p-4 backdrop-blur-sm hover:bg-card/80 transition group relative">
+                  <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { toggleFavorite(r.id); }}>
+                      <Heart className={`w-3.5 h-3.5 ${isFavorite(r.id) ? 'fill-accent text-accent' : ''}`} />
+                      <span className="sr-only">{isFavorite(r.id)?'Unfavorite':'Favorite'}</span>
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { navigator.clipboard?.writeText(window.location.origin + '/app/voice/' + r.id); toast({ title: 'Link copied', description: 'Voice link copied to clipboard.' }); }}>
+                      <Share2 className="w-3.5 h-3.5" />
+                      <span className="sr-only">Share</span>
+                    </Button>
+                  </div>
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="min-w-0 flex-1">
                       <h3 className="font-semibold text-card-foreground leading-tight truncate">{r.title}</h3>
-                      <p className="text-xs text-card-foreground/60 truncate">{r.user_profile?.display_name || 'Anonymous'}</p>
+                      <button
+                        onClick={() => navigate(`/app/p/${r.user_id}`)}
+                        className="text-xs text-card-foreground/60 truncate inline-flex items-center gap-1 hover:text-card-foreground/90 focus:outline-none focus:ring-1 focus:ring-primary rounded"
+                      >
+                        <User2 className="w-3 h-3" /> {r.user_profile?.display_name || 'Anonymous'}
+                      </button>
                     </div>
-                    <Button size="icon" variant="ghost" onClick={() => currentRecording?.id === r.id && isPlaying ? pause() : (loadRecording(r), play())} className="h-9 w-9">
+                    <Button size="icon" variant="ghost" onClick={() => currentRecording?.id === r.id && isPlaying ? pause() : (loadRecording(r), play(), incrementPlay(r.id), r.plays_count += 1)} className="h-9 w-9">
                       {currentRecording?.id === r.id && isPlaying ? <PauseIcon /> : <Play className="w-4 h-4" />}
                       <span className="sr-only">{currentRecording?.id === r.id && isPlaying ? 'Pause' : 'Play'}</span>
                     </Button>
