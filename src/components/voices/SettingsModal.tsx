@@ -18,14 +18,16 @@ interface SettingsModalProps { onClose: () => void; returnFocusRef?: React.RefOb
 type TabKey = 'profile' | 'privacy' | 'notifications' | 'playback' | 'account' | 'legal';
 
 const LS_KEY = 'stageheart_user_settings_v1';
-const PERSONA_SUGGESTIONS = [
-  'Warm & Reflective','Upbeat Storyteller','Calm Instructor','Energetic Host','Soft & Intimate','Bold Narrator'
+const MUSIC_GENRES = [
+  'Pop', 'Rock', 'Jazz', 'Classical', 'R&B', 'Country', 'Folk', 'Blues', 'Hip-Hop', 'Electronic', 
+  'Indie', 'Alternative', 'Soul', 'Funk', 'Reggae', 'Metal', 'Punk', 'Gospel', 'Musical Theatre', 'Opera'
 ] as const;
 
 interface PersistedSettings {
   displayName: string;
   bio: string;
-  personaTags: string[];
+  genresSinging: string[];
+  genresListening: string[];
   voiceAvatarSeed: string;
   dmEnabled: boolean;
   meetRequireRecording: boolean;
@@ -39,7 +41,8 @@ interface PersistedSettings {
 const defaultSettings: PersistedSettings = {
   displayName: 'Your Name',
   bio: 'Short intro or description about your voice and interests.',
-  personaTags: ['Warm & Reflective'],
+  genresSinging: ['Pop'],
+  genresListening: ['Pop', 'Rock'],
   voiceAvatarSeed: 'seed-default',
   dmEnabled: true,
   meetRequireRecording: true,
@@ -50,12 +53,117 @@ const defaultSettings: PersistedSettings = {
   language: 'en'
 };
 
+// Genre tags section component
+interface GenreTagsSectionProps {
+  label: string;
+  genres: string[];
+  setGenres: (genres: string[]) => void;
+}
+
+const GenreTagsSection: React.FC<GenreTagsSectionProps> = ({ label, genres, setGenres }) => {
+  const [customGenre, setCustomGenre] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState(false);
+
+  const addCustomGenre = () => {
+    if (customGenre.trim() && !genres.includes(customGenre.trim())) {
+      setGenres([...genres, customGenre.trim()]);
+      setCustomGenre('');
+      setShowCustomInput(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      addCustomGenre();
+    } else if (e.key === 'Escape') {
+      setCustomGenre('');
+      setShowCustomInput(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className="text-xs font-medium uppercase tracking-wide text-card-foreground/60">{label}</label>
+      <div className="flex flex-wrap gap-2">
+        <AnimatePresence>
+          {genres.map(genre => (
+            <motion.button
+              key={genre}
+              onClick={() => setGenres(genres.filter(g => g !== genre))}
+              className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] flex items-center gap-1 hover:bg-primary/30"
+              initial={{opacity:0,scale:0.85}}
+              animate={{opacity:1,scale:1}}
+              exit={{opacity:0,scale:0.8}}
+              transition={{duration:0.18}}
+            >
+              {genre} <span aria-hidden>×</span>
+              <span className="sr-only">Remove {genre}</span>
+            </motion.button>
+          ))}
+        </AnimatePresence>
+        
+        {/* Available genre suggestions */}
+        <AnimatePresence>
+          {MUSIC_GENRES.filter(g => !genres.includes(g)).slice(0,3).map(genre => (
+            <motion.button
+              key={genre}
+              onClick={() => setGenres([...genres, genre])}
+              className="px-2 py-0.5 rounded-full bg-input/50 text-[10px] text-card-foreground/70 hover:text-card-foreground hover:bg-input/60"
+              whileHover={{y:-2,scale:1.05}}
+              whileTap={{scale:0.95}}
+              initial={{opacity:0,y:4}}
+              animate={{opacity:1,y:0}}
+              exit={{opacity:0,y:-4}}
+              transition={{duration:0.2}}
+            >+ {genre}</motion.button>
+          ))}
+        </AnimatePresence>
+
+        {/* Add custom button */}
+        {!showCustomInput ? (
+          <motion.button
+            onClick={() => setShowCustomInput(true)}
+            className="px-2 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] hover:bg-accent/30"
+            whileHover={{y:-2,scale:1.05}}
+            whileTap={{scale:0.95}}
+          >+ Add Custom</motion.button>
+        ) : (
+          <motion.div
+            className="flex items-center gap-1"
+            initial={{opacity:0,scale:0.85}}
+            animate={{opacity:1,scale:1}}
+            exit={{opacity:0,scale:0.8}}
+          >
+            <Input
+              value={customGenre}
+              onChange={(e) => setCustomGenre(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="Custom genre"
+              className="h-6 text-[10px] w-24"
+              autoFocus
+            />
+            <button
+              onClick={addCustomGenre}
+              className="text-[10px] text-primary hover:text-primary/80"
+            >✓</button>
+            <button
+              onClick={() => {setShowCustomInput(false); setCustomGenre('');}}
+              className="text-[10px] text-muted-foreground hover:text-foreground"
+            >×</button>
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFocusRef }) => {
   const { toast } = useToast();
   const [tab, setTab] = useState<TabKey>('profile');
   const [displayName, setDisplayName] = useState(defaultSettings.displayName);
   const [bio, setBio] = useState(defaultSettings.bio);
-  const [personaTags, setPersonaTags] = useState<string[]>(defaultSettings.personaTags);
+  const [genresSinging, setGenresSinging] = useState<string[]>(defaultSettings.genresSinging);
+  const [genresListening, setGenresListening] = useState<string[]>(defaultSettings.genresListening);
   const [voiceAvatarSeed, setVoiceAvatarSeed] = useState(defaultSettings.voiceAvatarSeed);
   const [dmEnabled, setDmEnabled] = useState(defaultSettings.dmEnabled);
   const [meetRequireRecording, setMeetRequireRecording] = useState(defaultSettings.meetRequireRecording);
@@ -80,7 +188,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
           const parsed: PersistedSettings = { ...defaultSettings, ...(JSON.parse(raw)||{}) };
           setDisplayName(parsed.displayName);
           setBio(parsed.bio);
-          setPersonaTags(parsed.personaTags);
+          // Handle migration from old personaTags to new genre fields
+          setGenresSinging(parsed.genresSinging || (parsed as any).personaTags || defaultSettings.genresSinging);
+          setGenresListening(parsed.genresListening || defaultSettings.genresListening);
           setVoiceAvatarSeed(parsed.voiceAvatarSeed || defaultSettings.voiceAvatarSeed);
           setDmEnabled(parsed.dmEnabled);
           setMeetRequireRecording(parsed.meetRequireRecording);
@@ -102,6 +212,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
             setDisplayName(profile.display_name || defaultSettings.displayName);
             setBio(profile.about || defaultSettings.bio);
             setDmEnabled(profile.dm_enabled ?? defaultSettings.dmEnabled);
+            
+            // Load genres from profile if they exist, otherwise keep localStorage values
+            if (profile.fav_genres && profile.fav_genres.length > 0) {
+              // Split the combined genres back to singing/listening (for now, distribute evenly)
+              const halfPoint = Math.ceil(profile.fav_genres.length / 2);
+              setGenresSinging(profile.fav_genres.slice(0, halfPoint));
+              setGenresListening(profile.fav_genres.slice(halfPoint));
+            }
           }
         }
       } catch (error) {
@@ -121,8 +239,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
   }, [displayName, bio]);
 
   const currentSettings: PersistedSettings = useMemo(() => ({
-    displayName, bio, personaTags, voiceAvatarSeed, dmEnabled, meetRequireRecording, notifyNewMessages, notifyFavorites, volumeDefault, playAutoplay, language
-  }), [displayName, bio, personaTags, voiceAvatarSeed, dmEnabled, meetRequireRecording, notifyNewMessages, notifyFavorites, volumeDefault, playAutoplay, language]);
+    displayName, bio, genresSinging, genresListening, voiceAvatarSeed, dmEnabled, meetRequireRecording, notifyNewMessages, notifyFavorites, volumeDefault, playAutoplay, language
+  }), [displayName, bio, genresSinging, genresListening, voiceAvatarSeed, dmEnabled, meetRequireRecording, notifyNewMessages, notifyFavorites, volumeDefault, playAutoplay, language]);
 
   const isDirty = useMemo(() => {
     try {
@@ -154,6 +272,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
         let profile = await getUserProfile(user.id);
         if (!profile) {
           // Create initial profile
+          const combinedGenres = [...new Set([...genresSinging, ...genresListening])];
+          console.log('Creating profile with genres:', { genresSinging, genresListening, combinedGenres });
           const { error } = await supabase
             .from('user_profiles')
             .insert({
@@ -163,7 +283,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
               dm_enabled: dmEnabled,
               comments_enabled: true,
               contact_visibility: 'after_meet',
-              status: 'active'
+              status: 'active',
+              fav_genres: combinedGenres // Combine both singing and listening genres
             });
           
           if (error) {
@@ -172,11 +293,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
           }
         } else {
           // Update existing profile
+          const combinedGenres = [...new Set([...genresSinging, ...genresListening])];
+          console.log('Saving genres to profile:', { genresSinging, genresListening, combinedGenres });
           await updateUserProfile(user.id, {
             display_name: displayName,
             about: bio,
             dm_enabled: dmEnabled,
-            comments_enabled: true
+            comments_enabled: true,
+            fav_genres: combinedGenres // Combine both singing and listening genres
           });
         }
       }
@@ -189,6 +313,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
       
       // Notify other components that voice avatar may have changed
       window.dispatchEvent(new CustomEvent('voiceAvatarUpdated'));
+      // Notify profile modal that profile data may have changed
+      window.dispatchEvent(new CustomEvent('profileUpdated'));
     } catch (err) {
       setSaving(false);
       toast({ title: 'Error saving', description: 'Failed to sync settings', variant: 'destructive' as any });
@@ -275,40 +401,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
                   <Input value={displayName} onChange={e=> setDisplayName(e.target.value)} placeholder="Your name" aria-invalid={!!errors.displayName} />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-xs font-medium uppercase tracking-wide text-card-foreground/60">Persona Tags</label>
-                  <div className="flex flex-wrap gap-2">
-                    <AnimatePresence>
-                      {personaTags.map(tag => (
-                        <motion.button
-                          key={tag}
-                          onClick={()=> setPersonaTags(prev => prev.filter(t => t!==tag))}
-                          className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] flex items-center gap-1 hover:bg-primary/30"
-                          initial={{opacity:0,scale:0.85}}
-                          animate={{opacity:1,scale:1}}
-                          exit={{opacity:0,scale:0.8}}
-                          transition={{duration:0.18}}
-                        >
-                          {tag} <span aria-hidden>×</span>
-                          <span className="sr-only">Remove {tag}</span>
-                        </motion.button>
-                      ))}
-                    </AnimatePresence>
-                    <AnimatePresence>
-                      {PERSONA_SUGGESTIONS.filter(s => !personaTags.includes(s)).slice(0,3).map(s => (
-                        <motion.button
-                          key={s}
-                          onClick={()=> setPersonaTags(prev => [...prev, s])}
-                          className="px-2 py-0.5 rounded-full bg-input/50 text-[10px] text-card-foreground/70 hover:text-card-foreground hover:bg-input/60"
-                          whileHover={{y:-2,scale:1.05}}
-                          whileTap={{scale:0.95}}
-                          initial={{opacity:0,y:4}}
-                          animate={{opacity:1,y:0}}
-                          exit={{opacity:0,y:-4}}
-                          transition={{duration:0.2}}
-                        >+ {s}</motion.button>
-                      ))}
-                    </AnimatePresence>
-                  </div>
+                  <GenreTagsSection 
+                    label="Genres I love singing"
+                    genres={genresSinging}
+                    setGenres={setGenresSinging}
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-1">
+                  <GenreTagsSection 
+                    label="Genres I love listening to"
+                    genres={genresListening}
+                    setGenres={setGenresListening}
+                  />
                 </div>
                 <div className="md:col-span-3 space-y-2">
                   <label className="text-xs font-medium uppercase tracking-wide text-card-foreground/60 flex items-center justify-between">Bio {errors.bio && <span className="text-destructive text-[10px] font-normal">{errors.bio}</span>}</label>

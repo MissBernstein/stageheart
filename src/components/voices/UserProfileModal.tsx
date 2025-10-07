@@ -65,8 +65,23 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    
+    // Listen for profile updates from settings modal
+    const onProfileUpdated = async () => {
+      if (active) {
+        const updatedProfile = await getUserProfile(userId);
+        setProfile(updatedProfile);
+      }
+    };
+    
     window.addEventListener('keydown', onKey);
-    return () => { active = false; window.removeEventListener('keydown', onKey); document.body.style.overflow = prevOverflow; };
+    window.addEventListener('profileUpdated', onProfileUpdated);
+    return () => { 
+      active = false; 
+      window.removeEventListener('keydown', onKey); 
+      window.removeEventListener('profileUpdated', onProfileUpdated);
+      document.body.style.overflow = prevOverflow; 
+    };
   }, [userId, onClose, initialRecordings]);
 
   const filtered = recordings; // no search filtering needed
