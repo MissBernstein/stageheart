@@ -10,7 +10,9 @@ export interface UserProfile {
   id: string;
   display_name: string;
   about?: string;
-  fav_genres?: string[];
+  fav_genres?: string[]; // Keep for backward compatibility
+  genres_singing?: string[]; // New field for singing genres
+  genres_listening?: string[]; // New field for listening genres
   favorite_artists?: string[];
   groups?: string[];
   links?: ProfileLink[];

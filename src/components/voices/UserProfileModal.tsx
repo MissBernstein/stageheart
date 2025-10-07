@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
 import { ModalShell } from './ModalShell';
-import { X, Share2, Mail, Link as LinkIcon, Globe2, Loader2, Heart } from 'lucide-react';
+import { X, Share2, Link as LinkIcon, Globe2, Loader2, Heart, Mic } from 'lucide-react';
+import headphonesIcon from '@/assets/headphonesicon.png';
 import messagesIcon from '@/assets/messagesicon.png';
 import { incrementPlay } from '@/lib/voicesApi';
 import { useVoiceFavorites } from '@/hooks/useVoiceFavorites';
@@ -122,14 +123,36 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
                     transition={{ duration:0.4, delay:0.15 }}
                   >
                     <AnimatePresence>
-                      {profile?.fav_genres?.slice(0,4).map(g => (
-                        <motion.span key={g} className="text-[10px] uppercase tracking-wide px-2 py-1 rounded-full bg-input/40 text-card-foreground/70"
+                      {/* Singing genres with microphone icon */}
+                      {profile?.genres_singing?.slice(0,3).map(g => (
+                        <motion.span key={`singing-${g}`} className="text-[10px] uppercase tracking-wide px-2 py-1 rounded-full bg-primary/20 text-primary flex items-center gap-1"
                           initial={{ opacity:0, y:4, scale:0.9 }} animate={{ opacity:1, y:0, scale:1 }} exit={{ opacity:0, scale:0.9 }} transition={{ duration:0.18 }}
-                        >{g}</motion.span>
+                        >
+                          <Mic className="w-2.5 h-2.5" />
+                          {g}
+                        </motion.span>
                       ))}
+                      {/* Listening genres with headphones icon */}
+                      {profile?.genres_listening?.slice(0,3).map(g => (
+                        <motion.span key={`listening-${g}`} className="text-[10px] uppercase tracking-wide px-2 py-1 rounded-full bg-accent/20 text-accent flex items-center gap-1"
+                          initial={{ opacity:0, y:4, scale:0.9 }} animate={{ opacity:1, y:0, scale:1 }} exit={{ opacity:0, scale:0.9 }} transition={{ duration:0.18, delay:0.02 }}
+                        >
+                          <img src={headphonesIcon} alt="" className="w-2.5 h-2.5 object-contain" />
+                          {g}
+                        </motion.span>
+                      ))}
+                      {/* Fallback to combined genres for backward compatibility */}
+                      {(!profile?.genres_singing?.length && !profile?.genres_listening?.length) && 
+                        profile?.fav_genres?.slice(0,4).map(g => (
+                          <motion.span key={g} className="text-[10px] uppercase tracking-wide px-2 py-1 rounded-full bg-input/40 text-card-foreground/70"
+                            initial={{ opacity:0, y:4, scale:0.9 }} animate={{ opacity:1, y:0, scale:1 }} exit={{ opacity:0, scale:0.9 }} transition={{ duration:0.18 }}
+                          >{g}</motion.span>
+                        ))
+                      }
+                      {/* Favorite artists */}
                       {profile?.favorite_artists?.slice(0,2).map(a => (
                         <motion.span key={a} className="text-[10px] px-2 py-1 rounded-full bg-input/40 text-card-foreground/70"
-                          initial={{ opacity:0, y:4, scale:0.9 }} animate={{ opacity:1, y:0, scale:1 }} exit={{ opacity:0, scale:0.9 }} transition={{ duration:0.18, delay:0.02 }}
+                          initial={{ opacity:0, y:4, scale:0.9 }} animate={{ opacity:1, y:0, scale:1 }} exit={{ opacity:0, scale:0.9 }} transition={{ duration:0.18, delay:0.04 }}
                         >{a}</motion.span>
                       ))}
                     </AnimatePresence>
@@ -150,7 +173,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
                 <h3 className="text-sm font-semibold tracking-wide text-card-foreground/70">CONNECT</h3>
                 <div className="flex flex-wrap gap-3">
                   <AnimatedButton variant="outline" size="sm" className="gap-2"><img src={messagesIcon} alt="Message" className="w-4 h-4" />Message</AnimatedButton>
-                  <AnimatedButton variant="outline" size="sm" className="gap-2"><Mail className="w-4 h-4" />Email</AnimatedButton>
                   <AnimatedButton variant="outline" size="sm" className="gap-2"><Share2 className="w-4 h-4" />Share</AnimatedButton>
                 </div>
                 {profile?.profile_note_to_listeners && (
@@ -164,8 +186,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
                         whileTap={!prefersReducedMotion ? { scale:0.96 } : undefined}
                       >
                         {l.type === 'website' && <Globe2 className="w-3 h-3" />}
-                        {l.type !== 'website' && <LinkIcon className="w-3 h-3" />}
-                        <span className="truncate max-w-[120px]">{new URL(l.url).hostname.replace('www.','')}</span>
+                        {l.type === 'instagram' && <span className="text-xs font-bold">IG</span>}
+                        {l.type === 'tiktok' && <span className="text-xs font-bold">TT</span>}
+                        {!['website', 'instagram', 'tiktok'].includes(l.type) && <LinkIcon className="w-3 h-3" />}
+                        <span className="truncate max-w-[120px]">
+                          {l.type === 'instagram' ? `@${l.url.split('/').pop()}` :
+                           l.type === 'tiktok' ? `@${l.url.split('/').pop()?.replace('@', '')}` :
+                           new URL(l.url).hostname.replace('www.','')}
+                        </span>
                       </motion.a>
                     ))}
                   </div>

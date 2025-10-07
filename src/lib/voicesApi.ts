@@ -169,3 +169,17 @@ export async function reportRecording(recordingId: string, reason: string, repor
 
   return true;
 }
+
+export async function updateRecordingState(recordingId: string, state: 'public' | 'private'): Promise<boolean> {
+  const { error } = await supabase
+    .from('recordings')
+    .update({ state })
+    .eq('id', recordingId);
+
+  if (error) {
+    console.error('Error updating recording state:', error);
+    return false;
+  }
+
+  return true;
+}
