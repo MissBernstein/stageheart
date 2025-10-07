@@ -1,58 +1,148 @@
-// @keep - Mock messages API abstraction (client-side only)
-// KEEP: integration-pending - Will be replaced with real Supabase API calls
+// Real Supabase implementation for messages
+import { supabase } from '@/integrations/supabase/client';
+
 export type MessageType = 'dm' | 'meet' | 'comment' | 'system';
 
 export interface MessageRecord {
   id: string;
   type: MessageType;
   from?: string;
+  from_user_id?: string;
   subject?: string;
   body: string;
-  created_at: string; // ISO date
+  created_at: string;
   unread: boolean;
 }
 
-let MOCK_MESSAGES: MessageRecord[] = Array.from({ length: 14 }).map((_, i) => {
-  const t: MessageType[] = ['dm','meet','comment','system'];
-  return {
-    id: `m${i+1}`,
-    type: t[i % 4],
-    from: ['Sarah','Jon','Maya','System'][i%4],
-    subject: ['Follow up','Meet request','New comment','Update'][i%4] + (i < 3 ? ' (new)' : ''),
-    body: `Mock message #${i+1}. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus fermentum.`,
-    created_at: new Date(Date.now() - i * 37 * 60_000).toISOString(),
-    unread: i < 3,
-  } as MessageRecord;
-}).sort((a,b)=> b.created_at.localeCompare(a.created_at));
-
-const delay = (ms:number) => new Promise(r=> setTimeout(r, ms));
-
 export async function listMessages(): Promise<MessageRecord[]> {
-  await delay(160);
-  return MOCK_MESSAGES.map(m => ({ ...m }));
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('messages')
+    .select(`
+      id,
+      body,
+      is_read,
+      created_at,
+      from_user_id,
+      from:user_profiles(display_name)
+    `)
+    .eq('to_user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching messages:', error);
+    return [];
+  }
+
+  // Map to MessageRecord format
+  return (data || []).map(msg => ({
+    id: msg.id,
+    type: 'dm' as MessageType,
+    from: (msg.from as any)?.display_name || 'Unknown User',
+    from_user_id: msg.from_user_id,
+    body: msg.body,
+    created_at: msg.created_at,
+    unread: !msg.is_read
+  }));
 }
 
 export async function markMessageRead(id: string) {
-  await delay(40);
-  const msg = MOCK_MESSAGES.find(m => m.id === id);
-  if (msg) msg.unread = false;
+  const { error } = await supabase
+    .from('messages')
+    .update({ is_read: true })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error marking message as read:', error);
+    return { success: false };
+  }
+
   return { success: true };
 }
 
 export async function markMessagesRead(ids: string[]) {
-  await delay(50);
-  const set = new Set(ids);
-  MOCK_MESSAGES = MOCK_MESSAGES.map(m => set.has(m.id) ? { ...m, unread:false } : m);
+  const { error } = await supabase
+    .from('messages')
+    .update({ is_read: true })
+    .in('id', ids);
+
+  if (error) {
+    console.error('Error marking messages as read:', error);
+    return { success: false };
+  }
+
   return { success: true };
 }
 
 export async function markAllMessagesRead() {
-  await delay(70);
-  MOCK_MESSAGES = MOCK_MESSAGES.map(m => ({ ...m, unread:false }));
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    return { success: false };
+  }
+
+  const { error } = await supabase
+    .from('messages')
+    .update({ is_read: true })
+    .eq('to_user_id', user.id)
+    .eq('is_read', false);
+
+  if (error) {
+    console.error('Error marking all messages as read:', error);
+    return { success: false };
+  }
+
   return { success: true };
 }
 
+export async function sendMessage(toUserId: string, body: string, subject?: string) {
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    return { success: false, error: 'Not authenticated' };
+  }
+
+  const { data, error } = await supabase
+    .from('messages')
+    .insert({
+      to_user_id: toUserId,
+      from_user_id: user.id,
+      body
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error sending message:', error);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true, id: data.id };
+}
+
 export async function sendReply(parentId: string, body: string) {
-  await delay(120);
-  return { success: true, id: `r_${Date.now()}`, parentId, body };
+  // For replies, we need to get the original message to find the sender
+  const { data: originalMessage } = await supabase
+    .from('messages')
+    .select('from_user_id')
+    .eq('id', parentId)
+    .single();
+
+  if (!originalMessage) {
+    return { success: false, error: 'Original message not found' };
+  }
+
+  const result = await sendMessage(originalMessage.from_user_id, body);
+  
+  return {
+    success: result.success,
+    id: result.id || '',
+    parentId,
+    body
+  };
 }

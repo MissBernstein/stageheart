@@ -10,6 +10,7 @@ import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SettingsModalProps { onClose: () => void; returnFocusRef?: React.RefObject<HTMLElement>; }
 
@@ -114,16 +115,35 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
     if (Object.keys(errors).length) {
       toast({ title:'Cannot save', description: Object.values(errors).join(' '), variant: 'destructive' as any });
       liveRegionRef.current && (liveRegionRef.current.textContent = 'Save failed due to validation errors');
-      return; // prevent save
+      return;
     }
     setSaving(true);
-    await new Promise(r => setTimeout(r, 250));
-    try { localStorage.setItem(LS_KEY, JSON.stringify(currentSettings)); } catch {/* ignore */}
-    setSaving(false);
-    setJustSaved(true);
-    toast({ title: 'Settings saved', description: 'Your preferences have been updated.' });
-    liveRegionRef.current && (liveRegionRef.current.textContent = 'Settings saved');
-    setTimeout(()=> setJustSaved(false), 2500);
+    
+    try {
+      // Save to localStorage for playback preferences
+      localStorage.setItem(LS_KEY, JSON.stringify(currentSettings));
+      
+      // Sync profile data to Supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { updateUserProfile } = await import('@/lib/voicesApi');
+        await updateUserProfile(user.id, {
+          display_name: displayName,
+          about: bio,
+          dm_enabled: dmEnabled,
+          comments_enabled: true // Default to enabled
+        });
+      }
+      
+      setSaving(false);
+      setJustSaved(true);
+      toast({ title: 'Settings saved', description: 'Your preferences have been updated.' });
+      liveRegionRef.current && (liveRegionRef.current.textContent = 'Settings saved');
+      setTimeout(()=> setJustSaved(false), 2500);
+    } catch (err) {
+      setSaving(false);
+      toast({ title: 'Error saving', description: 'Failed to sync settings', variant: 'destructive' as any });
+    }
   };
 
   const dangerDelete = () => {

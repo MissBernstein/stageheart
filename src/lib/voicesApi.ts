@@ -1,39 +1,6 @@
-// @keep - Mockable voices/profile data access layer (no Supabase required yet)
-// KEEP: integration-pending - When Supabase is available, swap internals while keeping function signatures stable.
+// Real Supabase implementation for voices/profile data access
+import { supabase } from '@/integrations/supabase/client';
 import { Recording, UserProfile } from '@/types/voices';
-
-// In-memory mock DB (can be mutated for optimistic UI demos)
-const mockProfiles: Record<string, UserProfile> = {};
-const mockRecordings: Recording[] = [];
-
-function seed() {
-  if (Object.keys(mockProfiles).length > 0) return; // already seeded
-  const now = new Date().toISOString();
-  const profile: UserProfile = {
-    id: 'user1',
-    display_name: 'Sarah M.',
-    about: 'Voice artist exploring texture + emotional storytelling.',
-    fav_genres: ['indie','folk'],
-    favorite_artists: ['Joni Mitchell'],
-    groups: ['Open Mic Circle'],
-    links: [{ type:'website', url:'https://example.com', visibility:'public' }],
-    contact_visibility: 'after_meet',
-    dm_enabled: true,
-    comments_enabled: true,
-    profile_note_to_listeners: 'Thanks for listening – reach out after you complete a full listen! 💛',
-    status: 'active',
-    created_at: now,
-    updated_at: now
-  };
-  mockProfiles[profile.id] = profile;
-  const recs: Recording[] = [
-    { id:'r1', user_id: profile.id, title:'Morning Reflection', duration_sec:182, mood_tags:['calm','contemplative'], voice_type:'soft', language:'en', is_signature:true, state:'public', comments_enabled:true, plays_count:42, reports_count:0, moderation_status:'clean', created_at:now, updated_at:now, user_profile: profile },
-    { id:'r2', user_id: profile.id, title:'Evening Whisper', duration_sec:143, mood_tags:['warm','intimate'], voice_type:'medium', language:'en', is_signature:false, state:'public', comments_enabled:true, plays_count:12, reports_count:0, moderation_status:'clean', created_at:now, updated_at:now, user_profile: profile },
-    { id:'r3', user_id: profile.id, title:'Golden Hour Harmony', duration_sec:201, mood_tags:['hopeful','bright'], voice_type:'medium', language:'en', is_signature:false, state:'public', comments_enabled:true, plays_count:5, reports_count:0, moderation_status:'clean', created_at:now, updated_at:now, user_profile: profile }
-  ];
-  mockRecordings.push(...recs);
-}
-seed();
 
 export interface ListVoicesParams {
   search?: string;
@@ -42,41 +9,163 @@ export interface ListVoicesParams {
 }
 
 export async function listVoices(params: ListVoicesParams = {}): Promise<Recording[]> {
-  await delay(120);
   const { search, mood, limit = 50 } = params;
-  let recs = mockRecordings.slice();
+  
+  let query = supabase
+    .from('recordings')
+    .select('*')
+    .eq('state', 'public')
+    .eq('moderation_status', 'clean')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (mood) {
+    query = query.contains('mood_tags', [mood]);
+  }
+
+  const { data, error } = await query;
+  
+  if (error) {
+    console.error('Error fetching recordings:', error);
+    return [];
+  }
+
+  const recordings = data || [];
+
+  // Fetch user profiles for all recordings
+  const userIds = [...new Set(recordings.map(r => r.user_id))];
+  const { data: profiles } = await supabase
+    .from('user_profiles')
+    .select('*')
+    .in('id', userIds);
+
+  const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+
+  // Combine recordings with their profiles
+  let result = recordings.map(r => ({
+    ...r,
+    user_profile: profileMap.get(r.user_id) ? {
+      ...profileMap.get(r.user_id)!,
+      links: Array.isArray(profileMap.get(r.user_id)?.links) 
+        ? profileMap.get(r.user_id)!.links as any[]
+        : []
+    } as UserProfile : undefined
+  })) as Recording[];
+
+  // Apply search filter
   if (search) {
     const q = search.toLowerCase();
-    recs = recs.filter(r => r.title.toLowerCase().includes(q) || r.user_profile?.display_name?.toLowerCase().includes(q));
+    result = result.filter(r => 
+      r.title.toLowerCase().includes(q) || 
+      r.user_profile?.display_name?.toLowerCase().includes(q)
+    );
   }
-  if (mood) {
-    recs = recs.filter(r => r.mood_tags?.includes(mood));
-  }
-  return recs.slice(0, limit);
+
+  return result;
 }
 
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
-  await delay(100);
-  if (userId === 'me') return mockProfiles['user1']; // alias for demo
-  return mockProfiles[userId] || null;
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('*')
+    .eq('id', userId)
+    .eq('status', 'active')
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching user profile:', error);
+    return null;
+  }
+
+  if (!data) return null;
+
+  // Transform Json type to ProfileLink[]
+  return {
+    ...data,
+    links: Array.isArray(data.links) ? data.links as any[] : []
+  } as unknown as UserProfile;
 }
 
 export async function listRecordingsByUser(userId: string): Promise<Recording[]> {
-  await delay(140);
-  return mockRecordings.filter(r => r.user_id === (userId === 'me' ? 'user1' : userId));
+  const { data: recordings, error } = await supabase
+    .from('recordings')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching user recordings:', error);
+    return [];
+  }
+
+  // Fetch user profile
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle();
+
+  const userProfile = profile ? {
+    ...profile,
+    links: Array.isArray(profile.links) ? profile.links as any[] : []
+  } as UserProfile : undefined;
+
+  // Combine recordings with profile
+  return (recordings || []).map(r => ({
+    ...r,
+    user_profile: userProfile
+  })) as Recording[];
 }
 
-export async function incrementPlay(recordingId: string) {
-  const rec = mockRecordings.find(r => r.id === recordingId);
-  if (rec) rec.plays_count += 1;
+export async function incrementPlay(recordingId: string): Promise<void> {
+  const { error } = await supabase.rpc('increment_recording_plays', {
+    recording_uuid: recordingId
+  });
+
+  if (error) {
+    console.error('Error incrementing play count:', error);
+  }
 }
 
-// Utility delay
-function delay(ms: number) { return new Promise(res => setTimeout(res, ms)); }
+export async function updateUserProfile(userId: string, updates: Partial<UserProfile>): Promise<UserProfile | null> {
+  // Convert ProfileLink[] to Json type for database
+  const dbUpdates: any = { ...updates };
+  if (updates.links) {
+    dbUpdates.links = updates.links as any;
+  }
 
-// For tests
-export function __resetMocks() {
-  Object.keys(mockProfiles).forEach(k => delete mockProfiles[k]);
-  mockRecordings.splice(0, mockRecordings.length);
-  seed();
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .update(dbUpdates)
+    .eq('id', userId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating profile:', error);
+    return null;
+  }
+
+  // Transform Json back to ProfileLink[]
+  return {
+    ...data,
+    links: Array.isArray(data.links) ? data.links as any[] : []
+  } as unknown as UserProfile;
+}
+
+export async function reportRecording(recordingId: string, reason: string, reporterUserId?: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('recording_reports')
+    .insert({
+      recording_id: recordingId,
+      reporter_user_id: reporterUserId,
+      reason
+    });
+
+  if (error) {
+    console.error('Error reporting recording:', error);
+    return false;
+  }
+
+  return true;
 }
