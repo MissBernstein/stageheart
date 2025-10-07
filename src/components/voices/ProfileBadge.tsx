@@ -10,6 +10,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, User, Settings, Heart, Mail } from 'lucide-react';
+import { ProceduralAvatar } from '@/components/ui/ProceduralAvatar';
+import { useVoiceAvatar } from '@/hooks/useVoiceAvatar';
 
 interface ProfileBadgeProps {
   displayName?: string | null;
@@ -40,6 +42,7 @@ export const ProfileBadge: React.FC<ProfileBadgeProps> = ({
 }) => {
   const navigate = useNavigate();
   const initial = (displayName || email || '?').charAt(0).toUpperCase();
+  const voiceAvatarSeed = useVoiceAvatar();
 
   return (
   <DropdownMenu onOpenChange={onOpenChange}>
@@ -48,21 +51,25 @@ export const ProfileBadge: React.FC<ProfileBadgeProps> = ({
           className="group flex items-center gap-2 rounded-full border border-card-border/60 bg-card/70 pl-1 pr-3 py-1.5 hover:bg-card/80 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40"
         >
           <div className="relative">
-          <Avatar className="h-8 w-8">
-            {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName || email || 'Profile'} />}
-            <AvatarFallback className="text-sm font-medium">
-              {initial}
-            </AvatarFallback>
-          </Avatar>
-          {unreadMessagesCount > 0 && (
-            <>
-              <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60" />
-                <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
-              </span>
-              <span className="sr-only">{unreadMessagesCount} unread messages</span>
-            </>
-          )}
+            {avatarUrl ? (
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={avatarUrl} alt={displayName || email || 'Profile'} />
+                <AvatarFallback className="text-sm font-medium">
+                  {initial}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <ProceduralAvatar seed={voiceAvatarSeed} className="h-8 w-8" />
+            )}
+            {unreadMessagesCount > 0 && (
+              <>
+                <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60" />
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
+                </span>
+                <span className="sr-only">{unreadMessagesCount} unread messages</span>
+              </>
+            )}
           </div>
           <span className="text-xs md:text-sm font-medium text-card-foreground max-w-[90px] md:max-w-[140px] truncate">
             {displayName || email || 'Profile'}
