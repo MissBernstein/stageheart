@@ -69,25 +69,46 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
   const liveRegionRef = useRef<HTMLDivElement | null>(null);
   const [errors, setErrors] = useState<{ displayName?: string; bio?: string }>({});
 
-  // Hydrate from localStorage
+  // Hydrate from localStorage and Supabase profile
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(LS_KEY);
-      if (raw) {
-        const parsed: PersistedSettings = { ...defaultSettings, ...(JSON.parse(raw)||{}) };
-        setDisplayName(parsed.displayName);
-        setBio(parsed.bio);
-  setPersonaTags(parsed.personaTags);
-  setVoiceAvatarSeed(parsed.voiceAvatarSeed || defaultSettings.voiceAvatarSeed);
-        setDmEnabled(parsed.dmEnabled);
-        setMeetRequireRecording(parsed.meetRequireRecording);
-        setNotifyNewMessages(parsed.notifyNewMessages);
-        setNotifyFavorites(parsed.notifyFavorites);
-        setVolumeDefault(parsed.volumeDefault);
-        setPlayAutoplay(parsed.playAutoplay);
-        setLanguage(parsed.language);
+    const loadSettings = async () => {
+      // First load from localStorage
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        if (raw) {
+          const parsed: PersistedSettings = { ...defaultSettings, ...(JSON.parse(raw)||{}) };
+          setDisplayName(parsed.displayName);
+          setBio(parsed.bio);
+          setPersonaTags(parsed.personaTags);
+          setVoiceAvatarSeed(parsed.voiceAvatarSeed || defaultSettings.voiceAvatarSeed);
+          setDmEnabled(parsed.dmEnabled);
+          setMeetRequireRecording(parsed.meetRequireRecording);
+          setNotifyNewMessages(parsed.notifyNewMessages);
+          setNotifyFavorites(parsed.notifyFavorites);
+          setVolumeDefault(parsed.volumeDefault);
+          setPlayAutoplay(parsed.playAutoplay);
+          setLanguage(parsed.language);
+        }
+      } catch {/* ignore localStorage errors */}
+      
+      // Then sync with Supabase profile data (takes precedence for profile fields)
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { getUserProfile } = await import('@/lib/voicesApi');
+          const profile = await getUserProfile(user.id);
+          if (profile) {
+            setDisplayName(profile.display_name || defaultSettings.displayName);
+            setBio(profile.about || defaultSettings.bio);
+            setDmEnabled(profile.dm_enabled ?? defaultSettings.dmEnabled);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading profile data:', error);
       }
-    } catch {/* ignore */}
+    };
+    
+    loadSettings();
   }, []);
 
   // Validation
@@ -126,13 +147,37 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
       // Sync profile data to Supabase
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { updateUserProfile } = await import('@/lib/voicesApi');
-        await updateUserProfile(user.id, {
-          display_name: displayName,
-          about: bio,
-          dm_enabled: dmEnabled,
-          comments_enabled: true // Default to enabled
-        });
+        const { updateUserProfile, getUserProfile } = await import('@/lib/voicesApi');
+        
+        // Check if profile exists, create it if not
+        let profile = await getUserProfile(user.id);
+        if (!profile) {
+          // Create initial profile
+          const { error } = await supabase
+            .from('user_profiles')
+            .insert({
+              id: user.id,
+              display_name: displayName,
+              about: bio,
+              dm_enabled: dmEnabled,
+              comments_enabled: true,
+              contact_visibility: 'after_meet',
+              status: 'active'
+            });
+          
+          if (error) {
+            console.error('Error creating profile:', error);
+            throw new Error('Failed to create profile');
+          }
+        } else {
+          // Update existing profile
+          await updateUserProfile(user.id, {
+            display_name: displayName,
+            about: bio,
+            dm_enabled: dmEnabled,
+            comments_enabled: true
+          });
+        }
       }
       
       setSaving(false);
