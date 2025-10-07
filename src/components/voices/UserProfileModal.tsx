@@ -12,6 +12,9 @@ import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Recording, UserProfile } from '@/types/voices';
 import { getUserProfile, listRecordingsByUser } from '@/lib/voicesApi';
 import { usePlayer } from '@/hooks/usePlayer';
+import { ProceduralAvatar } from '@/components/ui/ProceduralAvatar';
+import { useVoiceAvatar } from '@/hooks/useVoiceAvatar';
+import { supabase } from '@/integrations/supabase/client';
 // (search removed)
 
 interface UserProfileModalProps {
@@ -32,10 +35,21 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
   const [recordings, setRecordings] = useState<Recording[]>(initialRecordings || []);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [loadingRecs, setLoadingRecs] = useState(!initialRecordings);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const voiceAvatarSeed = useVoiceAvatar();
   // search removed (profile will have <=3 recordings)
 
   useEffect(() => {
     let active = true;
+    
+    // Get current user ID
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (active && user) {
+        setCurrentUserId(user.id);
+      }
+    })();
+    
     (async () => {
       setLoadingProfile(true);
   const p = await getUserProfile(userId);
@@ -61,12 +75,18 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
   <ModalShell titleId="user-profile-title" onClose={onClose} className="max-w-5xl" contentClassName="" returnFocusRef={returnFocusRef}>
       <div className="p-6 border-b border-card-border flex items-start justify-between gap-6">
               <div className="flex items-start gap-5">
-                <motion.div layoutId={`avatar-${userId}`} className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center text-3xl font-semibold text-card-foreground shadow-inner"
+                <motion.div layoutId={`avatar-${userId}`}
                   initial={!prefersReducedMotion ? { opacity:0, scale:0.85, y:8 } : false}
                   animate={!prefersReducedMotion ? { opacity:1, scale:1, y:0 } : {}}
                   transition={{ duration:0.35, ease:[0.22,0.72,0.28,0.99] }}
                 >
-                  {profile?.display_name?.charAt(0) || '?' }
+                  {currentUserId === userId ? (
+                    <ProceduralAvatar seed={voiceAvatarSeed} className="w-20 h-20" />
+                  ) : (
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center text-3xl font-semibold text-card-foreground shadow-inner">
+                      {profile?.display_name?.charAt(0) || '?' }
+                    </div>
+                  )}
                 </motion.div>
                 <div className="space-y-2">
                   <motion.h2 id="user-profile-title" className="text-2xl font-semibold leading-tight"
