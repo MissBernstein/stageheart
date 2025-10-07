@@ -53,7 +53,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
     
     (async () => {
       setLoadingProfile(true);
-  const p = await getUserProfile(userId);
+      const p = await getUserProfile(userId);
+      console.log('Loaded profile data:', p);
       if (active) { setProfile(p); setLoadingProfile(false); }
     })();
     if (!initialRecordings) {
@@ -69,8 +70,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
     
     // Listen for profile updates from settings modal
     const onProfileUpdated = async () => {
+      console.log('Profile updated event received');
       if (active) {
         const updatedProfile = await getUserProfile(userId);
+        console.log('Updated profile data:', updatedProfile);
         setProfile(updatedProfile);
       }
     };
@@ -192,7 +195,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
                         <span className="truncate max-w-[120px]">
                           {l.type === 'instagram' ? `@${l.url.split('/').pop()}` :
                            l.type === 'tiktok' ? `@${l.url.split('/').pop()?.replace('@', '')}` :
-                           new URL(l.url).hostname.replace('www.','')}
+                           (() => {
+                             try {
+                               return new URL(l.url).hostname.replace('www.','');
+                             } catch {
+                               return l.url.length > 20 ? l.url.substring(0, 20) + '...' : l.url;
+                             }
+                           })()}
                         </span>
                       </motion.a>
                     ))}

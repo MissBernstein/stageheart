@@ -204,9 +204,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
           // Handle migration from old personaTags to new genre fields
           setGenresSinging(parsed.genresSinging || (parsed as any).personaTags || defaultSettings.genresSinging);
           setGenresListening(parsed.genresListening || defaultSettings.genresListening);
-          setWebsite(parsed.website || defaultSettings.website);
-          setInstagram(parsed.instagram || defaultSettings.instagram);
-          setTiktok(parsed.tiktok || defaultSettings.tiktok);
+          setWebsite(parsed.website ?? defaultSettings.website);
+          setInstagram(parsed.instagram ?? defaultSettings.instagram);
+          setTiktok(parsed.tiktok ?? defaultSettings.tiktok);
           setVoiceAvatarSeed(parsed.voiceAvatarSeed || defaultSettings.voiceAvatarSeed);
           setDmEnabled(parsed.dmEnabled);
           setMeetRequireRecording(parsed.meetRequireRecording);
@@ -315,7 +315,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
         // Convert social fields to ProfileLink objects
         const links: any[] = [];
         if (website.trim()) {
-          links.push({ type: 'website', url: website.trim(), visibility: 'public' });
+          const websiteUrl = website.trim().startsWith('http') ? website.trim() : `https://${website.trim()}`;
+          links.push({ type: 'website', url: websiteUrl, visibility: 'public' });
         }
         if (instagram.trim()) {
           const instagramUrl = instagram.trim().startsWith('http') ? instagram.trim() : `https://instagram.com/${instagram.trim().replace('@', '')}`;
@@ -325,6 +326,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
           const tiktokUrl = tiktok.trim().startsWith('http') ? tiktok.trim() : `https://tiktok.com/@${tiktok.trim().replace('@', '')}`;
           links.push({ type: 'tiktok', url: tiktokUrl, visibility: 'public' });
         }
+        
+        console.log('Saving profile with links:', { website, instagram, tiktok, links });
         
         // Check if profile exists, create it if not
         let profile = await getUserProfile(user.id);
