@@ -524,7 +524,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
   }, [isDirty, justSaved, saving]);
 
   return (
-  <ModalShell titleId="settings-title" onClose={onClose} className="max-w-5xl flex flex-col h-[82vh]" contentClassName="flex flex-col h-full" returnFocusRef={returnFocusRef}>
+  <ModalShell titleId="settings-title" onClose={onClose} className="max-w-5xl flex flex-col max-h-[80dvh]" contentClassName="flex flex-col h-full" returnFocusRef={returnFocusRef}>
       <div className="p-6 border-b border-card-border flex items-start justify-between gap-4">
         <div className="space-y-1">
           <h2 id="settings-title" className="text-2xl font-semibold flex items-center gap-3">
@@ -572,7 +572,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
           ))}
         </div>
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-10 relative">
+  <div className="flex-1 overflow-y-auto p-6 space-y-10 relative">
           <AnimatePresence mode="wait" initial={false}>
           {tab === 'profile' && (
             <motion.section key="profile" id="settings-panel-profile" role="tabpanel" aria-labelledby="settings-tab-profile" className="space-y-6" aria-describedby="profile-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>

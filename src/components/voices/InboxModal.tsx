@@ -159,7 +159,7 @@ export const InboxModal: React.FC<InboxModalProps> = ({ onClose, returnFocusRef 
   };
 
   return (
-    <ModalShell titleId="inbox-title" onClose={onClose} className="max-w-6xl flex flex-col h-[80vh]" contentClassName="flex flex-col h-full" returnFocusRef={returnFocusRef}>
+  <ModalShell titleId="inbox-title" onClose={onClose} className="max-w-6xl flex flex-col max-h-[80dvh]" contentClassName="flex flex-col h-full" returnFocusRef={returnFocusRef}>
       <div className="p-6 border-b border-card-border flex items-start justify-between gap-4">
               <div className="space-y-1">
                 <h2 id="inbox-title" className="text-2xl font-semibold flex items-center gap-3"><img src={messagesIcon} alt="Messages" className="w-16 h-16 rounded-2xl shadow-sm" /> <span className="leading-tight">Messages</span></h2>

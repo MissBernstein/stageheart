@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { fadeInUp, motionDur, motionEase } from '@/ui/motion';
 import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
 import { MotionIfOkay } from '@/ui/MotionIfOkay';
+import { PageContainer } from '@/ui';
 
 export default function Favorites() {
   const { t } = useTranslation();
@@ -190,7 +191,7 @@ export default function Favorites() {
         className="min-h-screen bg-background"
       >
         <header className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-10">
-          <div className="container mx-auto px-4 py-4 flex items-center gap-4">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-4">
             <AnimatedButton variant="ghost" size="icon" onClick={() => navigate('/')} className="h-10 w-10">
               <ArrowLeft className="w-5 h-5" />
               <span className="sr-only">{t('common.backToHome', 'Back to home')}</span>
@@ -201,12 +202,11 @@ export default function Favorites() {
                 alt="Favorites"
                 className="w-16 h-16 object-contain drop-shadow-sm"
               />
-              <h1 className="text-3xl font-bold leading-tight">Favorites</h1>
+              <h1 className="font-bold leading-tight text-xl md:text-2xl lg:text-3xl">Favorites</h1>
             </Link>
           </div>
         </header>
-
-      <main className="container mx-auto px-4 py-8">
+      <PageContainer className="pt-8">
         {favorites.length === 0 ? (
           <div className="text-center py-16">
             <Music className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
@@ -216,7 +216,7 @@ export default function Favorites() {
         ) : (
           <AnimatedAccordion items={categoryItems} type="multiple" className="space-y-3" />
         )}
-      </main>
+      </PageContainer>
 
       <CategoryManageDialog
         mode="rename"

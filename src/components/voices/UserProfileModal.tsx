@@ -91,7 +91,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
   const filtered = recordings; // no search filtering needed
 
   return (
-  <ModalShell titleId="user-profile-title" onClose={onClose} className="max-w-5xl" contentClassName="" returnFocusRef={returnFocusRef}>
+  <ModalShell titleId="user-profile-title" onClose={onClose} className="max-w-5xl max-h-[80dvh] flex flex-col" contentClassName="flex-1 overflow-y-auto" returnFocusRef={returnFocusRef}>
       <div className="p-6 border-b border-card-border flex items-start justify-between gap-6">
               <div className="flex items-start gap-5">
                 <motion.div layoutId={`avatar-${userId}`}

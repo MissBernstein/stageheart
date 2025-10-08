@@ -7,7 +7,6 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useToast } from '../components/ui/Toast';
 import { usePlayer } from '../hooks/usePlayer';
-import { theme } from '../styles/theme';
 import { Recording } from '../types/voices';
 
 export const VoicesPage: React.FC = () => {
@@ -17,354 +16,141 @@ export const VoicesPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
-
   const { addToast } = useToast();
   const { loadRecording, currentRecording, isPlaying } = usePlayer();
-
-  // Mock data for now - replace with actual API call
-  useEffect(() => {
-    const fetchRecordings = async () => {
-      setIsLoading(true);
-      try {
-        // TODO: Replace with actual Supabase query
-        const mockRecordings: Recording[] = [
-          {
-            id: '1',
-            user_id: 'user1',
-            title: 'Morning Reflection',
-            duration_sec: 180,
-            mood_tags: ['peaceful', 'contemplative'],
-            voice_type: 'soft',
-            language: 'en',
-            is_signature: true,
-            state: 'public',
-            comments_enabled: true,
-            plays_count: 42,
-            reports_count: 0,
-            moderation_status: 'clean',
-            created_at: '2024-01-15T10:00:00Z',
-            updated_at: '2024-01-15T10:00:00Z',
-            user_profile: {
-              id: 'user1',
-              display_name: 'Sarah M.',
-              about: 'Voice artist and storyteller',
-              fav_genres: ['indie', 'folk'],
-              favorite_artists: ['Joni Mitchell', 'Nick Drake'],
-              groups: [],
-              links: [],
-              contact_visibility: 'after_meet',
-              dm_enabled: true,
-              comments_enabled: true,
-              profile_note_to_listeners: 'Thank you for listening!',
-              status: 'active',
-              created_at: '2024-01-01T00:00:00Z',
-              updated_at: '2024-01-15T10:00:00Z'
-            }
-          }
-        ];
-        
-        setRecordings(mockRecordings);
-        setFilteredRecordings(mockRecordings);
-      } catch (error) {
-        addToast({
-          type: 'error',
-          title: 'Error loading recordings',
-          description: 'Please try again later.'
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchRecordings();
-  }, [addToast]);
-
-  // Filter recordings based on search and mood filters
-  useEffect(() => {
-    let filtered = recordings;
-
-    if (searchQuery) {
-      filtered = filtered.filter(recording => 
-        recording.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        recording.user_profile?.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        recording.mood_tags?.some(tag => 
-          tag.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      );
-    }
-
-    if (selectedMoods.length > 0) {
-      filtered = filtered.filter(recording =>
-        recording.mood_tags?.some(tag => selectedMoods.includes(tag))
-      );
-    }
-
-    setFilteredRecordings(filtered);
-  }, [recordings, searchQuery, selectedMoods]);
-
-  const handlePlayRecording = (recording: Recording) => {
-    loadRecording(recording);
-  };
 
   const formatDuration = (seconds?: number) => {
     if (!seconds) return '0:00';
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2,'0')}`;
   };
 
+  useEffect(()=> {
+    // TODO replace with real API call
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const mock: Recording[] = [];
+        setRecordings(mock);
+        setFilteredRecordings(mock);
+      } catch (e:any) {
+        addToast({ type:'error', title:'Error loading recordings', description:'Please try again later.' });
+      } finally { setIsLoading(false); }
+    };
+    load();
+  }, [addToast]);
+
+  useEffect(()=> {
+    let filtered = recordings;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(r => r.title.toLowerCase().includes(q) || r.user_profile?.display_name?.toLowerCase().includes(q) || r.mood_tags?.some(tag => tag.toLowerCase().includes(q)));
+    }
+    if (selectedMoods.length) {
+      filtered = filtered.filter(r => r.mood_tags?.some(tag => selectedMoods.includes(tag)));
+    }
+    setFilteredRecordings(filtered);
+  }, [recordings, searchQuery, selectedMoods]);
   if (isLoading) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '50vh',
-          fontSize: theme.typography.sizes.lg,
-          color: theme.colors.text.secondary,
-        }}
-      >
-        Loading voices...
-      </div>
+      <div className="flex items-center justify-center h-[50vh] text-base text-muted-foreground">Loading voices...</div>
     );
   }
 
   return (
-    <div
-      style={{
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: theme.spacing.lg,
-      }}
-    >
-      {/* Compact Header with Icon & Search */}
-      <div style={{ marginBottom: theme.spacing.lg }}>
-        <div style={{ display:'flex', alignItems:'center', gap: theme.spacing.sm, marginBottom: theme.spacing.sm }}>
-          <img src={voicesIcon} alt="Voices" style={{ width: 40, height: 40, objectFit:'contain', filter:'drop-shadow(0 1px 2px rgba(0,0,0,0.1))' }} />
-          <div>
-            <h1 style={{
-              fontSize: theme.typography.sizes['2xl'],
-              fontWeight: theme.typography.weights.bold,
-              color: theme.colors.text.primary,
-              margin:0
-            }}>Discover Voices</h1>
-            <p style={{
-              fontSize: theme.typography.sizes.sm,
-              color: theme.colors.text.secondary,
-              margin:0
-            }}>Listen to authentic voice recordings and connect with their creators</p>
+    <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pt-[env(safe-area-inset-top)] pb-10 pb-[env(safe-area-inset-bottom)] overscroll-contain">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-start gap-3 mb-4 flex-col sm:flex-row sm:items-center">
+          <img src={voicesIcon} alt="Voices" className="w-10 h-10 object-contain drop-shadow-sm" />
+          <div className="space-y-1 min-w-0">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground break-words hyphens-auto">Discover Voices</h1>
+            <p className="text-sm text-muted-foreground leading-snug">Listen to authentic voice recordings and connect with their creators</p>
           </div>
         </div>
-        <div style={{
-          display:'flex',
-          gap: theme.spacing.sm,
-          alignItems:'center'
-        }}>
-          <div style={{ position:'relative', flex:1, maxWidth:'420px' }}>
-            <Search size={20} style={{ position:'absolute', left: theme.spacing.sm, top:'50%', transform:'translateY(-50%)', color: theme.colors.text.muted }} />
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+          <div className="relative flex-1 min-w-0">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden />
             <Input
               placeholder="Search voices, moods, or creators..."
               value={searchQuery}
               onChange={(e)=> setSearchQuery(e.target.value)}
-              style={{ paddingLeft:'40px' }}
+              className="pl-9 h-11 text-sm"
+              aria-label="Search voices"
             />
           </div>
-          <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
+          <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="h-11 gap-2" aria-pressed={showFilters} aria-label="Toggle filters">
             <Filter size={16} />
-            Filters
+            <span className="text-sm">Filters</span>
           </Button>
         </div>
+        {showFilters && (
+          <div className="mt-4 p-4 rounded-lg border bg-card/50 backdrop-blur-sm text-sm">{/* placeholder for filters */}Filters panel coming soon…</div>
+        )}
       </div>
 
-      {/* Results */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-          gap: theme.spacing.lg,
-        }}
-      >
+      {/* Results Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {filteredRecordings.map((recording) => (
           <div
             key={recording.id}
-            style={{
-              backgroundColor: 'white',
-              border: `1px solid ${theme.colors.border}`,
-              borderRadius: theme.radius.lg,
-              padding: theme.spacing.md,
-              boxShadow: theme.shadows.sm,
-              transition: 'all 0.2s ease',
-            }}
-            className="hover:shadow-md"
+            className="group flex flex-col rounded-xl border bg-card shadow-sm hover:shadow-md transition focus-within:ring-2 focus-within:ring-primary/50 min-w-0"
           >
-            {/* Recording Header */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: theme.spacing.sm,
-              }}
-            >
-              <h3
-                style={{
-                  fontSize: theme.typography.sizes.lg,
-                  fontWeight: theme.typography.weights.semibold,
-                  color: theme.colors.text.primary,
-                  margin: 0,
-                }}
-              >
-                {recording.title}
-              </h3>
+            {/* Header */}
+            <div className="flex items-center justify-between gap-3 px-4 pt-4">
+              <h3 className="text-base font-semibold text-foreground leading-tight break-words hyphens-auto flex-1 min-w-0 truncate" title={recording.title}>{recording.title}</h3>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handlePlayRecording(recording)}
-                style={{
-                  borderRadius: '50%',
-                  width: '40px',
-                  height: '40px',
-                  padding: 0,
-                  backgroundColor: 
-                    currentRecording?.id === recording.id && isPlaying 
-                      ? theme.colors.primary 
-                      : 'transparent',
-                }}
+                onClick={() => loadRecording(recording)}
+                aria-label={currentRecording?.id === recording.id && isPlaying ? 'Pause recording' : 'Play recording'}
+                aria-pressed={currentRecording?.id === recording.id && isPlaying}
+                className={`h-11 w-11 rounded-full p-0 flex items-center justify-center ${currentRecording?.id === recording.id && isPlaying ? 'bg-primary text-primary-foreground' : ''}`}
               >
-                <Play size={16} />
+                <Play size={18} />
               </Button>
             </div>
 
-            {/* Creator Info */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: theme.spacing.sm,
-                marginBottom: theme.spacing.md,
-              }}
-            >
-              <div
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  backgroundColor: theme.colors.surface,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: theme.typography.sizes.sm,
-                  fontWeight: theme.typography.weights.semibold,
-                  color: theme.colors.text.primary,
-                }}
-              >
+            {/* Creator */}
+            <div className="flex items-center gap-3 px-4 mt-3">
+              <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-xs font-semibold text-foreground flex-shrink-0">
                 {recording.user_profile?.display_name?.charAt(0) || '?'}
               </div>
-              <div>
-                <div
-                  style={{
-                    fontSize: theme.typography.sizes.sm,
-                    fontWeight: theme.typography.weights.medium,
-                    color: theme.colors.text.primary,
-                  }}
-                >
-                  {recording.user_profile?.display_name || 'Anonymous'}
-                </div>
-                <div
-                  style={{
-                    fontSize: theme.typography.sizes.xs,
-                    color: theme.colors.text.muted,
-                  }}
-                >
-                  {formatDuration(recording.duration_sec)}
-                </div>
+              <div className="min-w-0">
+                <div className="text-sm font-medium text-foreground truncate">{recording.user_profile?.display_name || 'Anonymous'}</div>
+                <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{formatDuration(recording.duration_sec)}</div>
               </div>
             </div>
 
-            {/* Mood Tags */}
+            {/* Tags */}
             {recording.mood_tags && recording.mood_tags.length > 0 && (
-              <div
-                style={{
-                  display: 'flex',
-                  gap: theme.spacing.xs,
-                  flexWrap: 'wrap',
-                  marginBottom: theme.spacing.md,
-                }}
-              >
-                {recording.mood_tags.slice(0, 3).map((tag) => (
-                  <span
-                    key={tag}
-                    style={{
-                      fontSize: theme.typography.sizes.xs,
-                      padding: `2px ${theme.spacing.xs}`,
-                      backgroundColor: theme.colors.surface,
-                      color: theme.colors.text.secondary,
-                      borderRadius: theme.radius.sm,
-                    }}
-                  >
+              <div className="flex flex-wrap gap-2 px-4 mt-4">
+                {recording.mood_tags.slice(0,3).map(tag => (
+                  <span key={tag} className="px-2 py-0.5 rounded-full bg-muted text-[11px] text-muted-foreground font-medium">
                     {tag}
                   </span>
                 ))}
               </div>
             )}
 
-            {/* Actions */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingTop: theme.spacing.sm,
-                borderTop: `1px solid ${theme.colors.border}`,
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: theme.spacing.sm,
-                  fontSize: theme.typography.sizes.xs,
-                  color: theme.colors.text.muted,
-                }}
-              >
-                <span>{recording.plays_count} plays</span>
-              </div>
-
-              <div
-                style={{
-                  display: 'flex',
-                  gap: theme.spacing.xs,
-                }}
-              >
-                <Button variant="ghost" size="sm">
-                  <Heart size={14} />
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <img src={messagesIcon} alt="Messages" style={{ width:14, height:14 }} />
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <Share2 size={14} />
-                </Button>
+            {/* Footer / Actions */}
+            <div className="mt-4 px-4 py-3 border-t flex items-center justify-between text-xs text-muted-foreground gap-3">
+              <span className="whitespace-nowrap">{recording.plays_count} plays</span>
+              <div className="flex items-center gap-1.5">
+                <Button variant="ghost" size="sm" aria-label="Like" className="h-10 w-10 p-0"><Heart size={16} /></Button>
+                <Button variant="ghost" size="sm" aria-label="Messages" className="h-10 w-10 p-0"><img src={messagesIcon} alt="Messages" className="w-4 h-4" /></Button>
+                <Button variant="ghost" size="sm" aria-label="Share" className="h-10 w-10 p-0"><Share2 size={16} /></Button>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Empty State */}
       {filteredRecordings.length === 0 && !isLoading && (
-        <div
-          style={{
-            textAlign: 'center',
-            padding: theme.spacing.xl,
-            color: theme.colors.text.secondary,
-          }}
-        >
-          <p style={{ fontSize: theme.typography.sizes.lg }}>
-            {searchQuery || selectedMoods.length > 0
-              ? 'No voices found matching your search.'
-              : 'No voice recordings available yet.'}
+        <div className="text-center py-16 text-muted-foreground">
+          <p className="text-base font-medium">
+            {searchQuery || selectedMoods.length > 0 ? 'No voices found matching your search.' : 'No voice recordings available yet.'}
           </p>
         </div>
       )}

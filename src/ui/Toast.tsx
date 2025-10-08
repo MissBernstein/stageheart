@@ -157,6 +157,7 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
   const prefersReducedMotion = usePrefersReducedMotion();
   const [toasts, setToasts] = useState<ToastRecord[]>([]);
   const timeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const liveRef = useRef<HTMLDivElement | null>(null);
 
   const dismiss = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
@@ -209,6 +210,20 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
 
   const value = useMemo(() => ({ toasts, show, dismiss, dismissAll }), [toasts, show, dismiss, dismissAll]);
 
+  // Update live region for screen readers with latest toast (title + description)
+  useEffect(() => {
+    if (!liveRef.current) return;
+    if (toasts.length === 0) return;
+    const last = toasts[toasts.length - 1];
+    // Slight delay helps some SRs announce reliably
+    const id = setTimeout(() => {
+      if (liveRef.current) {
+        liveRef.current.textContent = `${last.title}${last.description ? '. ' + last.description : ''}`;
+      }
+    }, 30);
+    return () => clearTimeout(id);
+  }, [toasts]);
+
   return (
     <ToastContext.Provider value={value}>
       {children}
@@ -224,6 +239,8 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
           ))}
         </AnimatePresence>
       </div>
+      {/* Global polite live region for SR announcement of toasts */}
+      <div ref={liveRef} aria-live="polite" aria-atomic="true" className="sr-only" />
       <ToastRegistrar />
     </ToastContext.Provider>
   );
