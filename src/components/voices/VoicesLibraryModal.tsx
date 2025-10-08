@@ -6,7 +6,7 @@ import { AnimatedButton } from '@/ui/AnimatedButton';
 import { AnimatedCard } from '@/ui/AnimatedCard';
 import { ChipToggle } from '@/ui/ChipToggle';
 import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
-import { Search, Filter, Play, X, Trash2, RefreshCw, Share2 } from 'lucide-react';
+import { Search, Filter, Play, X, Trash2, RefreshCw, Share2, Cloud, CloudOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { incrementPlay } from '@/lib/voicesApi';
 // import { useVoiceFavorites } from '@/hooks/useVoiceFavorites';
@@ -571,15 +571,38 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
               {filteredDiscovered.slice(0, 24).map(d => {
                 const profile = recordings.find(r => r.user_id === d.id)?.user_profile; // may be undefined if not in current fetch
                 const sampleRec = recordings.find(r => r.user_id === d.id);
+                const isPlayingSample = currentRecording?.id === sampleRec?.id;
                 return (
-                  <motion.div key={d.id} className="p-4 rounded-xl border border-card-border/60 bg-card/60 backdrop-blur-sm flex flex-col gap-3 group"
+                  <motion.div key={d.id} className="p-4 rounded-xl border border-card-border/60 bg-card/60 backdrop-blur-sm flex flex-col gap-3 group relative"
                     initial={prefersReducedMotion ? false : { opacity:0, y:8 }}
-                    animate={prefersReducedMotion ? {} : { opacity:1, y:0 }}
+                    animate={prefersReducedMotion ? {} : { opacity:1, y:0, boxShadow: isPlayingSample ? '0 0 0 0 rgba(var(--primary-rgb),0.5)' : '0 0 0 0 rgba(0,0,0,0)' }}
                     transition={{ duration:0.25 }}
+                    whileHover={!prefersReducedMotion ? { scale: 1.015 } : undefined}
                   >
+                    {/* Pulsing ring when playing */}
+                    {isPlayingSample && !prefersReducedMotion && (
+                      <motion.div
+                        className="absolute inset-0 rounded-xl pointer-events-none"
+                        initial={{ boxShadow: '0 0 0 0 rgba(var(--primary-rgb),0.6)' }}
+                        animate={{ boxShadow: ['0 0 0 0 rgba(var(--primary-rgb),0.5)','0 0 0 6px rgba(var(--primary-rgb),0)'] }}
+                        transition={{ duration: 1.8, repeat: Infinity, ease: 'easeOut' }}
+                      />
+                    )}
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center text-sm font-semibold">
-                        {(profile?.display_name || d.display_name || '?').slice(0,1).toUpperCase()}
+                      <div className="relative">
+                        {d.id ? (
+                          <ProceduralAvatar seed={d.id} className="h-10 w-10" />
+                        ) : (
+                          <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center text-xs font-semibold">?</div>
+                        )}
+                        {/* Sync status badge */}
+                        <div
+                          className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full flex items-center justify-center ring-1 ring-background shadow-md"
+                          title={d.synced ? 'Synced to cloud' : 'Not yet synced'}
+                          aria-label={d.synced ? 'Synced to cloud' : 'Not yet synced'}
+                        >
+                          {d.synced ? <Cloud className="h-3 w-3 text-primary" /> : <CloudOff className="h-3 w-3 text-card-foreground/50" />}
+                        </div>
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium truncate" title={`Last opened ${new Date(d.last_opened_at).toLocaleString()}`}>{profile?.display_name || d.display_name || 'Unknown'}</p>
