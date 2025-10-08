@@ -195,13 +195,13 @@ export default function Favorites() {
               <ArrowLeft className="w-5 h-5" />
               <span className="sr-only">{t('common.backToHome', 'Back to home')}</span>
             </AnimatedButton>
-            <Link to="/" className="flex items-center gap-3">
+            <Link to="/" className="flex items-center gap-4">
               <img
                 src={generalHeartIcon}
-                alt="Heart icon"
-                className="w-8 h-8 object-contain"
+                alt="Favorites"
+                className="w-16 h-16 object-contain drop-shadow-sm"
               />
-              <h1 className="text-2xl font-bold">{t('favorites.title')}</h1>
+              <h1 className="text-3xl font-bold leading-tight">Favorites</h1>
             </Link>
           </div>
         </header>
