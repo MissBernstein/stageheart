@@ -128,23 +128,34 @@ export async function incrementPlay(recordingId: string): Promise<void> {
 }
 
 export async function updateUserProfile(userId: string, updates: Partial<UserProfile>): Promise<UserProfile | null> {
-  // Prepare updates (filter out undefined to avoid overwriting with null)
-  const dbUpdates: Record<string, any> = {};
+  // NOTE: The database currently does NOT yet have columns `genres_singing` / `genres_listening`.
+  // Until a migration adds them, we merge both into `fav_genres` for persistence and strip the unsupported keys.
+  const ALLOWED_COLUMNS = new Set([
+    'id', 'display_name', 'about', 'fav_genres', 'favorite_artists', 'groups', 'links',
+    'contact_visibility', 'dm_enabled', 'comments_enabled', 'profile_note_to_listeners'
+  ]);
+
+  const mergedFavGenres = (() => {
+    const base = Array.isArray(updates.fav_genres) ? updates.fav_genres : [];
+    const sing = (updates as any).genres_singing as string[] | undefined;
+    const listen = (updates as any).genres_listening as string[] | undefined;
+    if (sing || listen) {
+      return Array.from(new Set([ ...base, ...(sing||[]), ...(listen||[]) ]));
+    }
+    return base.length ? base : undefined;
+  })();
+
+  const dbUpdates: Record<string, any> = { id: userId };
   for (const [k, v] of Object.entries(updates)) {
-    if (v !== undefined) dbUpdates[k] = v;
+    if (v === undefined || v === null) continue;
+    if (!ALLOWED_COLUMNS.has(k)) continue; // skip unsupported
+    dbUpdates[k] = v;
   }
-  if (Array.isArray(updates.links)) {
-    dbUpdates.links = updates.links as any; // JSON column
-  }
+  if (mergedFavGenres) dbUpdates.fav_genres = mergedFavGenres;
+  if (Array.isArray(updates.links)) dbUpdates.links = updates.links as any;
+  if (!dbUpdates.display_name) dbUpdates.display_name = (updates as any).display_name || '';
 
-  // Always ensure id present for upsert
-  dbUpdates.id = userId;
-  if (!dbUpdates.display_name) {
-    // Preserve existing display name if present in DB (will fetch after), else empty string
-    dbUpdates.display_name = (updates as any).display_name || '';
-  }
-
-  console.debug('[updateUserProfile] Upserting profile', dbUpdates);
+  console.debug('[updateUserProfile] Sanitized upsert payload', dbUpdates);
 
   const { data, error } = await supabase
     .from('user_profiles')

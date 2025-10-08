@@ -345,12 +345,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
           display_name: displayName,
           about: bio,
           dm_enabled: dmEnabled,
-          comments_enabled: true,
-          genres_singing: genresSinging,
-          genres_listening: genresListening,
+            comments_enabled: true,
+          // DB currently only has fav_genres – merge both sets for persistence
           fav_genres: [...new Set([...genresSinging, ...genresListening])],
           links: links
-        });
+        } as any); // cast to allow extra local props suppressed in API layer
       }
 
       setSaving(false);
