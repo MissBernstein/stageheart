@@ -17,6 +17,7 @@ import { fadeInUp, motionDur, motionEase } from '@/ui/motion';
 import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
 import { MotionIfOkay } from '@/ui/MotionIfOkay';
 import { PageContainer } from '@/ui';
+import PageFooter from '@/ui/PageFooter';
 
 export default function Favorites() {
   const { t } = useTranslation();
@@ -216,7 +217,8 @@ export default function Favorites() {
         ) : (
           <AnimatedAccordion items={categoryItems} type="multiple" className="space-y-3" />
         )}
-      </PageContainer>
+  </PageContainer>
+  <PageFooter compact />
 
       <CategoryManageDialog
         mode="rename"

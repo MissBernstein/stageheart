@@ -1,4 +1,5 @@
 import React from 'react';
+import PageFooter from '@/ui/PageFooter';
 import { Link } from 'react-router-dom';
 import { LEGAL_CONTACT_EMAIL, TERMS_LAST_UPDATED } from '@/lib/legal';
 import { useTranslation } from 'react-i18next';
@@ -54,10 +55,10 @@ export default function Terms() {
           </section>
         </div>
 
-        <footer className="pt-6 border-t border-border text-xs text-muted-foreground flex flex-col gap-2">
-          <p>Need clarification? Email <span className="font-mono">{LEGAL_CONTACT_EMAIL}</span></p>
-          <p>&copy; {new Date().getFullYear()} Stageheart</p>
-        </footer>
+        <div className="pt-6 border-t border-border space-y-3">
+          <p className="text-xs text-muted-foreground">Need clarification? Email <span className="font-mono">{LEGAL_CONTACT_EMAIL}</span></p>
+          <PageFooter hideLegal compact className="!mt-2 !pb-0" />
+        </div>
       </div>
     </div>
   );

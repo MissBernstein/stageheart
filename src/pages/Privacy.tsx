@@ -1,4 +1,5 @@
 import React from 'react';
+import PageFooter from '@/ui/PageFooter';
 import { Link } from 'react-router-dom';
 import { LEGAL_CONTACT_EMAIL, PRIVACY_LAST_UPDATED } from '@/lib/legal';
 import { useTranslation } from 'react-i18next';
@@ -49,9 +50,7 @@ export default function Privacy() {
             <p className="text-sm">{t('legal.sections.privacy.contactBody', { email: LEGAL_CONTACT_EMAIL })}</p>
           </section>
         </div>
-        <footer className="pt-6 border-t border-border text-xs text-muted-foreground flex flex-col gap-2">
-          <p>&copy; {new Date().getFullYear()} Stageheart</p>
-        </footer>
+        <PageFooter hideLegal compact className="pt-6 border-t border-border" />
       </div>
     </div>
   );

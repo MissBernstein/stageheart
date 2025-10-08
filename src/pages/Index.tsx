@@ -35,6 +35,7 @@ import { fadeInUp } from '@/ui/motion';
 import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
 import { MotionIfOkay } from '@/ui/MotionIfOkay';
 import { Link } from 'react-router-dom';
+import PageFooter from '@/ui/PageFooter';
 import { useUnreadMessagesStore } from '@/hooks/useUnreadMessages';
 
 const Index = () => {
@@ -544,14 +545,7 @@ const Index = () => {
     </div>
     </div>
     {/* Footer legal links */}
-    <footer className="relative z-10 mt-8 pb-8 px-4">
-      <div className="container mx-auto">
-        <p className="text-[11px] text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
-          <a href="/terms" className="underline underline-offset-2 hover:text-foreground">Terms of Use</a>
-          <a href="/privacy" className="underline underline-offset-2 hover:text-foreground">Privacy Policy</a>
-        </p>
-      </div>
-    </footer>
+    <PageFooter compact />
   </motion.div>
   {showSettings && <SettingsModal onClose={() => setShowSettings(false)} returnFocusRef={settingsReturnRef} />}
   {showUserProfile && <UserProfileModal userId={session!.user.id} onClose={() => setShowUserProfile(false)} returnFocusRef={profileReturnRef} />}
