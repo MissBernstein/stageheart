@@ -24,6 +24,25 @@ type TabKey = 'profile' | 'media' | 'privacyNotifications' | 'legalAccount';
 const LAST_TAB_KEY = 'stageheart_settings_last_tab_v1';
 
 const LS_KEY = 'stageheart_user_settings_v1';
+const LS_HASH_KEY = 'stageheart_user_settings_hash_v1';
+const LS_VERSION_KEY = 'stageheart_user_settings_version_v1';
+
+// Lightweight stable stringify (sort keys) to avoid depending on insertion order
+function stableStringify(obj: any): string {
+  if (obj === null || typeof obj !== 'object') return JSON.stringify(obj);
+  if (Array.isArray(obj)) return '[' + obj.map(stableStringify).join(',') + ']';
+  return '{' + Object.keys(obj).sort().map(k => JSON.stringify(k) + ':' + stableStringify(obj[k])).join(',') + '}';
+}
+
+// Simple fast hash (FNV-1a 32-bit) returning hex
+function hashString(str: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = (h >>> 0) * 0x01000193; // FNV prime
+  }
+  return ('0000000' + (h >>> 0).toString(16)).slice(-8);
+}
 const MUSIC_GENRES = [
   'Pop', 'Rock', 'Jazz', 'Classical', 'R&B', 'Country', 'Folk', 'Blues', 'Hip-Hop', 'Electronic', 
   'Indie', 'Alternative', 'Soul', 'Funk', 'Reggae', 'Metal', 'Punk', 'Gospel', 'Musical Theatre', 'Opera'
@@ -296,14 +315,32 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
     displayName, bio, genresSinging, genresListening, website, instagram, tiktok, voiceAvatarSeed, dmEnabled, meetRequireRecording, notifyNewMessages, notifyFavorites, volumeDefault, playAutoplay, language
   }), [displayName, bio, genresSinging, genresListening, website, instagram, tiktok, voiceAvatarSeed, dmEnabled, meetRequireRecording, notifyNewMessages, notifyFavorites, volumeDefault, playAutoplay, language]);
 
-  const isDirty = useMemo(() => {
-    try {
-      const raw = localStorage.getItem(LS_KEY);
-      if (!raw) return true; // first save
-      const stored: PersistedSettings = { ...defaultSettings, ...(JSON.parse(raw)||{}) };
-      return JSON.stringify(stored) !== JSON.stringify(currentSettings);
-    } catch { return true; }
+  const [isDirtyExplicit, setIsDirtyExplicit] = useState(false);
+  const [currentHash, setCurrentHash] = useState('');
+  const debounceRef = useRef<number | null>(null);
+  useEffect(() => {
+    // Debounce hash computation to reduce churn while user types
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    debounceRef.current = window.setTimeout(() => {
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        const base: PersistedSettings | null = raw ? { ...defaultSettings, ...(JSON.parse(raw)||{}) } : null;
+        const serialized = stableStringify(currentSettings);
+        const newHash = hashString(serialized);
+        setCurrentHash(newHash);
+        const storedHash = localStorage.getItem(LS_HASH_KEY);
+        if (!base || !storedHash) {
+          setIsDirtyExplicit(true);
+        } else {
+          setIsDirtyExplicit(storedHash !== newHash);
+        }
+      } catch {
+        setIsDirtyExplicit(true);
+      }
+    }, 160); // 160ms debounce
+    return () => { if (debounceRef.current) window.clearTimeout(debounceRef.current); };
   }, [currentSettings]);
+  const isDirty = isDirtyExplicit;
 
   // Section-level dirty flags (simple heuristic grouping fields)
   const dirtyMap = useMemo(() => {
@@ -359,8 +396,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
         }
       }
 
-      // Save to localStorage for playback preferences
-      localStorage.setItem(LS_KEY, JSON.stringify(currentSettings));
+  // Save snapshot + meta (hash + version) before remote sync
+  const serialized = stableStringify(currentSettings);
+  const newHash = hashString(serialized);
+  localStorage.setItem(LS_KEY, JSON.stringify(currentSettings));
+  localStorage.setItem(LS_HASH_KEY, newHash);
+  const prevVersion = parseInt(localStorage.getItem(LS_VERSION_KEY) || '0', 10) || 0;
+  localStorage.setItem(LS_VERSION_KEY, String(prevVersion + 1));
 
       // Sync profile data to Supabase
       const { data: { user } } = await supabase.auth.getUser();
@@ -377,8 +419,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
         } as any); // cast to allow extra local props suppressed in API layer
       }
 
-      setSaving(false);
-      setJustSaved(true);
+      // Re-sync meta after remote (in case we want to reflect any silent normalization later)
+      try {
+        const serialized2 = stableStringify(currentSettings);
+        const hash2 = hashString(serialized2);
+        localStorage.setItem(LS_KEY, JSON.stringify(currentSettings));
+        localStorage.setItem(LS_HASH_KEY, hash2);
+      } catch {}
+  setSaving(false);
+  setJustSaved(true);
+  setIsDirtyExplicit(false);
       toast({ title: 'Settings saved', description: 'Your preferences have been updated.' });
       liveRegionRef.current && (liveRegionRef.current.textContent = 'Settings saved');
       setTimeout(() => setJustSaved(false), 2500);
