@@ -34,10 +34,34 @@ export async function listVoices(params: ListVoicesParams = {}): Promise<Recordi
 
   // Fetch user profiles for all recordings
   const userIds = [...new Set(recordings.map(r => r.user_id))];
-  const { data: profiles } = await supabase
+  // Select only non-sensitive profile columns; avoid exposing privacy flags directly
+  const { data: profiles, error: profilesError } = await supabase
     .from('user_profiles')
-    .select('*')
+    // Only select columns guaranteed by current migration; new genre split columns may not exist yet
+    .select('id, display_name, about, fav_genres, favorite_artists, links, status')
     .in('id', userIds);
+  if (profilesError) {
+    console.warn('Profile fetch restricted or failed; attempting sanitized fallback:', profilesError.message);
+    // Fallback: call sanitized RPC if available (anonymous safe). We only supply ids to reduce data volume
+    const { data: sanitized, error: sanitizedErr } = await (supabase as any).rpc('fetch_public_profiles', { p_ids: userIds });
+    if (!sanitizedErr && Array.isArray(sanitized)) {
+      const existing = (profiles as any[] | null) || [];
+      for (const s of sanitized) {
+        existing.push({
+          id: s.id,
+          display_name: s.display_name,
+          about: s.about_snippet,
+          fav_genres: s.genres,
+          favorite_artists: s.favorite_artists_sample,
+          links: [],
+          status: 'active'
+        });
+      }
+      (profiles as any) = existing;
+    } else if (sanitizedErr) {
+      console.warn('Sanitized profile fallback failed:', sanitizedErr.message);
+    }
+  }
 
   const profileMap = new Map((profiles || []).map(p => [p.id, p]));
 
@@ -67,14 +91,32 @@ export async function listVoices(params: ListVoicesParams = {}): Promise<Recordi
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   const { data, error } = await supabase
     .from('user_profiles')
-    .select('*')
+    .select('id, display_name, about, fav_genres, favorite_artists, links, status, profile_note_to_listeners')
     .eq('id', userId)
     .eq('status', 'active')
     .maybeSingle();
 
   if (error) {
-    console.error('Error fetching user profile:', error);
-    return null;
+    console.error('Error fetching user profile (will try sanitized fallback):', error.message);
+    // Attempt sanitized fallback for anonymous / restricted access
+    try {
+  const { data: sanitized, error: sanitizedErr } = await (supabase as any).rpc('fetch_public_profiles', { p_ids: [userId] });
+  if (sanitizedErr || !Array.isArray(sanitized) || !sanitized.length) return null;
+  const s = sanitized[0];
+      return {
+        id: s.id,
+        display_name: s.display_name,
+        about: s.about_snippet,
+        fav_genres: s.genres,
+        favorite_artists: s.favorite_artists_sample,
+        links: [],
+        status: 'active',
+        profile_note_to_listeners: ''
+      } as unknown as UserProfile;
+    } catch (e) {
+      console.warn('Sanitized user profile fallback failed:', (e as any).message);
+      return null;
+    }
   }
 
   if (!data) return null;
@@ -99,11 +141,14 @@ export async function listRecordingsByUser(userId: string): Promise<Recording[]>
   }
 
   // Fetch user profile
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('user_profiles')
-    .select('*')
+    .select('id, display_name, about, fav_genres, favorite_artists, links, status')
     .eq('id', userId)
     .maybeSingle();
+  if (profileError) {
+    console.warn('Restricted from fetching profile for recordings list:', profileError.message);
+  }
 
   const userProfile = profile ? {
     ...profile,
