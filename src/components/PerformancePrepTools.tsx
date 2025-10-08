@@ -601,9 +601,9 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                   <img
                     src={prepIcon}
                     alt="Performance prep icon"
-                    className="w-18 h-18 transition-transform duration-200"
+                    className="w-[72px] h-[72px] transition-transform duration-200"
                   />
-                  <h1 className="text-[30px] font-bold whitespace-nowrap" style={{ fontFamily: '"I lova ya like a sister"' }}>{t('prep.title')}</h1>
+                  <h1 className="text-[30px] font-heading font-bold whitespace-nowrap">{t('prep.title')}</h1>
                 </div>
               </div>
               {currentSong && (
@@ -642,7 +642,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                                   />
                                 </div>
                                 <div className="flex-1">
-                                  <h3 className="text-[18px] font-semibold mb-2 flex items-center gap-2" style={{ fontFamily: '"I lova ya like a sister"' }}>
+                                  <h3 className="text-[18px] font-semibold mb-2 flex items-center gap-2" style={{ fontFamily: '"Love Ya Like A Sister"' }}>
                                     {category.title}
                                   </h3>
                                     <p className="text-sm text-muted-foreground">
@@ -678,7 +678,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
                                 alt={`${category.title} icon`}
                                 className="w-14 h-14 object-contain"
                               />
-                              <h2 className="text-[24px] font-semibold" style={{ fontFamily: '"I lova ya like a sister"' }}>{category.title}</h2>
+                              <h2 className="text-[24px] font-semibold" style={{ fontFamily: '"Love Ya Like A Sister"' }}>{category.title}</h2>
                             </>
                           );
                         }
@@ -883,7 +883,7 @@ export const PerformancePrepTools = ({ currentSong, onClose, songs }: Performanc
 
                       {savedWarmups.length > 0 && (
                         <section className="space-y-4">
-                          <h3 className="text-[18px] font-semibold" style={{ fontFamily: '"I lova ya like a sister"' }}>Saved Warm-ups</h3>
+                          <h3 className="text-[18px] font-semibold" style={{ fontFamily: '"Love Ya Like A Sister"' }}>Saved Warm-ups</h3>
                           <ul className="space-y-2">
                             <AnimatePresence>
                               {savedWarmups.map((warmup) => (

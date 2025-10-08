@@ -303,7 +303,7 @@ export const FeelingJourney = ({ onSelectSong, onClose, songs }: FeelingJourneyP
                     alt="Feeling journey icon"
                     className="w-14 h-14 object-contain transition-transform duration-200 group-hover:scale-105"
                   />
-                  <span className="text-[24px]" style={{ fontFamily: '"I lova ya like a sister"' }}>{t('journey.title')}</span>
+                  <span className="text-[24px]" style={{ fontFamily: '"Love Ya Like A Sister"' }}>{t('journey.title')}</span>
                 </button>
               </CardTitle>
               <button

@@ -21,33 +21,33 @@ export default function Terms() {
 
         <div className="prose prose-invert max-w-none">
           <section className={sectionCls}>
-            <h2 className="text-[24px] font-semibold" style={{ fontFamily: '"I lova ya like a sister"' }}>{t('legal.sections.terms.purposeTitle')}</h2>
+            <h2 className="text-[24px] font-semibold" style={{ fontFamily: '"Love Ya Like A Sister"' }}>{t('legal.sections.terms.purposeTitle')}</h2>
             <p>{t('legal.sections.terms.purposeBody')}</p>
           </section>
           <section className={sectionCls}>
-            <h2 className="text-[24px] font-semibold" style={{ fontFamily: '"I lova ya like a sister"' }}>{t('legal.sections.terms.responsibilityTitle')}</h2>
+            <h2 className="text-[24px] font-semibold" style={{ fontFamily: '"Love Ya Like A Sister"' }}>{t('legal.sections.terms.responsibilityTitle')}</h2>
             <p>{t('legal.sections.terms.responsibilityBody1')}</p>
             <p>{t('legal.sections.terms.responsibilityBody2')}</p>
             <p>{t('legal.sections.terms.responsibilityBody3')}</p>
           </section>
           <section className={sectionCls}>
-            <h2 className="text-[24px] font-semibold" style={{ fontFamily: '"I lova ya like a sister"' }}>{t('legal.sections.terms.licenseTitle')}</h2>
+            <h2 className="text-[24px] font-semibold" style={{ fontFamily: '"Love Ya Like A Sister"' }}>{t('legal.sections.terms.licenseTitle')}</h2>
             <p>{t('legal.sections.terms.licenseBody')}</p>
           </section>
           <section className={sectionCls}>
-            <h2 className="text-[24px] font-semibold" style={{ fontFamily: '"I lova ya like a sister"' }}>{t('legal.sections.terms.takedownTitle')}</h2>
+            <h2 className="text-[24px] font-semibold" style={{ fontFamily: '"Love Ya Like A Sister"' }}>{t('legal.sections.terms.takedownTitle')}</h2>
             <p>{t('legal.sections.terms.takedownBody', { email: LEGAL_CONTACT_EMAIL })}</p>
           </section>
           <section className={sectionCls}>
-            <h2 className="text-[24px] font-semibold" style={{ fontFamily: '"I lova ya like a sister"' }}>{t('legal.sections.terms.sharingTitle')}</h2>
+            <h2 className="text-[24px] font-semibold" style={{ fontFamily: '"Love Ya Like A Sister"' }}>{t('legal.sections.terms.sharingTitle')}</h2>
             <p>{t('legal.sections.terms.sharingBody')}</p>
           </section>
           <section className={sectionCls}>
-            <h2 className="text-[24px] font-semibold" style={{ fontFamily: '"I lova ya like a sister"' }}>{t('legal.sections.terms.prohibitedTitle')}</h2>
+            <h2 className="text-[24px] font-semibold" style={{ fontFamily: '"Love Ya Like A Sister"' }}>{t('legal.sections.terms.prohibitedTitle')}</h2>
             <p>{t('legal.sections.terms.prohibitedBody')}</p>
           </section>
           <section className={sectionCls}>
-            <h2 className="text-[24px] font-semibold" style={{ fontFamily: '"I lova ya like a sister"' }}>{t('legal.sections.terms.liabilityTitle')}</h2>
+            <h2 className="text-[24px] font-semibold" style={{ fontFamily: '"Love Ya Like A Sister"' }}>{t('legal.sections.terms.liabilityTitle')}</h2>
             <p>{t('legal.sections.terms.liabilityBody')}</p>
           </section>
           <section className={sectionCls}>

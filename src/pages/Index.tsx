@@ -418,10 +418,10 @@ const Index = () => {
                 <img
                   src={logo}
                   alt="Stage Heart Logo"
-                  className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain cursor-pointer"
+                  className="w-[72px] h-[72px] object-contain cursor-pointer"
                 />
               </Link>
-              <h1 className="text-[36px] font-bold text-foreground text-center whitespace-nowrap" style={{ fontFamily: '"I lova ya like a sister"' }}>
+              <h1 className="text-[36px] font-heading font-bold text-foreground text-center whitespace-nowrap">
                 Stage Heart
               </h1>
               <p className="text-sm md:text-base text-foreground max-w-2xl mx-auto text-center">

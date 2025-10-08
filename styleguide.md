@@ -30,7 +30,9 @@
 - **Usage**: Sub-section headers within a page or modal
 
 ### Font Family
-- **Primary Font**: "I lova ya like a sister"
+- **Primary Font**: "Love Ya Like A Sister"
+- **Tailwind Class**: `font-heading` (recommended)
+- **Inline Style**: `style={{ fontFamily: '"Love Ya Like A Sister"' }}` (fallback)
 
 ## Icon Sizing
 
@@ -60,7 +62,7 @@
 H1: 36px; icons 18px; scope: Home, /auth top-level titles only
 H2: 24px; icons 14px; scope: main section headers (Discover Voices, Song Library, Performance Prep, Voice Profile, Feeling Card song titles, Settings, Messages, Favorites, Feeling Journey)
 H3: 18px; icons 10px; scope: in-page and modal section headers
-Font: "I lova ya like a sister"
+Font: "Love Ya Like A Sister" (use font-heading class)
 Exceptions:
 - Messages icon: 16x16
 - Prep Tools menu header: 30px text, 18px icon

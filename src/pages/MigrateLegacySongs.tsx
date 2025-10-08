@@ -42,7 +42,7 @@ export default function MigrateLegacySongs() {
       </Button>
 
       <Card className="p-8">
-        <h1 className="text-[36px] font-bold mb-4" style={{ fontFamily: '"I lova ya like a sister"' }}>Migrate Legacy Songs</h1>
+        <h1 className="text-[36px] font-bold mb-4" style={{ fontFamily: '"Love Ya Like A Sister"' }}>Migrate Legacy Songs</h1>
         <p className="text-muted-foreground mb-6">
           This will import all songs from the legacy songs.json file into the Supabase database.
           Songs that already exist (by slug) will be skipped.
@@ -58,7 +58,7 @@ export default function MigrateLegacySongs() {
 
         {result && (
           <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <h2 className="font-semibold text-[24px] mb-2" style={{ fontFamily: '"I lova ya like a sister"' }}>Migration Successful!</h2>
+            <h2 className="font-semibold text-[24px] mb-2" style={{ fontFamily: '"Love Ya Like A Sister"' }}>Migration Successful!</h2>
             <dl className="space-y-1 text-sm">
               <div className="flex justify-between">
                 <dt>Total songs in JSON:</dt>
@@ -82,7 +82,7 @@ export default function MigrateLegacySongs() {
 
         {error && (
           <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
-            <h2 className="font-semibold text-[24px] mb-2" style={{ fontFamily: '"I lova ya like a sister"' }}>Migration Failed</h2>
+            <h2 className="font-semibold text-[24px] mb-2" style={{ fontFamily: '"Love Ya Like A Sister"' }}>Migration Failed</h2>
             <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
           </div>
         )}

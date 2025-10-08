@@ -120,7 +120,7 @@ export default function AddSong() {
 
             {validationErrors.length > 0 && (
               <div className="mt-4 p-4 bg-red-50 text-red-800 border border-red-200 rounded-lg">
-                <h3 className="text-[18px] font-semibold mb-2" style={{ fontFamily: '"I lova ya like a sister"' }}>Please fix these issues:</h3>
+                <h3 className="text-[18px] font-semibold mb-2" style={{ fontFamily: '"Love Ya Like A Sister"' }}>Please fix these issues:</h3>
                 <ul className="space-y-1">
                   {validationErrors.map((error, index) => (
                     <li key={index} className="text-sm">• {error}</li>

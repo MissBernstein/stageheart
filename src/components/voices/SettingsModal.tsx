@@ -527,8 +527,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
   <ModalShell titleId="settings-title" onClose={onClose} className="max-w-5xl flex flex-col max-h-[80dvh]" contentClassName="flex flex-col h-full" returnFocusRef={returnFocusRef}>
   <div className="p-6 border-b border-card-border flex items-start justify-between gap-4 relative bg-gradient-to-b from-background/60 to-background/20">
         <div className="space-y-1">
-          <h2 id="settings-title" className="text-[24px] font-semibold flex items-center gap-3" style={{ fontFamily: '"I lova ya like a sister"' }}>
-            <img src={settingsIcon} alt="Settings" className="w-10 h-10 object-contain" />
+          <h2 id="settings-title" className="text-[24px] font-semibold flex items-center gap-3" style={{ fontFamily: '"Love Ya Like A Sister"' }}>
+            <img src={settingsIcon} alt="Settings" className="w-14 h-14 object-contain" />
             <span>Settings</span>
           </h2>
           <p className="text-xs text-card-foreground/60">Profile • Recordings • Privacy • Notifications • Playback • Account</p>
@@ -577,7 +577,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
           {tab === 'profile' && (
             <motion.section key="profile" id="settings-panel-profile" role="tabpanel" aria-labelledby="settings-tab-profile" className="space-y-6" aria-describedby="profile-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
               <div className="space-y-2 pb-2 border-b border-card-border/30">
-                <h3 id="profile-heading" className="text-[18px] font-semibold text-card-foreground" style={{ fontFamily: '"I lova ya like a sister"' }}>Profile</h3>
+                <h3 id="profile-heading" className="text-[18px] font-semibold text-card-foreground" style={{ fontFamily: '"Love Ya Like A Sister"' }}>Profile</h3>
                 <p className="text-sm text-card-foreground/70">Control what listeners see about you.</p>
               </div>
               <div className="grid md:grid-cols-3 gap-6">
@@ -674,7 +674,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
             <div key="privacy-wrapper" id="settings-panel-privacyNotifications" role="tabpanel" aria-labelledby="settings-tab-privacyNotifications" className="space-y-10">
             <motion.section key="privacy" className="space-y-6" aria-labelledby="privacy-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
               <div className="space-y-2 pb-2 border-b border-card-border/30">
-                <h3 id="privacy-heading" className="text-[18px] font-semibold text-card-foreground" style={{ fontFamily: '"I lova ya like a sister"' }}>Privacy & Contact</h3>
+                <h3 id="privacy-heading" className="text-[18px] font-semibold text-card-foreground" style={{ fontFamily: '"Love Ya Like A Sister"' }}>Privacy & Contact</h3>
                 <p className="text-sm text-card-foreground/70">Tune how people can reach you or request a meet.</p>
               </div>
               <div className="space-y-4">
@@ -690,7 +690,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
             </motion.section>
             <motion.section key="notif-sub" className="space-y-6" aria-labelledby="notif-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
               <div className="space-y-2 pb-2 border-b border-card-border/30">
-                <h3 id="notif-heading" className="text-[18px] font-semibold text-card-foreground" style={{ fontFamily: '"I lova ya like a sister"' }}>Notifications</h3>
+                <h3 id="notif-heading" className="text-[18px] font-semibold text-card-foreground" style={{ fontFamily: '"Love Ya Like A Sister"' }}>Notifications</h3>
                 <p className="text-sm text-card-foreground/70">Choose which events trigger notifications.</p>
               </div>
               <div className="space-y-4">

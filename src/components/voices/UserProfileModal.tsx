@@ -108,7 +108,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
                   )}
                 </motion.div>
                 <div className="space-y-2">
-                  <motion.h2 id="user-profile-title" className="text-[24px] font-semibold leading-tight" style={{ fontFamily: '"I lova ya like a sister"' }}
+                  <motion.h2 id="user-profile-title" className="text-[24px] font-semibold leading-tight" style={{ fontFamily: '"Love Ya Like A Sister"' }}
                     initial={!prefersReducedMotion ? { opacity:0, y:6 } : false}
                     animate={!prefersReducedMotion ? { opacity:1, y:0 } : {}}
                     transition={{ duration:0.3, delay:0.05 }}
@@ -173,7 +173,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
                 animate={!prefersReducedMotion ? { opacity:1, y:0 } : {}}
                 transition={{ duration:0.4, ease:[0.22,0.72,0.28,0.99] }}
               >
-                <h3 className="text-[18px] font-semibold tracking-wide text-card-foreground/70" style={{ fontFamily: '"I lova ya like a sister"' }}>CONNECT</h3>
+                <h3 className="text-[18px] font-semibold tracking-wide text-card-foreground/70" style={{ fontFamily: '"Love Ya Like A Sister"' }}>CONNECT</h3>
                 <div className="flex flex-wrap gap-3">
                   <AnimatedButton variant="outline" size="sm" className="gap-2"><img src={messagesIcon} alt="Message" className="w-4 h-4" />Message</AnimatedButton>
                   <AnimatedButton variant="outline" size="sm" className="gap-2"><Share2 className="w-4 h-4" />Share</AnimatedButton>
@@ -212,7 +212,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
               {/* Recordings */}
               <motion.section className="space-y-4" initial={!prefersReducedMotion ? { opacity:0, y:16 } : false} animate={!prefersReducedMotion ? { opacity:1, y:0 } : {}} transition={{ duration:0.45 }}>
                 <div className="flex items-center justify-between gap-4 flex-wrap">
-                  <h3 className="text-[18px] font-semibold tracking-wide text-card-foreground/70" style={{ fontFamily: '"I lova ya like a sister"' }}>RECORDINGS ({filtered.length})</h3>
+                  <h3 className="text-[18px] font-semibold tracking-wide text-card-foreground/70" style={{ fontFamily: '"Love Ya Like A Sister"' }}>RECORDINGS ({filtered.length})</h3>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
                   {loadingRecs && (

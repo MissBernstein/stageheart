@@ -203,7 +203,7 @@ export default function Favorites() {
                 alt="Favorites"
                 className="w-14 h-14 object-contain drop-shadow-sm"
               />
-              <h2 className="text-[24px] font-bold leading-tight" style={{ fontFamily: '"I lova ya like a sister"' }}>Favorites</h2>
+              <h2 className="text-[24px] font-heading font-bold leading-tight">Favorites</h2>
             </Link>
           </div>
         </header>

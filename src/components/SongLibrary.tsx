@@ -147,7 +147,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
           {/* Header */}
           <div className="p-6 border-b border-card-border">
             <div className="flex items-center justify-between mb-4">
-              <h2 id="song-library-title" className="text-[24px] font-semibold text-card-foreground flex items-center gap-3" style={{ fontFamily: '"I lova ya like a sister"' }}>
+              <h2 id="song-library-title" className="text-[24px] font-heading font-semibold text-card-foreground flex items-center gap-3">
                 <img src={jukeboxIcon} alt="Jukebox Icon" className="w-14 h-14 object-contain" />
                 {t('library.title')}
               </h2>
@@ -290,7 +290,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
                       <div className="mb-3 flex items-start gap-3">
                         <span className="text-2xl">{song.visual.split(' ')[0]}</span>
                         <div className="flex-1 min-w-0">
-                          <h3 className="line-clamp-1 text-[18px] font-medium text-card-foreground flex items-center gap-2" style={{ fontFamily: '"I lova ya like a sister"' }}>
+                          <h3 className="line-clamp-1 text-[18px] font-medium text-card-foreground flex items-center gap-2" style={{ fontFamily: '"Love Ya Like A Sister"' }}>
                             {song.title}
                             {song.isRemote && song.isNew && <span className="text-[11px] rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1 py-0.5 leading-none">🆕</span>}
                           </h3>
@@ -335,7 +335,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
                           <span className="text-xl">{song.visual.split(' ')[0]}</span>
                           <div className="min-w-0 flex-1">
                             <div className="mb-1 flex items-center gap-2">
-                              <h3 className="text-[18px] font-medium text-card-foreground flex items-center gap-2" style={{ fontFamily: '"I lova ya like a sister"' }}>{song.title} {song.isRemote && song.isNew && <span className="text-[11px] rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1 py-0.5 leading-none">🆕</span>}</h3>
+                              <h3 className="text-[18px] font-medium text-card-foreground flex items-center gap-2" style={{ fontFamily: '"Love Ya Like A Sister"' }}>{song.title} {song.isRemote && song.isNew && <span className="text-[11px] rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1 py-0.5 leading-none">🆕</span>}</h3>
                               <span className="text-sm text-card-foreground/70">{t('common.by', 'by')} {song.artist}</span>
                             </div>
                             <p className="mb-2 text-sm text-card-foreground/60">{song.summary}</p>
