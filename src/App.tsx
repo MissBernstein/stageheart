@@ -14,6 +14,7 @@ import AddSong from "./pages/AddSong";
 import AdminSubmissions from "./pages/AdminSubmissions";
 import MigrateLegacySongs from "./pages/MigrateLegacySongs";
 import SimpleMigration from "./pages/SimpleMigration";
+import { ImportSongsPage } from "./pages/ImportSongsPage";
 import { VoicesApp } from "./VoicesApp";
 import { AuthProvider } from "./hooks/useAuth";
 import { PlayerProvider } from "./hooks/usePlayer";
@@ -47,6 +48,7 @@ const App = () => (
                   <Route path="/admin/submissions" element={<AdminSubmissions />} />
                   <Route path="/admin/migrate" element={<MigrateLegacySongs />} />
                   <Route path="/admin/simple-migration" element={<SimpleMigration />} />
+                  <Route path="/admin/import-songs" element={<ImportSongsPage />} />
                   {/* Voices & Profiles Feature - accessible at /app/* */}
                   <Route path="/app/*" element={<VoicesApp />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
