@@ -1,4 +1,6 @@
+// @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,43 +20,70 @@ serve(async (req) => {
     let systemPrompt = "";
 
     if (type === "journey") {
-      systemPrompt = `You are a vocal performance coach helping singers find the perfect song for their current emotional state and performance context. You will receive user preferences and recommend songs from the provided dataset that match their mood and needs.
+      // --- Dynamic dataset build (replaces legacy hard-coded list) ---
+      // We cache for a short interval to reduce DB + token overhead.
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY');
+      let datasetLines: string[] = [];
+      if (supabaseUrl && supabaseKey) {
+        try {
+          // Simple in-memory cache (resets on cold start)
+          const cacheKey = 'songsDatasetCache';
+          const globalAny = globalThis as any;
+          const now = Date.now();
+          const CACHE_MS = 1000 * 60 * 5; // 5 minutes
+          if (!globalAny.__songsDataset || (now - globalAny.__songsDataset.timestamp) > CACHE_MS) {
+            const sb: SupabaseClient = createClient(supabaseUrl, supabaseKey);
+            const { data, error } = await sb
+              .from('songs')
+              .select('title, artist, feeling_cards ( theme, core_feelings )')
+              .limit(600); // safety upper bound
+            if (error) throw error;
+            const lines: string[] = [];
+            for (const row of (data || [])) {
+              const fc = Array.isArray((row as any).feeling_cards) ? (row as any).feeling_cards[0] : (row as any).feeling_cards;
+              const core = Array.isArray(fc?.core_feelings) ? fc.core_feelings : [];
+              if (!core.length) continue; // filter out entries without core feelings
+              const theme = fc?.theme || 'Unknown theme';
+              const feelings = core.slice(0, 3).join(', ');
+              lines.push(`- ${row.title}: ${theme}${feelings ? ' – ' + feelings : ''}`);
+            }
+            // If dataset extremely large, prune to a manageable subset: keep newest ~300 & random sample of rest
+            let final = lines;
+            const MAX_LINES = 380; // token safety
+            if (final.length > MAX_LINES) {
+              const firstChunk = final.slice(0, 280); // keep first chunk (likely newest if query sorted)
+              const remaining = final.slice(280);
+              // random sample
+              for (let i = remaining.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+              }
+              final = firstChunk.concat(remaining.slice(0, MAX_LINES - firstChunk.length));
+            }
+            globalAny.__songsDataset = { timestamp: now, lines: final };
+          }
+          datasetLines = (globalAny.__songsDataset?.lines as string[]) || [];
+        } catch (e) {
+          console.error('Failed to build dynamic songs dataset, falling back to legacy list', e);
+        }
+      }
+      if (!datasetLines.length) {
+        // Fallback minimal legacy subset to avoid total failure (kept short)
+        datasetLines = [
+          '- Bridge Over Troubled Water: unconditional support, deep empathy, warm reassurance',
+          '- Mustang Sally: freedom and rebellion, playful groove, cheeky frustration',
+          '- Signed, Sealed, Delivered: renewed love, joy, celebration',
+          '- Can\'t Help Falling in Love: tender love, gentle awe, quiet surrender',
+          '- Uptown Funk: pure joy and self-assurance, playful swagger'
+        ];
+      }
 
-Available songs dataset:
-- Bridge Over Troubled Water: unconditional support, deep empathy, warm reassurance
-- Mustang Sally: freedom and rebellion, playful groove, cheeky frustration  
-- Signed, Sealed, Delivered: renewed love, joy, celebration
-- Can't Help Falling in Love: tender love, gentle awe, quiet surrender
-- Forget You: bitter heartbreak turned empowerment, playful sass
-- You're the Voice: courage and collective strength, rising determination
-- He Will Supply: faith and reassurance, warm trust, joyful praise
-- Come Home: yearning for reunion, tender longing, vulnerable hope
-- Hosanna: triumphant faith, explosive joy, unstoppable celebration
-- You've Got a Friend: unconditional support, calm reassurance
-- Proud Mary: breaking free after hardship, weary to wild joy
-- Diavolo in Me: overpowering attraction, magnetic pull, wild surrender
-- Du fragsch mi, wer i bi: identity and authenticity, tender self-reveal
-- I Can Go to God in Prayer: prayer as refuge, humble need, grateful joy
-- Aquarius/Let the Sunshine In: awakening and collective joy, cosmic wonder
-- Higher Ground: resilience and self-betterment, strong drive, hopeful striving
-- Sing: joyful self-expression, lighthearted fun, shared energy
-- Luegit vo Bärg und Tal: awe and peace, calm wonder, expanding joy
-- Uptown Funk: pure joy and self-assurance, playful swagger
+  systemPrompt = `You are a vocal performance coach helping singers find the perfect song for their current emotional state and performance context. You will receive user preferences and recommend songs strictly from the provided dataset that match their mood and needs. If multiple songs could work, rank the top 3 (1 = best) for clarity.
 
-Return your recommendation as a JSON object with:
-{
-  "recommendedSong": "exact song title",
-  "reason": "2-3 sentence explanation of why this song matches their mood and context",
-  "emotionalJourney": "description of the emotional arc they'll experience",
-  "performanceTips": ["3 specific tips for performing this song in their current state"]
-}`;
+Available songs dataset (title: theme – core feelings):\n${datasetLines.join('\n')}\n\nReturn JSON ONLY with shape:\n{\n  "recommendedSong": "exact title of rank 1",\n  "candidates": [\n    {"title": "rank 1 exact title", "reason": "1-2 sentence reason", "emotionalJourney": "short arc", "performanceTips": ["tip1","tip2","tip3"]},\n    {"title": "rank 2 exact title", "reason": "...", "emotionalJourney": "...", "performanceTips": ["tip1","tip2","tip3"]},\n    {"title": "rank 3 exact title", "reason": "...", "emotionalJourney": "...", "performanceTips": ["tip1","tip2","tip3"]}\n  ]\n}\nRules:\n- Titles MUST come verbatim from dataset.\n- Always provide exactly 3 candidates unless dataset has fewer than 3 items.\n- Performance tips: concise, actionable, no numbering, 5-10 words each.`;
 
-      prompt = `User wants a song recommendation based on:
-- Current mood: ${mood}
-- Energy level: ${energy}  
-- Performance context: ${context}
-
-Recommend the most suitable song from the dataset and explain why it's perfect for their current state.`;
+  prompt = `User wants a song recommendation based on:\n- Current mood: ${mood}\n- Energy level: ${energy}\n- Performance context: ${context}\n\nProvide ranked top 3 as specified.`;
 
     } else if (type === "warmup") {
       systemPrompt = `You are a vocal coach creating personalized warm-up routines based on song emotions and performance requirements. Provide practical, actionable vocal and physical warm-ups.`;
