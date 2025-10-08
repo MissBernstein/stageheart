@@ -68,6 +68,43 @@ const variantStyles: Record<ToastVariant, { container: string; indicator: string
   },
 };
 
+const getVariantStyles = (variant: ToastVariant) => {
+  if (!variantStyles[variant]) {
+    console.error(`Undefined toast variant: ${variant}`);
+    return variantStyles.default; // Fallback to default styles
+  }
+  return variantStyles[variant];
+};
+
+const ToastItem: React.FC<{ toast: ToastRecord; onRemove: () => void }> = ({ toast, onRemove }) => {
+  const prefersReducedMotion = usePrefersReducedMotion();
+
+  const { container, indicator, Icon } = getVariantStyles(toast.variant);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.95 }}
+      transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
+      className={`relative flex items-center gap-3 rounded-lg border px-4 py-3 shadow-md ${container}`}
+      role="alert"
+    >
+      <span className={`flex h-2 w-2 shrink-0 rounded-full ${indicator}`} />
+      <div className="flex flex-col gap-1">
+        <p className="text-sm font-medium">{toast.title}</p>
+        {toast.description && <p className="text-xs text-muted-foreground">{toast.description}</p>}
+      </div>
+      <button
+        onClick={onRemove}
+        className="absolute right-2 top-2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+      >
+        <X className="h-4 w-4" />
+      </button>
+    </motion.div>
+  );
+};
+
 interface ToastProviderProps {
   children: ReactNode;
 }
@@ -131,7 +168,7 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
       <div className="pointer-events-none fixed inset-x-0 bottom-6 z-[70] flex flex-col items-center gap-3 px-4">
         <AnimatePresence initial={false}>
           {toasts.map(({ id, title, description, variant }) => {
-            const { container, indicator, Icon } = variantStyles[variant];
+            const { container, indicator, Icon } = getVariantStyles(variant);
             return (
               <motion.div
                 key={id}
