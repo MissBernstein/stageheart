@@ -297,7 +297,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
 
   const save = async () => {
     if (Object.keys(errors).length) {
-      toast({ title:'Cannot save', description: Object.values(errors).join(' '), variant: 'destructive' as any });
+  toast({ title:'Cannot save', description: Object.values(errors).join(' '), variant: 'error' });
       liveRegionRef.current && (liveRegionRef.current.textContent = 'Save failed due to validation errors');
       return;
     }
@@ -364,7 +364,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
       window.dispatchEvent(new CustomEvent('profileUpdated'));
     } catch (err) {
       setSaving(false);
-      toast({ title: 'Error saving', description: err.message || 'Failed to sync settings', variant: 'destructive' as any });
+  toast({ title: 'Error saving', description: (err as any).message || 'Failed to sync settings', variant: 'error' });
       liveRegionRef.current && (liveRegionRef.current.textContent = 'Save failed');
     }
   };
@@ -587,7 +587,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
                               toast({ 
                                 title: 'Error', 
                                 description: 'Failed to update recording visibility', 
-                                variant: 'destructive' as any 
+                                variant: 'error'
                               });
                             } else {
                               toast({ 

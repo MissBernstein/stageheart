@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { motionDur, motionEase } from './motion';
 import { usePrefersReducedMotion } from './usePrefersReducedMotion';
 
-type ToastVariant = 'default' | 'success' | 'error';
+type ToastVariant = 'default' | 'success' | 'error' | 'destructive';
 
 export interface ToastOptions {
   id?: string;
@@ -62,6 +62,12 @@ const variantStyles: Record<ToastVariant, { container: string; indicator: string
     Icon: CheckCircle2,
   },
   error: {
+    container: 'bg-red-500/15 border-red-400/40 text-red-100',
+    indicator: 'bg-red-400',
+    Icon: AlertTriangle,
+  },
+  // Alias destructive -> error styling
+  destructive: {
     container: 'bg-red-500/15 border-red-400/40 text-red-100',
     indicator: 'bg-red-400',
     Icon: AlertTriangle,

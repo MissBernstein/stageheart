@@ -128,25 +128,37 @@ export async function incrementPlay(recordingId: string): Promise<void> {
 }
 
 export async function updateUserProfile(userId: string, updates: Partial<UserProfile>): Promise<UserProfile | null> {
-  // Convert ProfileLink[] to Json type for database
-  const dbUpdates: any = { ...updates };
-  if (updates.links) {
-    dbUpdates.links = updates.links as any;
+  // Prepare updates (filter out undefined to avoid overwriting with null)
+  const dbUpdates: Record<string, any> = {};
+  for (const [k, v] of Object.entries(updates)) {
+    if (v !== undefined) dbUpdates[k] = v;
   }
+  if (Array.isArray(updates.links)) {
+    dbUpdates.links = updates.links as any; // JSON column
+  }
+
+  // Always ensure id present for upsert
+  dbUpdates.id = userId;
+  if (!dbUpdates.display_name) {
+    // Preserve existing display name if present in DB (will fetch after), else empty string
+    dbUpdates.display_name = (updates as any).display_name || '';
+  }
+
+  console.debug('[updateUserProfile] Upserting profile', dbUpdates);
 
   const { data, error } = await supabase
     .from('user_profiles')
-    .update(dbUpdates)
-    .eq('id', userId)
+    .upsert([dbUpdates] as any, { onConflict: 'id' })
     .select()
     .single();
 
   if (error) {
-    console.error('Error updating profile:', error);
+    console.error('Error updating profile (upsert):', error, dbUpdates);
     throw new Error(`Failed to update profile: ${error.message}`);
   }
 
-  // Transform Json back to ProfileLink[]
+  if (!data) return null;
+
   return {
     ...data,
     links: Array.isArray(data.links) ? data.links as any[] : []
