@@ -143,7 +143,7 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
 
   if (error) {
     console.error('Error updating profile:', error);
-    return null;
+    throw new Error(`Failed to update profile: ${error.message}`);
   }
 
   // Transform Json back to ProfileLink[]

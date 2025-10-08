@@ -302,87 +302,70 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
       return;
     }
     setSaving(true);
-    
+
     try {
+      // Validate links before saving
+      const links: any[] = [];
+      if (website.trim()) {
+        const websiteUrl = website.trim().startsWith('http') ? website.trim() : `https://${website.trim()}`;
+        try {
+          new URL(websiteUrl); // Ensure valid URL
+          links.push({ type: 'website', url: websiteUrl, visibility: 'public' });
+        } catch {
+          throw new Error('Invalid website URL');
+        }
+      }
+      if (instagram.trim()) {
+        const instagramUrl = instagram.trim().startsWith('http') ? instagram.trim() : `https://instagram.com/${instagram.trim().replace('@', '')}`;
+        try {
+          new URL(instagramUrl);
+          links.push({ type: 'instagram', url: instagramUrl, visibility: 'public' });
+        } catch {
+          throw new Error('Invalid Instagram URL');
+        }
+      }
+      if (tiktok.trim()) {
+        const tiktokUrl = tiktok.trim().startsWith('http') ? tiktok.trim() : `https://tiktok.com/@${tiktok.trim().replace('@', '')}`;
+        try {
+          new URL(tiktokUrl);
+          links.push({ type: 'tiktok', url: tiktokUrl, visibility: 'public' });
+        } catch {
+          throw new Error('Invalid TikTok URL');
+        }
+      }
+
       // Save to localStorage for playback preferences
       localStorage.setItem(LS_KEY, JSON.stringify(currentSettings));
-      
+
       // Sync profile data to Supabase
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { updateUserProfile, getUserProfile } = await import('@/lib/voicesApi');
-        
-        // Convert social fields to ProfileLink objects
-        const links: any[] = [];
-        if (website.trim()) {
-          const websiteUrl = website.trim().startsWith('http') ? website.trim() : `https://${website.trim()}`;
-          links.push({ type: 'website', url: websiteUrl, visibility: 'public' });
-        }
-        if (instagram.trim()) {
-          const instagramUrl = instagram.trim().startsWith('http') ? instagram.trim() : `https://instagram.com/${instagram.trim().replace('@', '')}`;
-          links.push({ type: 'instagram', url: instagramUrl, visibility: 'public' });
-        }
-        if (tiktok.trim()) {
-          const tiktokUrl = tiktok.trim().startsWith('http') ? tiktok.trim() : `https://tiktok.com/@${tiktok.trim().replace('@', '')}`;
-          links.push({ type: 'tiktok', url: tiktokUrl, visibility: 'public' });
-        }
-        
-        console.log('Saving profile with links:', { website, instagram, tiktok, links });
-        
-        // Check if profile exists, create it if not
-        let profile = await getUserProfile(user.id);
-        if (!profile) {
-          // Create initial profile
-          console.log('Creating profile with genres:', { genresSinging, genresListening });
-          const { error } = await supabase
-            .from('user_profiles')
-            .insert({
-              id: user.id,
-              display_name: displayName,
-              about: bio,
-              dm_enabled: dmEnabled,
-              comments_enabled: true,
-              contact_visibility: 'after_meet',
-              status: 'active',
-              genres_singing: genresSinging,
-              genres_listening: genresListening,
-              fav_genres: [...new Set([...genresSinging, ...genresListening])], // Keep for backward compatibility
-              links: links
-            });
-          
-          if (error) {
-            console.error('Error creating profile:', error);
-            throw new Error('Failed to create profile');
-          }
-        } else {
-          // Update existing profile
-          console.log('Saving genres to profile:', { genresSinging, genresListening });
-          await updateUserProfile(user.id, {
-            display_name: displayName,
-            about: bio,
-            dm_enabled: dmEnabled,
-            comments_enabled: true,
-            genres_singing: genresSinging,
-            genres_listening: genresListening,
-            fav_genres: [...new Set([...genresSinging, ...genresListening])], // Keep for backward compatibility
-            links: links
-          });
-        }
+        const { updateUserProfile } = await import('@/lib/voicesApi');
+        await updateUserProfile(user.id, {
+          display_name: displayName,
+          about: bio,
+          dm_enabled: dmEnabled,
+          comments_enabled: true,
+          genres_singing: genresSinging,
+          genres_listening: genresListening,
+          fav_genres: [...new Set([...genresSinging, ...genresListening])],
+          links: links
+        });
       }
-      
+
       setSaving(false);
       setJustSaved(true);
       toast({ title: 'Settings saved', description: 'Your preferences have been updated.' });
       liveRegionRef.current && (liveRegionRef.current.textContent = 'Settings saved');
-      setTimeout(()=> setJustSaved(false), 2500);
-      
-      // Notify other components that voice avatar may have changed
+      setTimeout(() => setJustSaved(false), 2500);
+
+      // Notify other components
       window.dispatchEvent(new CustomEvent('voiceAvatarUpdated'));
-      // Notify profile modal that profile data may have changed
       window.dispatchEvent(new CustomEvent('profileUpdated'));
     } catch (err) {
       setSaving(false);
-      toast({ title: 'Error saving', description: 'Failed to sync settings', variant: 'destructive' as any });
+      toast({ title: 'Error saving', description: err.message || 'Failed to sync settings', variant: 'destructive' as any });
+      liveRegionRef.current && (liveRegionRef.current.textContent = 'Save failed');
     }
   };
 
