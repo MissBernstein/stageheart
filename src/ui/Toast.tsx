@@ -16,12 +16,19 @@ import { usePrefersReducedMotion } from './usePrefersReducedMotion';
 
 type ToastVariant = 'default' | 'success' | 'error' | 'destructive';
 
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+  alt?: string; // accessible name override
+}
+
 export interface ToastOptions {
   id?: string;
   title: string;
   description?: string;
   variant?: ToastVariant;
   duration?: number;
+  action?: ToastAction;
 }
 
 interface ToastRecord extends Required<Omit<ToastOptions, 'id'>> {
@@ -37,6 +44,7 @@ interface ToastContextValue {
 
 const DEFAULT_DURATION = 2500;
 const TOAST_LIMIT = 3;
+const DEDUPE_WINDOW_MS = 3000; // prevent identical spam
 
 const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 
@@ -119,6 +127,18 @@ const ToastItem = ({ toast, onRemove, prefersReducedMotion }: {
             <p className="font-semibold leading-tight">{toast.title}</p>
           </div>
           {toast.description && <p className="text-sm text-muted-foreground/90">{toast.description}</p>}
+          {toast.action && (
+            <div>
+              <button
+                type="button"
+                onClick={() => { toast.action?.onClick(); onRemove(); }}
+                className="mt-1 inline-flex items-center rounded-md bg-primary/80 px-2 py-1 text-[11px] font-medium text-primary-foreground hover:bg-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              >
+                {toast.action.label}
+                <span className="sr-only"> {toast.action.alt || 'Toast action'} for {toast.title}</span>
+              </button>
+            </div>
+          )}
         </div>
         <button
           type="button"
@@ -154,19 +174,22 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
   }, []);
 
   const show = useCallback(
-    ({ id, title, description, variant = 'default', duration = DEFAULT_DURATION }: ToastOptions) => {
+    ({ id, title, description, variant = 'default', duration = DEFAULT_DURATION, action }: ToastOptions) => {
       const toastId = id ?? createId();
       setToasts((prev) => {
-        const next: ToastRecord[] = [
-          ...prev,
-          {
-            id: toastId,
+        const now = Date.now();
+        // Dedupe identical title+description+variant within window
+        const duplicate = prev.find(p => p.title === title && p.description === (description ?? '') && p.variant === variant && (now - parseInt(p.id.split('-').pop()||'0',10)) < DEDUPE_WINDOW_MS);
+        if (duplicate) return prev; // skip adding
+        const record: ToastRecord = {
+          id: toastId,
             title,
             description: description ?? '',
             variant,
             duration,
-          },
-        ];
+            action: action ?? { label: '', onClick: () => {}, alt: '' },
+        };
+        const next = [...prev, record];
         return next.slice(-TOAST_LIMIT);
       });
 
@@ -209,8 +232,8 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
 export const useToast = () => {
   const { toasts, show, dismiss, dismissAll } = useToastContext();
 
-  const success = useCallback((title: string, description?: string) => show({ title, description, variant: 'success' }), [show]);
-  const error = useCallback((title: string, description?: string) => show({ title, description, variant: 'error' }), [show]);
+  const success = useCallback((title: string, description?: string, action?: ToastAction) => show({ title, description, variant: 'success', action }), [show]);
+  const error = useCallback((title: string, description?: string, action?: ToastAction) => show({ title, description, variant: 'error', action }), [show]);
 
   return {
     toasts,
@@ -227,13 +250,13 @@ export const toast = {
     const context = toastStore.get();
     return context.show(options);
   },
-  success: (title: string, description?: string) => {
+  success: (title: string, description?: string, action?: ToastAction) => {
     const context = toastStore.get();
-    return context.show({ title, description, variant: 'success' });
+    return context.show({ title, description, variant: 'success', action });
   },
-  error: (title: string, description?: string) => {
+  error: (title: string, description?: string, action?: ToastAction) => {
     const context = toastStore.get();
-    return context.show({ title, description, variant: 'error' });
+    return context.show({ title, description, variant: 'error', action });
   },
   info: (title: string, description?: string) => {
     const context = toastStore.get();

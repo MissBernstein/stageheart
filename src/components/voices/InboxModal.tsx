@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
 import { ModalShell } from './ModalShell';
-import { X, Mail, Bell, Search, HeartHandshake, Loader2, Send } from 'lucide-react';
+import { X, Search, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AnimatedButton } from '@/ui/AnimatedButton';
 import { Input } from '@/components/ui/input';
@@ -22,12 +22,17 @@ export const InboxModal: React.FC<InboxModalProps> = ({ onClose, returnFocusRef 
   const [items, setItems] = useState<InboxItem[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const { unread, setUnread, markAllRead } = useUnreadMessagesStore();
-  const [filter, setFilter] = useState<'all'|'dm'|'meet'|'comment'|'system'>('all');
+  const [filter, setFilter] = useState<'all'|'dm'|'comment'|'system'>('all');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [selectMode, setSelectMode] = useState(false);
+  const chipScrollRef = useRef<HTMLDivElement|null>(null);
+  const [showLeftShadow, setShowLeftShadow] = useState(false);
+  const [showRightShadow, setShowRightShadow] = useState(false);
+  const chipRefs = useRef<HTMLButtonElement[]>([]);
+  const textareaRef = useRef<HTMLTextAreaElement|null>(null);
 
   useEffect(() => {
     let active = true;
@@ -105,12 +110,60 @@ export const InboxModal: React.FC<InboxModalProps> = ({ onClose, returnFocusRef 
     exit: prefersReducedMotion ? {} : { opacity: 0, y: -4, transition: { duration: 0.16 } }
   }), [prefersReducedMotion]);
 
+  // Auto-resize textarea
+  const autoResize = (el: HTMLTextAreaElement) => {
+    const maxPx = 220; // max visual height before internal scroll
+    el.style.height = '0px';
+    const newH = Math.min(el.scrollHeight, maxPx);
+    el.style.height = newH + 'px';
+    el.style.overflowY = el.scrollHeight > maxPx ? 'auto' : 'hidden';
+  };
+
+  useEffect(() => { if (textareaRef.current) autoResize(textareaRef.current); }, [draft]);
+
+  // Scroll shadow logic for chip row
+  useEffect(() => {
+    const el = chipScrollRef.current;
+    if (!el) return;
+    const update = () => {
+      const { scrollLeft, scrollWidth, clientWidth } = el;
+      setShowLeftShadow(scrollLeft > 2);
+      setShowRightShadow(scrollLeft + clientWidth < scrollWidth - 2);
+    };
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => { el.removeEventListener('scroll', update); window.removeEventListener('resize', update); };
+  }, [chipScrollRef]);
+
+  const chipKeys = ['all','dm','comment','system'] as const;
+
+  const focusChip = (idx: number) => {
+    const clamped = (idx + chipKeys.length) % chipKeys.length;
+    const key = chipKeys[clamped];
+    setFilter(key);
+    requestAnimationFrame(()=> {
+      chipRefs.current[clamped]?.focus();
+      chipRefs.current[clamped]?.scrollIntoView({ inline:'center', behavior:'smooth', block:'nearest' });
+    });
+  };
+
+  const handleChipListKey = (e: React.KeyboardEvent) => {
+    if (!['ArrowRight','ArrowLeft','ArrowUp','ArrowDown','Home','End'].includes(e.key)) return;
+    e.preventDefault();
+    const currentIndex = chipKeys.indexOf(filter as any);
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') focusChip(currentIndex + 1);
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') focusChip(currentIndex - 1);
+    else if (e.key === 'Home') focusChip(0);
+    else if (e.key === 'End') focusChip(chipKeys.length - 1);
+  };
+
   return (
     <ModalShell titleId="inbox-title" onClose={onClose} className="max-w-6xl flex flex-col h-[80vh]" contentClassName="flex flex-col h-full" returnFocusRef={returnFocusRef}>
       <div className="p-6 border-b border-card-border flex items-start justify-between gap-4">
               <div className="space-y-1">
-                <h2 id="inbox-title" className="text-2xl font-semibold flex items-center gap-2"><img src={messagesIcon} alt="Messages" className="w-8 h-8 rounded-xl" /> Messages</h2>
-                <p className="text-xs text-card-foreground/60">Direct messages • meet requests • comments • system updates</p>
+                <h2 id="inbox-title" className="text-2xl font-semibold flex items-center gap-3"><img src={messagesIcon} alt="Messages" className="w-16 h-16 rounded-2xl shadow-sm" /> <span className="leading-tight">Messages</span></h2>
+                <p className="text-xs text-card-foreground/60">Direct messages • comments • system updates</p>
               </div>
               <div className="flex items-center gap-2">
                 <AnimatedButton size="sm" variant={selectMode? 'secondary':'outline'} className="h-8 text-[11px]" onClick={()=> { if (selectMode) { setSelectMode(false); setSelected(new Set()); } else { setSelectMode(true); } }}>
@@ -126,21 +179,31 @@ export const InboxModal: React.FC<InboxModalProps> = ({ onClose, returnFocusRef 
             <div className="flex flex-col md:flex-row flex-1 min-h-0">
               {/* Left Pane */}
               <div className="md:w-72 border-b md:border-b-0 md:border-r border-card-border/60 flex flex-col min-h-0">
-                <div className="p-3 flex gap-2 overflow-x-auto">
-                  {(['all','dm','meet','comment','system'] as const).map(f => (
-                    <motion.button
-                      key={f}
-                      onClick={()=> setFilter(f)}
-                      whileHover={!prefersReducedMotion ? { y:-2, scale:1.05 } : undefined}
-                      whileTap={!prefersReducedMotion ? { scale:0.95 } : undefined}
-                      className={`px-3 py-1 rounded-full text-xs border transition whitespace-nowrap relative overflow-hidden ${filter===f?'bg-primary/70 border-primary text-primary-foreground shadow-sm':'bg-input/40 border-input-border text-card-foreground/60 hover:text-card-foreground'}`}
-                    >
-                      {filter===f && !prefersReducedMotion && (
-                        <motion.span layoutId="inboxFilterActive" className="absolute inset-0 bg-primary/25" style={{mixBlendMode:'overlay'}} initial={false} transition={{ duration:0.3 }} />
-                      )}
-                      <span className="relative z-10">{f==='dm'?'direct':f}</span>
-                    </motion.button>
-                  ))}
+                <div className="relative">
+                  {/* Gradient shadows */}
+                  <div className="pointer-events-none absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-background/95 to-transparent transition-opacity duration-200" style={{opacity: showLeftShadow ? 1 : 0}} aria-hidden />
+                  <div className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-background/95 to-transparent transition-opacity duration-200" style={{opacity: showRightShadow ? 1 : 0}} aria-hidden />
+                  <div ref={chipScrollRef} className="p-3 flex gap-3 overflow-x-auto scrollbar-thin scroll-smooth pr-6" role="tablist" aria-label="Message filters" onKeyDown={handleChipListKey}>
+                    {chipKeys.map((f, idx) => (
+                      <motion.button
+                        key={f}
+                        onClick={()=> setFilter(f)}
+                        whileHover={!prefersReducedMotion ? { y:-2, scale:1.05 } : undefined}
+                        whileTap={!prefersReducedMotion ? { scale:0.95 } : undefined}
+                        className={`inline-flex items-center justify-center h-8 px-4 rounded-full text-[11px] font-medium border transition whitespace-nowrap leading-none relative overflow-hidden ${filter===f?'bg-primary/80 border-primary text-primary-foreground shadow-sm':'bg-input/40 border-input-border text-card-foreground/60 hover:text-card-foreground'}`}
+                        role="tab"
+                        aria-selected={filter===f}
+                        tabIndex={filter===f ? 0 : -1}
+                        ref={el => { if (el) chipRefs.current[idx] = el; }}
+                        onKeyDown={(e)=> { if (e.key==='Enter' || e.key===' ') { e.preventDefault(); setFilter(f); } }}
+                      >
+                        {filter===f && !prefersReducedMotion && (
+                          <motion.span layoutId="inboxFilterActive" className="absolute inset-0 bg-primary/25" style={{mixBlendMode:'overlay'}} initial={false} transition={{ duration:0.3 }} />
+                        )}
+                        <span className="relative z-10 capitalize">{f==='dm'?'direct': f==='comment' ? 'comments' : f}</span>
+                      </motion.button>
+                    ))}
+                  </div>
                 </div>
                 <div className="px-3 pb-2 relative">
                   <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-card-foreground/40" />
@@ -230,7 +293,7 @@ export const InboxModal: React.FC<InboxModalProps> = ({ onClose, returnFocusRef 
                       </div>
                       <div className="flex gap-2">
                         {active.unread && <AnimatedButton size="sm" variant="outline" onClick={()=> markRead(active.id)} className="h-7 px-2 text-[11px]">Mark read</AnimatedButton>}
-                        <AnimatedButton size="sm" variant="outline" className="h-7 px-2 text-[11px]">Meet</AnimatedButton>
+                        {/* Meet feature removed */}
                       </div>
                     </div>
                     <motion.div
@@ -254,12 +317,30 @@ export const InboxModal: React.FC<InboxModalProps> = ({ onClose, returnFocusRef 
                   <div className="flex-1 flex items-center justify-center text-xs text-card-foreground/50">No message selected.</div>
                 )}
                 {/* Composer */}
-                <div className="border-t border-card-border/60 p-4 flex items-start gap-3">
-                  <div className="flex-1 relative">
-                    <textarea value={draft} onChange={e=> setDraft(e.target.value)} placeholder="Write a reply…" rows={2} className="w-full resize-none bg-input/50 rounded-xl p-3 text-sm border border-input-border focus:outline-none focus:ring-1 focus:ring-primary/60" />
-                    <div className="absolute bottom-2 right-2 flex gap-2">
-                      <AnimatedButton size="sm" variant="secondary" disabled={!draft.trim()} onClick={handleSend} className="h-7 px-3 text-[11px] flex items-center gap-1"><Send className="w-3 h-3" /> Send</AnimatedButton>
+                <div className="border-t border-card-border/60 p-4 flex flex-col gap-2">
+                  <div className="flex items-end gap-3">
+                    <div className="flex-1 relative">
+                      <textarea
+                        ref={textareaRef}
+                        value={draft}
+                        onChange={e=> setDraft(e.target.value)}
+                        placeholder="Write a reply… (Shift+Enter for newline)"
+                        maxLength={500}
+                        onInput={e=> autoResize(e.currentTarget)}
+                        onKeyDown={e=> { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+                        className="w-full resize-none bg-input/50 rounded-xl px-4 py-3 text-sm border border-input-border focus:outline-none focus:ring-1 focus:ring-primary/60 leading-relaxed min-h-[60px]"
+                      />
+                      <span className="absolute bottom-2 left-3 text-[10px] text-card-foreground/40">{draft.length}/500</span>
                     </div>
+                    <AnimatedButton
+                      size="sm"
+                      variant="secondary"
+                      disabled={!draft.trim()}
+                      onClick={handleSend}
+                      className="h-10 px-5 text-[12px] font-semibold flex items-center gap-1 rounded-xl shadow-sm disabled:opacity-40"
+                    >
+                      <Send className="w-4 h-4" /> Send
+                    </AnimatedButton>
                   </div>
                 </div>
               </div>

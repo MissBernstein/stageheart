@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ModalShell } from './ModalShell';
-import { X, Save, Shield, Bell, UserCog, SlidersHorizontal, Volume2, Trash2, AlertTriangle, CheckCircle2, ScrollText, Mic } from 'lucide-react';
+import { X, Save, Shield, UserCog, Trash2, AlertTriangle, CheckCircle2, ScrollText, Mic, Check } from 'lucide-react';
 import { TERMS_VERSION, PRIVACY_VERSION, getTermsAcceptance, getPrivacyAcceptance, recordTermsAcceptance, recordPrivacyAcceptance, needsTermsReacceptance, needsPrivacyReacceptance } from '@/lib/legal';
 import messagesIcon from '@/assets/messagesicon.png';
 import settingsIcon from '@/assets/settingsicon.png';
@@ -14,10 +14,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { ProceduralAvatar } from '@/components/ui/ProceduralAvatar';
 import { Recording } from '@/types/voices';
 import { listRecordingsByUser, updateRecordingState } from '@/lib/voicesApi';
+import ToggleRow from './ToggleRow';
+const MediaPanel = React.lazy(() => import('./settingsPanels/MediaPanel'));
+const LegalAccountPanel = React.lazy(() => import('./settingsPanels/LegalAccountPanel'));
 
 interface SettingsModalProps { onClose: () => void; returnFocusRef?: React.RefObject<HTMLElement>; }
 
-type TabKey = 'profile' | 'recordings' | 'privacy' | 'notifications' | 'playback' | 'account' | 'legal';
+type TabKey = 'profile' | 'media' | 'privacyNotifications' | 'legalAccount';
+const LAST_TAB_KEY = 'stageheart_settings_last_tab_v1';
 
 const LS_KEY = 'stageheart_user_settings_v1';
 const MUSIC_GENRES = [
@@ -167,7 +171,13 @@ const GenreTagsSection: React.FC<GenreTagsSectionProps> = ({ label, genres, setG
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFocusRef }) => {
   const { toast } = useToast();
-  const [tab, setTab] = useState<TabKey>('profile');
+  const [tab, setTab] = useState<TabKey>(() => {
+    try {
+      const saved = localStorage.getItem(LAST_TAB_KEY) as TabKey | null;
+      if (saved && ['profile','media','privacyNotifications','legalAccount'].includes(saved)) return saved;
+    } catch {}
+    return 'profile';
+  });
   const [displayName, setDisplayName] = useState(defaultSettings.displayName);
   const [bio, setBio] = useState(defaultSettings.bio);
   const [genresSinging, setGenresSinging] = useState<string[]>(defaultSettings.genresSinging);
@@ -295,6 +305,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
     } catch { return true; }
   }, [currentSettings]);
 
+  // Section-level dirty flags (simple heuristic grouping fields)
+  const dirtyMap = useMemo(() => {
+    const base: Record<TabKey, boolean> = { profile:false, media:false, privacyNotifications:false, legalAccount:false };
+    const raw = (() => { try { return localStorage.getItem(LS_KEY); } catch { return null; } })();
+    if (!raw) return { profile:true, media:true, privacyNotifications:true, legalAccount:false }; // first open
+    try {
+      const stored: PersistedSettings = { ...defaultSettings, ...(JSON.parse(raw)||{}) };
+      base.profile = stored.displayName !== displayName || stored.bio !== bio || stored.genresListening.join() !== genresListening.join() || stored.genresSinging.join() !== genresSinging.join() || stored.website !== website || stored.instagram !== instagram || stored.tiktok !== tiktok || stored.voiceAvatarSeed !== voiceAvatarSeed;
+      base.media = stored.volumeDefault !== volumeDefault || stored.playAutoplay !== playAutoplay || stored.language !== language; // recordings state changes not persisted locally now
+      base.privacyNotifications = stored.dmEnabled !== dmEnabled || stored.meetRequireRecording !== meetRequireRecording || stored.notifyFavorites !== notifyFavorites || stored.notifyNewMessages !== notifyNewMessages;
+      // legalAccount currently has no locally persisted editable fields
+    } catch {}
+    return base;
+  }, [displayName,bio,genresListening,genresSinging,website,instagram,tiktok,voiceAvatarSeed,volumeDefault,playAutoplay,language,dmEnabled,meetRequireRecording,notifyFavorites,notifyNewMessages]);
+
   const save = async () => {
     if (Object.keys(errors).length) {
   toast({ title:'Cannot save', description: Object.values(errors).join(' '), variant: 'error' });
@@ -378,17 +403,75 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
     liveRegionRef.current && (liveRegionRef.current.textContent = 'Account deletion requested');
   };
 
+  const tabs: { key: TabKey; label: string; icon: React.ReactNode }[] = useMemo(() => ([
+    { key: 'profile', label: 'Profile', icon: <UserCog className="w-4 h-4" /> },
+    { key: 'media', label: 'Recordings & Playback', icon: <Mic className="w-4 h-4" /> },
+    { key: 'privacyNotifications', label: 'Privacy & Notifications', icon: <Shield className="w-4 h-4" /> },
+    { key: 'legalAccount', label: 'Legal & Account', icon: <ScrollText className="w-4 h-4" /> },
+  ]), []);
+
+  const focusTab = (k: TabKey) => {
+    setTab(k);
+    try { localStorage.setItem(LAST_TAB_KEY, k); } catch {}
+    // Move focus to new tab button after change for SR users
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`settings-tab-${k}`);
+      el?.focus();
+    });
+  };
+
+  const onTabListKeyDown = (e: React.KeyboardEvent) => {
+    const order = tabs.map(t => t.key);
+    const currentIdx = order.indexOf(tab);
+    if (currentIdx === -1) return;
+    if (['ArrowRight','ArrowDown'].includes(e.key)) {
+      e.preventDefault();
+      const next = order[(currentIdx + 1) % order.length];
+      focusTab(next);
+    } else if (['ArrowLeft','ArrowUp'].includes(e.key)) {
+      e.preventDefault();
+      const prev = order[(currentIdx - 1 + order.length) % order.length];
+      focusTab(prev);
+    } else if (e.key === 'Home') { e.preventDefault(); focusTab(order[0]); }
+    else if (e.key === 'End') { e.preventDefault(); focusTab(order[order.length-1]); }
+  };
+
   const TabButton: React.FC<{ k: TabKey; icon: React.ReactNode; label: string; }>=({ k, icon, label }) => (
     <motion.button
       whileHover={{ y: -2, scale: 1.02 }}
       whileTap={{ scale: 0.97 }}
-      onClick={()=> setTab(k)}
+      onClick={()=> focusTab(k)}
+      id={`settings-tab-${k}`}
+      role="tab"
+      aria-selected={tab===k}
+      aria-controls={`settings-panel-${k}`}
+      tabIndex={tab===k ? 0 : -1}
       className={`relative w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition border overflow-hidden ${tab===k ? 'bg-primary/70 text-primary-foreground border-primary shadow-sm' : 'bg-input/40 border-input-border text-card-foreground/60 hover:text-card-foreground'}`}
     >
       {tab===k && <motion.span layoutId="settingsTabGlow" className="absolute inset-0 bg-primary/30" style={{ mixBlendMode: 'overlay' }} initial={false} transition={{ duration: 0.3 }} />}
       <span className="relative z-10 flex items-center gap-2">{icon}<span>{label}</span></span>
     </motion.button>
   );
+
+  const handleClose = () => {
+    if (isDirty && !justSaved && !saving) {
+      const confirmLeave = window.confirm('You have unsaved changes. Close without saving?');
+      if (!confirmLeave) return;
+    }
+    onClose();
+  };
+
+  // beforeunload guard
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isDirty && !justSaved && !saving) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty, justSaved, saving]);
 
   return (
   <ModalShell titleId="settings-title" onClose={onClose} className="max-w-5xl flex flex-col h-[82vh]" contentClassName="flex flex-col h-full" returnFocusRef={returnFocusRef}>
@@ -400,11 +483,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
           </h2>
           <p className="text-xs text-card-foreground/60">Profile • Recordings • Privacy • Notifications • Playback • Account</p>
         </div>
-        <div className="flex items-center gap-2">
-          <AnimatedButton size="sm" variant="outline" onClick={save} disabled={saving || !isDirty || Object.keys(errors).length>0} className="h-8 text-[11px] flex items-center gap-1">
-            {saving ? 'Saving…' : (<><Save className="w-3 h-3" /> {isDirty ? 'Save' : 'Saved'}</> )}
-          </AnimatedButton>
-          <AnimatedButton variant="ghost" size="icon" onClick={onClose} className="h-10 w-10"><X /><span className="sr-only">Close settings</span></AnimatedButton>
+        <div className="flex items-center gap-3">
+          <div className="relative flex items-center">
+            <AnimatedButton size="sm" variant="outline" onClick={save} disabled={saving || !isDirty || Object.keys(errors).length>0} className="h-8 text-[11px] flex items-center gap-1 pr-3 relative">
+              {saving ? 'Saving…' : (
+                justSaved ? (<><Check className="w-3 h-3 text-emerald-400" /> Saved</>) : (<><Save className="w-3 h-3" /> {isDirty ? 'Save' : 'Saved'}</>)
+              )}
+              {isDirty && !saving && !justSaved && <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 text-[9px] font-semibold tracking-wide">UNSAVED</span>}
+            </AnimatedButton>
+            {/* Success pulse */}
+            {justSaved && (
+              <motion.span
+                aria-hidden
+                className="absolute -right-2 -top-1 h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(16,185,129,0.3)]"
+                initial={{ scale:0, opacity:0 }}
+                animate={{ scale:1, opacity:1 }}
+                exit={{ scale:0.4, opacity:0 }}
+                transition={{ duration:0.35, ease:[0.22,0.72,0.28,0.99] }}
+              />
+            )}
+          </div>
+          <AnimatedButton variant="ghost" size="icon" onClick={handleClose} className="h-10 w-10"><X /><span className="sr-only">Close settings</span></AnimatedButton>
         </div>
         <div className="absolute bottom-2 right-6 text-[10px] text-card-foreground/50 flex items-center gap-3">
           <a href="/terms" className="underline underline-offset-2 hover:text-card-foreground/80">Terms</a>
@@ -414,20 +513,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
       <div ref={liveRegionRef} aria-live="polite" className="sr-only" />
       <div className="flex flex-1 min-h-0">
         {/* Left nav */}
-        <div className="w-48 border-r border-card-border/60 p-4 flex flex-col gap-2 overflow-y-auto">
-          <TabButton k="profile" icon={<UserCog className="w-4 h-4" />} label="Profile" />
-          <TabButton k="recordings" icon={<Mic className="w-4 h-4" />} label="Recordings" />
-          <TabButton k="privacy" icon={<Shield className="w-4 h-4" />} label="Privacy" />
-            <TabButton k="notifications" icon={<Bell className="w-4 h-4" />} label="Notifications" />
-          <TabButton k="playback" icon={<Volume2 className="w-4 h-4" />} label="Playback" />
-          <TabButton k="legal" icon={<ScrollText className="w-4 h-4" />} label="Legal" />
-          <TabButton k="account" icon={<SlidersHorizontal className="w-4 h-4" />} label="Account" />
+        <div className="w-48 border-r border-card-border/60 p-4 flex flex-col gap-2 overflow-y-auto" role="tablist" aria-orientation="vertical" onKeyDown={onTabListKeyDown}>
+          {tabs.map(t => (
+            <div key={t.key} className="relative">
+              <TabButton k={t.key} icon={t.icon} label={t.label} />
+              {dirtyMap[t.key] && <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-amber-500 shadow-[0_0_0_3px_rgba(245,158,11,0.35)]" aria-hidden title="Unsaved changes" />}
+            </div>
+          ))}
         </div>
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-10 relative">
           <AnimatePresence mode="wait" initial={false}>
           {tab === 'profile' && (
-            <motion.section key="profile" className="space-y-6" aria-labelledby="profile-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
+            <motion.section key="profile" id="settings-panel-profile" role="tabpanel" aria-labelledby="settings-tab-profile" className="space-y-6" aria-describedby="profile-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
               <div className="space-y-1">
                 <h3 id="profile-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">PROFILE</h3>
                 <p className="text-xs text-card-foreground/60">Control what listeners see about you.</p>
@@ -505,111 +603,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
               </div>
             </motion.section>
           )}
-          {tab === 'recordings' && (
-            <motion.section key="recordings" className="space-y-6" aria-labelledby="recordings-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
-              <div className="space-y-1">
-                <h3 id="recordings-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">RECORDINGS</h3>
-                <p className="text-xs text-card-foreground/60">Manage visibility for up to 3 recordings. Toggle whether they appear only on your profile or in Discover Voices.</p>
-              </div>
-              
-              {loadingRecordings ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                  <span className="ml-2 text-sm text-card-foreground/60">Loading recordings...</span>
-                </div>
-              ) : recordings.length === 0 ? (
-                <div className="text-center py-8 text-card-foreground/60">
-                  <Mic className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No recordings yet</p>
-                  <p className="text-xs mt-1">Upload your first recording to get started</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {recordings.slice(0, 3).map((recording) => (
-                    <motion.div
-                      key={recording.id}
-                      className="border border-card-border rounded-lg p-4 space-y-3"
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-1">
-                          <h4 className="font-medium text-sm">{recording.title}</h4>
-                          <div className="flex items-center gap-2 text-xs text-card-foreground/60">
-                            <span>{recording.duration_sec ? `${Math.floor(recording.duration_sec / 60)}:${(recording.duration_sec % 60).toString().padStart(2, '0')}` : 'Unknown duration'}</span>
-                            {recording.mood_tags && recording.mood_tags.length > 0 && (
-                              <>
-                                <span>•</span>
-                                <span>{recording.mood_tags.slice(0, 2).join(', ')}</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-1 rounded-full text-xs ${recording.state === 'public' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
-                            {recording.state === 'public' ? 'Public' : 'Private'}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <ToggleRow
-                          label="Show on profile"
-                          description="Visible to visitors on your profile page"
-                          value={true} // Always true for now - could be made configurable
-                          onChange={() => {}} // Placeholder
-                        />
-                        <ToggleRow
-                          label="Include in Discover Voices"
-                          description="Allow others to find this recording in the discover section"
-                          value={recording.state === 'public'}
-                          onChange={async (enabled) => {
-                            const newState = enabled ? 'public' : 'private';
-                            
-                            // Optimistically update UI
-                            setRecordings(prev => prev.map(r => 
-                              r.id === recording.id 
-                                ? { ...r, state: newState }
-                                : r
-                            ));
-                            
-                            // Save to database
-                            const success = await updateRecordingState(recording.id, newState);
-                            if (!success) {
-                              // Revert on error
-                              setRecordings(prev => prev.map(r => 
-                                r.id === recording.id 
-                                  ? { ...r, state: recording.state }
-                                  : r
-                              ));
-                              toast({ 
-                                title: 'Error', 
-                                description: 'Failed to update recording visibility', 
-                                variant: 'error'
-                              });
-                            } else {
-                              toast({ 
-                                title: 'Updated', 
-                                description: `Recording is now ${enabled ? 'public' : 'private'}` 
-                              });
-                            }
-                          }}
-                        />
-                      </div>
-                    </motion.div>
-                  ))}
-                  
-                  {recordings.length >= 3 && (
-                    <div className="text-xs text-card-foreground/60 text-center py-2">
-                      Maximum of 3 recordings allowed
-                    </div>
-                  )}
-                </div>
-              )}
-            </motion.section>
+          {tab === 'media' && (
+            <Suspense fallback={<div className="text-xs text-card-foreground/60">Loading media settings…</div>}>
+              <MediaPanel
+                recordings={recordings}
+                loadingRecordings={loadingRecordings}
+                volumeDefault={volumeDefault}
+                setVolumeDefault={setVolumeDefault}
+                playAutoplay={playAutoplay}
+                setPlayAutoplay={setPlayAutoplay}
+                language={language}
+                setLanguage={setLanguage}
+                updateRecordingState={updateRecordingState}
+                toast={toast}
+                setRecordings={setRecordings}
+              />
+            </Suspense>
           )}
-          {tab === 'privacy' && (
+          {tab === 'privacyNotifications' && (
+            <div key="privacy-wrapper" id="settings-panel-privacyNotifications" role="tabpanel" aria-labelledby="settings-tab-privacyNotifications" className="space-y-10">
             <motion.section key="privacy" className="space-y-6" aria-labelledby="privacy-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
               <div className="space-y-1">
                 <h3 id="privacy-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">PRIVACY & CONTACT</h3>
@@ -626,9 +638,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
                 />
               </div>
             </motion.section>
-          )}
-          {tab === 'notifications' && (
-            <motion.section key="notif" className="space-y-6" aria-labelledby="notif-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
+            <motion.section key="notif-sub" className="space-y-6" aria-labelledby="notif-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
               <div className="space-y-1">
                 <h3 id="notif-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">NOTIFICATIONS</h3>
                 <p className="text-xs text-card-foreground/60">Choose which events trigger notifications.</p>
@@ -638,61 +648,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
                 <ToggleRow label="Favorites activity" description="Notify me when someone favorites my recording" value={notifyFavorites} onChange={setNotifyFavorites} />
               </div>
             </motion.section>
+            </div>
           )}
-          {tab === 'playback' && (
-            <motion.section key="playback" className="space-y-6" aria-labelledby="playback-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
-              <div className="space-y-1">
-                <h3 id="playback-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">PLAYBACK & EXPERIENCE</h3>
-                <p className="text-xs text-card-foreground/60">Default listening preferences.</p>
-              </div>
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-medium uppercase tracking-wide text-card-foreground/60">Default Volume ({Math.round(volumeDefault*100)}%)</label>
-                  <input type="range" min={0} max={1} step={0.01} value={volumeDefault} onChange={e=> setVolumeDefault(parseFloat(e.target.value))} className="w-full" />
-                </div>
-                <ToggleRow label="Autoplay next recording" description="Automatically continue to the next item." value={playAutoplay} onChange={setPlayAutoplay} />
-                <div className="space-y-2">
-                  <label className="text-xs font-medium uppercase tracking-wide text-card-foreground/60">Interface Language</label>
-                  <select value={language} onChange={e=> setLanguage(e.target.value)} className="w-full bg-input/50 border border-input-border rounded-md px-2 py-2 text-sm">
-                    <option value="en">English</option>
-                    <option value="de">Deutsch</option>
-                    <option value="es">Español</option>
-                  </select>
-                </div>
-              </div>
-            </motion.section>
-          )}
-          {tab === 'account' && (
-            <motion.section key="account" className="space-y-6" aria-labelledby="account-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
-              <div className="space-y-1">
-                <h3 id="account-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">ACCOUNT & DANGER ZONE</h3>
-                <p className="text-xs text-card-foreground/60">Manage your account lifecycle.</p>
-              </div>
-              <div className="space-y-4">
-                <p className="text-xs text-card-foreground/60">More sections (email change, password, export data) will appear here once backend endpoints exist.</p>
-                <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/5 space-y-3">
-                  <p className="text-xs font-semibold text-destructive tracking-wide">DANGER ZONE</p>
-                  <p className="text-xs text-card-foreground/70">Delete your account and all associated recordings & messages. This action cannot be undone.</p>
-                  <Button size="sm" variant="destructive" className="h-8 text-[11px] flex items-center gap-1" onClick={dangerDelete}><Trash2 className="w-3 h-3" /> Delete Account</Button>
-                </div>
-                {showDeleteConfirm && (
-                  <div className="p-4 rounded-xl border border-destructive bg-destructive/10 space-y-3 animate-in fade-in slide-in-from-bottom-2">
-                    <p className="text-xs font-semibold text-destructive flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Confirm Deletion</p>
-                    <p className="text-[11px] text-card-foreground/70">Type <strong>DELETE</strong> below and click confirm to proceed. This cannot be undone.</p>
-                    <DeleteConfirm onConfirm={confirmDelete} onCancel={()=> setShowDeleteConfirm(false)} />
-                  </div>
-                )}
-              </div>
-            </motion.section>
-          )}
-          {tab === 'legal' && (
-            <motion.section key="legal" className="space-y-6" aria-labelledby="legal-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
-              <div className="space-y-1">
-                <h3 id="legal-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">LEGAL CONSENTS</h3>
-                <p className="text-xs text-card-foreground/60">Review or manage your current acceptance status.</p>
-              </div>
-              <LegalConsentPanel />
-            </motion.section>
+          {tab === 'legalAccount' && (
+            <Suspense fallback={<div className="text-xs text-card-foreground/60">Loading legal & account…</div>}>
+              <LegalAccountPanel
+                dangerDelete={dangerDelete}
+                showDeleteConfirm={showDeleteConfirm}
+                confirmDelete={confirmDelete}
+                cancelDelete={()=> setShowDeleteConfirm(false)}
+              />
+            </Suspense>
           )}
           </AnimatePresence>
         </div>
@@ -701,27 +667,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
   );
 };
 
-interface ToggleRowProps { label: string; description?: string; value: boolean; onChange: (v:boolean)=> void; }
-const ToggleRow: React.FC<ToggleRowProps> = ({ label, description, value, onChange }) => (
-  <label className="flex items-start gap-3 cursor-pointer select-none group">
-    <div className="pt-0.5 space-y-1">
-      <p className="text-xs font-medium text-card-foreground leading-tight">{label}</p>
-      {description && <p className="text-[10px] text-card-foreground/60 max-w-sm leading-snug">{description}</p>}
-    </div>
-    <div className="ml-auto pt-0.5">
-      <button
-        type="button"
-        role="switch"
-        aria-checked={value}
-        onClick={()=> onChange(!value)}
-        className={`h-5 w-9 rounded-full relative transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 ${value ? 'bg-primary' : 'bg-input-border'}`}
-      >
-        <span className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-card shadow transition-transform ${value ? 'translate-x-4' : ''}`} />
-        <span className="sr-only">Toggle {label}</span>
-      </button>
-    </div>
-  </label>
-);
 
 // Delete confirmation component
 const DeleteConfirm: React.FC<{ onConfirm: () => void; onCancel: () => void; }> = ({ onConfirm, onCancel }) => {
