@@ -46,6 +46,7 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTheme, setSelectedTheme] = useState<string>('');
+  const [letterFilter, setLetterFilter] = useState<string>('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const prefersReducedMotion = usePrefersReducedMotion();
   
@@ -53,21 +54,44 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
 
   const themes = useMemo(() => getCanonicalThemes(), []);
 
+  // Helper: derive canonical first letter for filtering (ignores leading non-alphanumerics and common articles)
+  const getLeadingLetter = useCallback((title: string) => {
+    const cleaned = title.trim();
+    // Remove common English articles for sorting/filtering purposes
+    const articleStripped = cleaned.replace(/^(the |a |an )/i, '');
+    const firstChar = (articleStripped.match(/[A-Za-z0-9]/) || [''])[0];
+    if (!firstChar) return '#';
+    return /[A-Za-z]/.test(firstChar) ? firstChar.toUpperCase() : '#';
+  }, []);
+
   const filteredSongs = useMemo(() => {
     let filtered = songs;
-    
+
     // Apply search filter using improved search logic
     if (searchQuery) {
       filtered = searchSongs(filtered, searchQuery);
     }
-    
+
     // Apply theme filter
     if (selectedTheme) {
       filtered = filtered.filter(song => song.theme === selectedTheme);
     }
-    
+
+    // Apply letter filter (only if no text search active to avoid conflicting expectations)
+    if (!searchQuery && letterFilter) {
+      filtered = filtered.filter(song => getLeadingLetter(song.title) === letterFilter);
+    }
+
+    // If no filters at all (search, theme, letter) => sort alphabetically by title
+    if (!searchQuery && !selectedTheme && !letterFilter) {
+      filtered = [...filtered].sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }));
+    } else {
+      // For filtered sets we still provide deterministic ordering (alphabetical) for consistency
+      filtered = [...filtered].sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }));
+    }
+
     return filtered;
-  }, [songs, searchQuery, selectedTheme]);
+  }, [songs, searchQuery, selectedTheme, letterFilter, getLeadingLetter]);
 
   const handleRandomSong = () => {
     const randomSong = songs[Math.floor(Math.random() * songs.length)];
@@ -203,6 +227,34 @@ export const SongLibrary = ({ onSelectSong, onClose }: SongLibraryProps) => {
                 {/* Remote toggle removed: all songs unified in DB now */}
               </div>
             </div>
+            {/* Alphabetical quick filter (disabled while a text search is active) */}
+            <div className="flex flex-wrap gap-1 mb-2">
+              {['All', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''), '#'].map(letter => {
+                const isAll = letter === 'All';
+                const active = isAll ? letterFilter === '' : letterFilter === letter;
+                const disabled = !!searchQuery; // Disable letter buttons when text searching
+                return (
+                  <button
+                    key={letter}
+                    type="button"
+                    disabled={disabled}
+                    aria-pressed={active}
+                    onClick={() => {
+                      if (disabled) return;
+                      if (isAll) setLetterFilter(''); else setLetterFilter(letter === letterFilter ? '' : letter);
+                    }}
+                    className={`text-xs px-2.5 py-1 rounded-md border transition-colors
+                      ${disabled ? 'opacity-30 cursor-not-allowed' : 'hover:bg-accent/40'}
+                      ${active ? 'bg-accent/70 text-accent-foreground border-accent' : 'bg-input border-input-border text-card-foreground/80'}`}
+                  >
+                    {isAll ? t('common.all', 'All') : letter}
+                  </button>
+                );
+              })}
+            </div>
+            {searchQuery && (
+              <p className="text-[11px] text-card-foreground/50 mb-2">{t('library.alphaDisabled', 'Alphabet filter disabled while typing')}</p>
+            )}
             
             <div className="flex items-center gap-3 text-sm text-card-foreground/60 flex-wrap">
               <span>{t('library.count', { count: filteredSongs.length, total: songs.length })}</span>
