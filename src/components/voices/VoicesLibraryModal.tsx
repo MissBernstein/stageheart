@@ -6,7 +6,7 @@ import { AnimatedButton } from '@/ui/AnimatedButton';
 import { AnimatedCard } from '@/ui/AnimatedCard';
 import { ChipToggle } from '@/ui/ChipToggle';
 import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
-import { Search, Filter, Play, X, User2 } from 'lucide-react';
+import { Search, Filter, Play, X, Trash2, RefreshCw, Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { incrementPlay } from '@/lib/voicesApi';
 // import { useVoiceFavorites } from '@/hooks/useVoiceFavorites';
@@ -17,6 +17,9 @@ import { Recording } from '@/types/voices';
 import { listVoices } from '@/lib/voicesApi';
 import { theme } from '@/styles/theme';
 import { ModalShell } from './ModalShell';
+import { UserProfileModal } from './UserProfileModal';
+import { ProceduralAvatar } from '@/components/ui/ProceduralAvatar';
+import { useToast } from '@/hooks/use-toast';
 
 interface VoicesLibraryModalProps {
   onClose: () => void;
@@ -44,9 +47,124 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
   const [offerReveal, setOfferReveal] = useState(false); // mid/end overlay
   const prefersReducedMotion = usePrefersReducedMotion();
   const [autoSkipProgress, setAutoSkipProgress] = useState(0); // 0-1 countdown after end
+  // Inline profile modal state (avoid relying on deprecated /app/p/:id route redirects)
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  const profileTriggerRef = useRef<HTMLElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const { toast } = useToast();
+
+  // Inert underlying content while nested profile modal open
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    if (profileUserId) {
+      el.setAttribute('aria-hidden', 'true');
+      (el as any).inert = true; // inert polyfill/experimental
+    } else {
+      el.removeAttribute('aria-hidden');
+      try { delete (el as any).inert; } catch { (el as any).inert = false; }
+      // Restore focus to triggering button
+      if (profileTriggerRef.current) {
+        profileTriggerRef.current.focus?.();
+      }
+    }
+  }, [profileUserId]);
+
+  const shareProfile = async (userId: string, displayName: string) => {
+    const url = `${window.location.origin}/app/p/${userId}`;
+    try {
+      if ((navigator as any).share) {
+        await (navigator as any).share({ title: displayName || 'Voice Profile', url });
+        // Provide confirmation feedback (Web Share API is otherwise silent on success)
+        toast({ title: 'Share started', description: 'System share sheet opened.' });
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(url);
+        toast({ title: 'Link copied', description: 'Profile link copied to clipboard.' });
+      }
+    } catch {
+      try { await navigator.clipboard?.writeText(url); toast({ title: 'Link copied', description: 'Profile link copied.' }); } catch {}
+    }
+  };
   const autoSkipRaf = useRef<number | null>(null);
   const countdownStartRef = useRef<number | null>(null);
   const preloadSet = useRef<Set<string>>(new Set());
+  // Discovered voices state (persisted list of profiles whose user has been visited)
+  interface DiscoveredVoiceMeta { id: string; display_name: string; first_discovered_at: number; last_opened_at: number; synced?: boolean; }
+  const DISCOVERED_LS_KEY = 'stageheart_discovered_voice_ids_v1';
+  const DISCOVERED_LAST_SYNC_KEY = 'stageheart_discovered_voice_last_sync_v1';
+  const SYNC_INTERVAL_MS = 1000 * 60 * 5; // 5 minutes
+  const [discovered, setDiscovered] = useState<DiscoveredVoiceMeta[]>(() => {
+    try {
+      const raw = localStorage.getItem(DISCOVERED_LS_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter(p => p && p.id && p.display_name);
+    } catch { return []; }
+  });
+
+  const persistDiscovered = (list: DiscoveredVoiceMeta[]) => {
+    try { localStorage.setItem(DISCOVERED_LS_KEY, JSON.stringify(list)); } catch {}
+  };
+
+  const markDiscovered = (id: string, display_name: string) => {
+    setDiscovered(prev => {
+      const existing = prev.find(p => p.id === id);
+      const now = Date.now();
+      let next: DiscoveredVoiceMeta[];
+      if (existing) {
+        existing.last_opened_at = now;
+        next = [...prev];
+      } else {
+        next = [...prev, { id, display_name, first_discovered_at: now, last_opened_at: now }];
+      }
+      // Sort most recently opened first
+      next.sort((a,b) => b.last_opened_at - a.last_opened_at);
+      persistDiscovered(next);
+      return next;
+    });
+  };
+
+  // --- Backend Sync (Placeholder Implementation) ---
+  // These stubs allow multi-device continuity in future. They gracefully no-op now.
+  const syncInFlightRef = useRef(false);
+  const attemptSyncDiscovered = async () => {
+    if (syncInFlightRef.current) return;
+    const last = (() => { try { return parseInt(localStorage.getItem(DISCOVERED_LAST_SYNC_KEY)||'0',10);} catch { return 0; } })();
+    const now = Date.now();
+    if (now - last < SYNC_INTERVAL_MS) return; // throttle
+    syncInFlightRef.current = true;
+    try {
+      const dirty = discovered.filter(d => !d.synced);
+      if (!dirty.length) { localStorage.setItem(DISCOVERED_LAST_SYNC_KEY, String(now)); return; }
+      // TODO: Replace with real API call (supabase edge function / table upsert)
+      // await supabase.from('discovered_voices').upsert(dirty.map(d => ({ user_id: currentUserId, voice_user_id: d.id, first_discovered_at: new Date(d.first_discovered_at).toISOString(), last_opened_at: new Date(d.last_opened_at).toISOString() }))); 
+      // For now we just mark them as synced.
+      setDiscovered(prev => {
+        const map = prev.map(p => dirty.some(d => d.id === p.id) ? { ...p, synced: true } : p);
+        persistDiscovered(map);
+        return map;
+      });
+      localStorage.setItem(DISCOVERED_LAST_SYNC_KEY, String(now));
+    } catch (e) {
+      // Silent fail; will retry later
+    } finally { syncInFlightRef.current = false; }
+  };
+
+  useEffect(() => { attemptSyncDiscovered(); /* attempt on mount & when list changes */ }, [discovered]);
+
+  const clearDiscovered = () => {
+    if (!window.confirm('Clear all discovered voices? This cannot be undone.')) return;
+    setDiscovered([]);
+    try { localStorage.removeItem(DISCOVERED_LS_KEY); } catch {}
+  };
+
+  const [discoveredSearch, setDiscoveredSearch] = useState('');
+  const filteredDiscovered = useMemo(() => {
+    if (!discoveredSearch.trim()) return discovered;
+    const q = discoveredSearch.toLowerCase();
+    return discovered.filter(d => (d.display_name||'').toLowerCase().includes(q));
+  }, [discovered, discoveredSearch]);
 
   const AUTO_SKIP_DELAY = 3000; // ms
 
@@ -241,7 +359,7 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
                 )}
               </div>
             </div>
-      <div className="p-6">
+  <div className="p-6" ref={contentRef}>
         {loading && <div className="text-sm text-card-foreground/60">Loading mysterious voices…</div>}
         {!loading && !currentMystery && <div className="text-sm text-card-foreground/60">No voices match your search.</div>}
         <AnimatePresence initial={false} mode="wait">
@@ -400,14 +518,16 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
                 transition={{ duration: 0.28, ease: [0.22,0.72,0.28,0.99] }}
               >
                 <div className="flex items-center gap-3">
-                  <User2 className="w-5 h-5 text-accent" />
+                  {/* Procedural waveform avatar seeded by user id for a consistent abstract identity */}
+                  <ProceduralAvatar seed={currentMystery.user_id || 'unknown'} className="w-8 h-8" />
                   <div>
                     <p className="text-sm font-medium">{currentMystery.user_profile?.display_name || 'Anonymous'}</p>
                     <p className="text-[11px] text-card-foreground/60">Singer revealed • You can view their profile now.</p>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <AnimatedButton size="sm" onClick={() => navigate(`/app/p/${currentMystery.user_id}`)} className="text-xs">Open Profile</AnimatedButton>
+                  <AnimatedButton size="sm" onClick={(e:any) => { profileTriggerRef.current = e.currentTarget; markDiscovered(currentMystery.user_id, currentMystery.user_profile?.display_name || 'Anonymous'); setProfileUserId(currentMystery.user_id); }} className="text-xs">Open Profile</AnimatedButton>
+                  <AnimatedButton size="sm" variant="secondary" title="Share profile link" onClick={() => shareProfile(currentMystery.user_id, currentMystery.user_profile?.display_name || 'Anonymous')} className="text-xs flex items-center gap-1"><Share2 className="w-3.5 h-3.5" /> Share</AnimatedButton>
                   <AnimatedButton size="sm" variant="outline" onClick={nextMystery} className="text-xs">Discover Another Voice</AnimatedButton>
                 </div>
               </motion.div>
@@ -416,7 +536,98 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
           </motion.div>
         )}
         </AnimatePresence>
+        {/* Discovered Voices Section */}
+        {discovered.length > 0 && (
+          <div className="mt-14 border-t border-card-border/60 pt-8">
+            <div className="flex flex-col gap-3 mb-4">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <h3 className="text-sm font-semibold tracking-wide text-card-foreground/70 uppercase">Discovered Voices <span className="ml-1 text-[10px] font-normal text-card-foreground/40">({filteredDiscovered.length}/{discovered.length})</span></h3>
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-card-foreground/40" />
+                    <input
+                      value={discoveredSearch}
+                      onChange={e=> setDiscoveredSearch(e.target.value)}
+                      placeholder="Search discovered…"
+                      className="pl-7 pr-2 h-8 rounded-md bg-input/50 border border-input-border text-xs focus:outline-none focus:ring-1 focus:ring-primary/50"
+                      aria-label="Search discovered voices"
+                    />
+                  </div>
+                  <button onClick={attemptSyncDiscovered} title="Sync (placeholder)" className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-card-border/50 hover:bg-input/40 text-card-foreground/70">
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span className="sr-only">Sync discovered voices</span>
+                  </button>
+                  <button onClick={clearDiscovered} className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-destructive/40 text-destructive/70 hover:bg-destructive/10" title="Clear all">
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span className="sr-only">Clear discovered voices</span>
+                  </button>
+                </div>
+              </div>
+              {discovered.length > 6 && (
+                <p className="text-[11px] text-card-foreground/50">Most recent first. Stored locally{` & future-sync`}</p>
+              )}
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredDiscovered.slice(0, 24).map(d => {
+                const profile = recordings.find(r => r.user_id === d.id)?.user_profile; // may be undefined if not in current fetch
+                const sampleRec = recordings.find(r => r.user_id === d.id);
+                return (
+                  <motion.div key={d.id} className="p-4 rounded-xl border border-card-border/60 bg-card/60 backdrop-blur-sm flex flex-col gap-3 group"
+                    initial={prefersReducedMotion ? false : { opacity:0, y:8 }}
+                    animate={prefersReducedMotion ? {} : { opacity:1, y:0 }}
+                    transition={{ duration:0.25 }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center text-sm font-semibold">
+                        {(profile?.display_name || d.display_name || '?').slice(0,1).toUpperCase()}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate" title={`Last opened ${new Date(d.last_opened_at).toLocaleString()}`}>{profile?.display_name || d.display_name || 'Unknown'}</p>
+                        <p className="text-[10px] text-card-foreground/50" title={`First discovered ${new Date(d.first_discovered_at).toLocaleString()}`}>First {new Date(d.first_discovered_at).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    {sampleRec?.mood_tags && sampleRec.mood_tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {sampleRec.mood_tags.slice(0,3).map(tag => (
+                          <span key={tag} className="px-2 py-0.5 rounded-full bg-input/40 text-[10px] text-card-foreground/60">{tag}</span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex gap-2 mt-auto">
+                      <AnimatedButton size="sm" variant="outline" className="text-[11px] flex-1"
+                        onClick={(e:any) => { profileTriggerRef.current = e.currentTarget; markDiscovered(d.id, profile?.display_name || d.display_name); setProfileUserId(d.id); }}>
+                        View Profile
+                      </AnimatedButton>
+                      {sampleRec && (
+                        <AnimatedButton size="icon" variant="ghost" className="h-8 w-8"
+                          onClick={() => { loadRecording(sampleRec); play(); incrementPlay(sampleRec.id); sampleRec.plays_count += 1; }}>
+                          {currentRecording?.id === sampleRec.id && isPlaying ? <PauseIcon /> : <Play className="w-4 h-4" />}
+                          <span className="sr-only">{currentRecording?.id === sampleRec.id && isPlaying ? 'Pause' : 'Play sample'}</span>
+                        </AnimatedButton>
+                      )}
+                      <AnimatedButton size="icon" variant="ghost" title="Share profile link" className="h-8 w-8" onClick={() => shareProfile(d.id, profile?.display_name || d.display_name)}>
+                        <Share2 className="w-4 h-4" />
+                        <span className="sr-only">Share profile link</span>
+                      </AnimatedButton>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+            {filteredDiscovered.length > 24 && (
+              <p className="mt-4 text-[11px] text-card-foreground/50">Showing first 24 discovered voices…</p>
+            )}
+          </div>
+        )}
       </div>
+      {/* Inline User Profile Modal */}
+      {profileUserId && (
+        <UserProfileModal
+          userId={profileUserId}
+          onClose={() => setProfileUserId(null)}
+          returnFocusRef={returnFocusRef}
+        />
+      )}
     </ModalShell>
   );
 };
