@@ -496,10 +496,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
       aria-selected={tab===k}
       aria-controls={`settings-panel-${k}`}
       tabIndex={tab===k ? 0 : -1}
-      className={`relative w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition border overflow-hidden ${tab===k ? 'bg-primary/70 text-primary-foreground border-primary shadow-sm' : 'bg-input/40 border-input-border text-card-foreground/60 hover:text-card-foreground'}`}
+      className={`relative w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium transition border overflow-hidden ${tab===k ? 'bg-primary/70 text-primary-foreground border-primary shadow-sm' : 'bg-input/40 border-input-border text-card-foreground/60 hover:text-card-foreground'}`}
     >
       {tab===k && <motion.span layoutId="settingsTabGlow" className="absolute inset-0 bg-primary/30" style={{ mixBlendMode: 'overlay' }} initial={false} transition={{ duration: 0.3 }} />}
-      <span className="relative z-10 flex items-center gap-2">{icon}<span>{label}</span></span>
+      <span className="relative z-10 flex items-center gap-2 min-w-0">{icon}<span className="truncate">{label}</span></span>
     </motion.button>
   );
 
@@ -525,13 +525,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
 
   return (
   <ModalShell titleId="settings-title" onClose={onClose} className="max-w-5xl flex flex-col max-h-[80dvh]" contentClassName="flex flex-col h-full" returnFocusRef={returnFocusRef}>
-      <div className="p-6 border-b border-card-border flex items-start justify-between gap-4">
+  <div className="p-6 border-b border-card-border flex items-start justify-between gap-4 relative bg-gradient-to-b from-background/60 to-background/20">
         <div className="space-y-1">
           <h2 id="settings-title" className="text-2xl font-semibold flex items-center gap-3">
             <img src={settingsIcon} alt="Settings" className="w-10 h-10 object-contain" />
             <span>Settings</span>
           </h2>
           <p className="text-xs text-card-foreground/60">Profile • Recordings • Privacy • Notifications • Playback • Account</p>
+          <div className="flex items-center gap-3 pt-1 text-[10px] text-card-foreground/50">
+            <a href="/terms" className="underline underline-offset-2 hover:text-card-foreground/80">Terms</a>
+            <a href="/privacy" className="underline underline-offset-2 hover:text-card-foreground/80">Privacy</a>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative flex items-center">
@@ -555,10 +559,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
           </div>
           <AnimatedButton variant="ghost" size="icon" onClick={handleClose} className="h-10 w-10"><X /><span className="sr-only">Close settings</span></AnimatedButton>
         </div>
-        <div className="absolute bottom-2 right-6 text-[10px] text-card-foreground/50 flex items-center gap-3">
-          <a href="/terms" className="underline underline-offset-2 hover:text-card-foreground/80">Terms</a>
-          <a href="/privacy" className="underline underline-offset-2 hover:text-card-foreground/80">Privacy</a>
-        </div>
       </div>
       <div ref={liveRegionRef} aria-live="polite" className="sr-only" />
       <div className="flex flex-1 min-h-0">
@@ -567,18 +567,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
           {tabs.map(t => (
             <div key={t.key} className="relative">
               <TabButton k={t.key} icon={t.icon} label={t.label} />
-              {dirtyMap[t.key] && <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-amber-500 shadow-[0_0_0_3px_rgba(245,158,11,0.35)]" aria-hidden title="Unsaved changes" />}
+              {dirtyMap[t.key] && <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-amber-500 border border-card shadow-[0_0_0_2px_rgba(245,158,11,0.25)]" aria-hidden title="Unsaved changes" />}
             </div>
           ))}
         </div>
         {/* Content */}
-  <div className="flex-1 overflow-y-auto p-6 space-y-10 relative">
+  <div className="flex-1 overflow-y-auto p-8 space-y-8 relative">
           <AnimatePresence mode="wait" initial={false}>
           {tab === 'profile' && (
             <motion.section key="profile" id="settings-panel-profile" role="tabpanel" aria-labelledby="settings-tab-profile" className="space-y-6" aria-describedby="profile-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
-              <div className="space-y-1">
-                <h3 id="profile-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">PROFILE</h3>
-                <p className="text-xs text-card-foreground/60">Control what listeners see about you.</p>
+              <div className="space-y-2 pb-2 border-b border-card-border/30">
+                <h3 id="profile-heading" className="text-lg font-semibold text-card-foreground">Profile</h3>
+                <p className="text-sm text-card-foreground/70">Control what listeners see about you.</p>
               </div>
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="space-y-2">
@@ -673,9 +673,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
           {tab === 'privacyNotifications' && (
             <div key="privacy-wrapper" id="settings-panel-privacyNotifications" role="tabpanel" aria-labelledby="settings-tab-privacyNotifications" className="space-y-10">
             <motion.section key="privacy" className="space-y-6" aria-labelledby="privacy-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
-              <div className="space-y-1">
-                <h3 id="privacy-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">PRIVACY & CONTACT</h3>
-                <p className="text-xs text-card-foreground/60">Tune how people can reach you or request a meet.</p>
+              <div className="space-y-2 pb-2 border-b border-card-border/30">
+                <h3 id="privacy-heading" className="text-lg font-semibold text-card-foreground">Privacy & Contact</h3>
+                <p className="text-sm text-card-foreground/70">Tune how people can reach you or request a meet.</p>
               </div>
               <div className="space-y-4">
                 <ToggleRow
@@ -689,9 +689,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
               </div>
             </motion.section>
             <motion.section key="notif-sub" className="space-y-6" aria-labelledby="notif-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
-              <div className="space-y-1">
-                <h3 id="notif-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">NOTIFICATIONS</h3>
-                <p className="text-xs text-card-foreground/60">Choose which events trigger notifications.</p>
+              <div className="space-y-2 pb-2 border-b border-card-border/30">
+                <h3 id="notif-heading" className="text-lg font-semibold text-card-foreground">Notifications</h3>
+                <p className="text-sm text-card-foreground/70">Choose which events trigger notifications.</p>
               </div>
               <div className="space-y-4">
                 <ToggleRow label="New messages" description="Notify me when I receive a new message" value={notifyNewMessages} onChange={setNotifyNewMessages} />

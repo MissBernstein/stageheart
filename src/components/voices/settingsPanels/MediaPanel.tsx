@@ -326,9 +326,9 @@ const MediaPanel: React.FC<MediaPanelProps> = ({ recordings, loadingRecordings, 
   return (
     <div className="space-y-10" id="settings-panel-media" role="tabpanel" aria-labelledby="settings-tab-media">
       <motion.section key="recordings" className="space-y-6" aria-labelledby="recordings-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
-        <div className="space-y-1">
-          <h3 id="recordings-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">RECORDINGS</h3>
-          <p className="text-xs text-card-foreground/60">Upload up to 3 short showcase clips (mp3 / wav / m4a). Drag & drop or click the upload area below. Newly uploaded recordings start as private; toggle visibility after upload.</p>
+        <div className="space-y-2 pb-2 border-b border-card-border/30">
+          <h3 id="recordings-heading" className="text-lg font-semibold text-card-foreground">Recordings</h3>
+          <p className="text-sm text-card-foreground/70">Upload up to 3 short showcase clips (mp3 / wav / m4a). Drag & drop or click the upload area below. Newly uploaded recordings start as private; toggle visibility after upload.</p>
         </div>
         {canAdd && (
           <div
@@ -482,9 +482,9 @@ const MediaPanel: React.FC<MediaPanelProps> = ({ recordings, loadingRecordings, 
       </motion.section>
   <audio ref={audioRef} className="hidden" src={currentPlayId ? recordings.find(r=> r.id===currentPlayId)?.file_stream_url || undefined : undefined} />
   <motion.section key="playback-sub" className="space-y-6" aria-labelledby="playback-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
-        <div className="space-y-1">
-          <h3 id="playback-heading" className="text-sm font-semibold tracking-wide text-card-foreground/70">PLAYBACK & EXPERIENCE</h3>
-          <p className="text-xs text-card-foreground/60">Default listening preferences.</p>
+        <div className="space-y-2 pb-2 border-b border-card-border/30">
+          <h3 id="playback-heading" className="text-lg font-semibold text-card-foreground">Playback & Experience</h3>
+          <p className="text-sm text-card-foreground/70">Default listening preferences.</p>
         </div>
         <div className="space-y-6">
           <div className="space-y-2">
