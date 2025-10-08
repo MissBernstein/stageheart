@@ -16,8 +16,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { fadeInUp, motionDur, motionEase } from '@/ui/motion';
 import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
 import { MotionIfOkay } from '@/ui/MotionIfOkay';
-import { PageContainer } from '@/ui';
-import PageFooter from '@/ui/PageFooter';
+import { PageContainer } from '@/ui'; // retained for header region spacing
+import PageLayout from '@/ui/PageLayout';
 
 export default function Favorites() {
   const { t } = useTranslation();
@@ -207,7 +207,8 @@ export default function Favorites() {
             </Link>
           </div>
         </header>
-      <PageContainer className="pt-8">
+      <PageLayout>
+        <div className="pt-8">
         {favorites.length === 0 ? (
           <div className="text-center py-16">
             <Music className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
@@ -217,8 +218,8 @@ export default function Favorites() {
         ) : (
           <AnimatedAccordion items={categoryItems} type="multiple" className="space-y-3" />
         )}
-  </PageContainer>
-  <PageFooter compact />
+        </div>
+      </PageLayout>
 
       <CategoryManageDialog
         mode="rename"

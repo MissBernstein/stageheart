@@ -1,5 +1,6 @@
 import React from 'react';
-import PageFooter from '@/ui/PageFooter';
+import PageLayout from '@/ui/PageLayout';
+import PageHeader from '@/ui/PageHeader';
 import { Link } from 'react-router-dom';
 import { LEGAL_CONTACT_EMAIL, TERMS_LAST_UPDATED } from '@/lib/legal';
 import { useTranslation } from 'react-i18next';
@@ -9,14 +10,14 @@ const sectionCls = 'space-y-3';
 export default function Terms() {
   const { t } = useTranslation();
   return (
-    <div className="min-h-screen bg-background px-4 py-10">
-      <div className="max-w-3xl mx-auto space-y-10">
-        <header className="space-y-2">
-          <h1 className="text-3xl font-bold">{t('legal.termsTitle')}</h1>
-          <p className="text-sm text-muted-foreground">{t('legal.lastUpdated', { date: TERMS_LAST_UPDATED })}</p>
-          <p className="text-sm text-muted-foreground">{t('legal.introTerms')}</p>
-          <Link to="/" className="text-primary text-sm underline underline-offset-4">← Back to app</Link>
-        </header>
+    <PageLayout className="bg-background" footerProps={{ hideLegal: true }}>
+      <div className="max-w-3xl mx-auto space-y-10 px-4 py-10">
+        <PageHeader
+          title={t('legal.termsTitle')}
+          subtitle={t('legal.introTerms')}
+          meta={t('legal.lastUpdated', { date: TERMS_LAST_UPDATED })}
+          actions={<Link to="/" className="text-primary text-sm underline underline-offset-4">← Back</Link>}
+        />
 
         <div className="prose prose-invert max-w-none">
           <section className={sectionCls}>
@@ -57,9 +58,8 @@ export default function Terms() {
 
         <div className="pt-6 border-t border-border space-y-3">
           <p className="text-xs text-muted-foreground">Need clarification? Email <span className="font-mono">{LEGAL_CONTACT_EMAIL}</span></p>
-          <PageFooter hideLegal compact className="!mt-2 !pb-0" />
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 }

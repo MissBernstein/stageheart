@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PageLayout from '@/ui/PageLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -62,8 +63,8 @@ export default function AddSong() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-2xl mx-auto pt-8">
+    <PageLayout className="bg-background" footerProps={{ hideLegal: false }}>
+      <div className="max-w-2xl mx-auto pt-10 px-4 w-full">
         <Button 
           variant="ghost" 
           onClick={() => navigate('/')}
@@ -146,6 +147,6 @@ export default function AddSong() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </PageLayout>
   );
 }

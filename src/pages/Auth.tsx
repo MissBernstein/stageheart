@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import PageLayout from '@/ui/PageLayout';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -161,7 +162,8 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <PageLayout container={false} footerProps={{ hideLegal: false }} className="bg-background">
+      <div className="flex flex-1 items-center justify-center px-4 py-10">
       <Card className="w-full max-w-md p-8 space-y-6">
         <div className="text-center space-y-4">
           <img src={logo} alt="Stage Heart Logo" className="w-20 h-auto mx-auto object-contain" />
@@ -284,7 +286,8 @@ const Auth = () => {
           </button>
         </div>
       </Card>
-    </div>
+      </div>
+    </PageLayout>
   );
 };
 

@@ -9,3 +9,4 @@ export * from './ChipToggle';
 export * from './Toast';
 export * from './PageContainer';
 export * from './ResponsiveCardGrid';
+export * from './PageLayout';
