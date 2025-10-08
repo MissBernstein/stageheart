@@ -51,7 +51,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           {hasCustom ? children : (
             <>
               {title && (
-                <HeadingTag className="font-bold leading-tight tracking-tight text-xl md:text-2xl lg:text-3xl">
+                <HeadingTag className="font-bold leading-tight tracking-tight text-[24px]" style={{ fontFamily: '"I lova ya like a sister"' }}>
                   {title}
                 </HeadingTag>
               )}

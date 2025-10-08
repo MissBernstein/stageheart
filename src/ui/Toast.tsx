@@ -310,3 +310,18 @@ export const ToastRegistrar = () => {
   }, [context]);
   return null;
 };
+
+// Apply typography and icon sizing standards
+// Example: H3 heading with associated icon
+import React from 'react';
+
+const ToastHeader = () => (
+  <div className="flex items-center">
+    <div>
+      <h3 className="text-[18px] font-[&quot;I_lova_ya_like_a_sister&quot;]">Toast Title</h3>
+      <div className="w-10 h-10 bg-gray-300 rounded-full" /> {/* Placeholder for Icon */}
+    </div>
+  </div>
+);
+
+export default ToastHeader;

@@ -201,9 +201,9 @@ export default function Favorites() {
               <img
                 src={generalHeartIcon}
                 alt="Favorites"
-                className="w-16 h-16 object-contain drop-shadow-sm"
+                className="w-14 h-14 object-contain drop-shadow-sm"
               />
-              <h1 className="font-bold leading-tight text-xl md:text-2xl lg:text-3xl">Favorites</h1>
+              <h2 className="text-[24px] font-bold leading-tight" style={{ fontFamily: '"I lova ya like a sister"' }}>Favorites</h2>
             </Link>
           </div>
         </header>

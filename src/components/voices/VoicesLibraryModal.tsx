@@ -316,7 +316,7 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
   <ModalShell titleId="voices-library-title" onClose={onClose} className="max-w-5xl" contentClassName="" returnFocusRef={returnFocusRef}>
       <div className="p-6 border-b border-card-border">
               <div className="flex items-center justify-between mb-4">
-                <h2 id="voices-library-title" className="text-2xl font-semibold text-card-foreground flex items-center gap-3">
+                <h2 id="voices-library-title" className="text-[24px] font-semibold text-card-foreground flex items-center gap-3" style={{ fontFamily: '"I lova ya like a sister"' }}>
                   <img src={voicesIcon} alt="Voices Icon" className="w-14 h-14 object-contain" />
                   Discover Voices
                 </h2>
@@ -380,7 +380,7 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
                 transition={{ duration: 0.2 }}
               />
               <div className="flex items-start justify-between mb-4">
-                <h3 className="font-semibold text-lg tracking-tight">{currentMystery.title}</h3>
+                <h3 className="font-semibold text-[18px] tracking-tight" style={{ fontFamily: '"I lova ya like a sister"' }}>{currentMystery.title}</h3>
                 {(() => {
                   const playable = !!(currentMystery.file_stream_url || currentMystery.file_original_url);
                   return (
@@ -541,7 +541,7 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
           <div className="mt-14 border-t border-card-border/60 pt-8">
             <div className="flex flex-col gap-3 mb-4">
               <div className="flex items-center justify-between flex-wrap gap-3">
-                <h3 className="text-sm font-semibold tracking-wide text-card-foreground/70 uppercase">Discovered Voices <span className="ml-1 text-[10px] font-normal text-card-foreground/40">({filteredDiscovered.length}/{discovered.length})</span></h3>
+                <h3 className="text-[18px] font-semibold tracking-wide text-card-foreground/70 uppercase" style={{ fontFamily: '"I lova ya like a sister"' }}>Discovered Voices <span className="ml-1 text-[10px] font-normal text-card-foreground/40">({filteredDiscovered.length}/{discovered.length})</span></h3>
                 <div className="flex items-center gap-2">
                   <div className="relative">
                     <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-card-foreground/40" />

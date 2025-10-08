@@ -90,7 +90,7 @@ export default function SimpleMigration() {
       padding: '20px',
       fontFamily: 'system-ui, sans-serif'
     }}>
-      <h1>Schema Migration - Simple Version</h1>
+      <h1 className="text-[36px]" style={{ fontFamily: '"I lova ya like a sister"' }}>Schema Migration - Simple Version</h1>
       <p>This will update your songs table to use the new schema patterns.</p>
       
       <div style={{ 

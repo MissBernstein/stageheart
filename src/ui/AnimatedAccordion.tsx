@@ -59,7 +59,7 @@ export const AnimatedAccordion = ({ items, type = 'single', defaultOpenIds = [],
               transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
             >
               <div className="flex-1">
-                <div className="font-semibold text-card-foreground text-lg">{title}</div>
+                <div className="font-semibold text-card-foreground text-[18px]" style={{ fontFamily: '"I lova ya like a sister"' }}>{title}</div>
                 {description && (
                   <div className="text-xs uppercase tracking-wider text-muted-foreground mt-2">
                     {description}

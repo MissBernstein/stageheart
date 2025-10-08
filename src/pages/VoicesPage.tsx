@@ -65,7 +65,7 @@ export const VoicesPage: React.FC = () => {
         <div className="flex items-start gap-3 mb-4 flex-col sm:flex-row sm:items-center">
           <img src={voicesIcon} alt="Voices" className="w-10 h-10 object-contain drop-shadow-sm" />
           <div className="space-y-1 min-w-0">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground break-words hyphens-auto">Discover Voices</h1>
+            <h2 className="text-[24px] font-bold tracking-tight text-foreground break-words hyphens-auto" style={{ fontFamily: '"I lova ya like a sister"' }}>Discover Voices</h2>
             <p className="text-sm text-muted-foreground leading-snug">Listen to authentic voice recordings and connect with their creators</p>
           </div>
         </div>
@@ -99,7 +99,7 @@ export const VoicesPage: React.FC = () => {
           >
             {/* Header */}
             <div className="flex items-center justify-between gap-3 px-4 pt-4">
-              <h3 className="text-base font-semibold text-foreground leading-tight break-words hyphens-auto flex-1 min-w-0 truncate" title={recording.title}>{recording.title}</h3>
+              <h3 className="text-[18px] font-semibold text-foreground leading-tight break-words hyphens-auto flex-1 min-w-0 truncate" title={recording.title} style={{ fontFamily: '"I lova ya like a sister"' }}>{recording.title}</h3>
               <Button
                 variant="ghost"
                 size="sm"

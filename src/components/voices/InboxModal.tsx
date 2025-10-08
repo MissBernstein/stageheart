@@ -162,7 +162,7 @@ export const InboxModal: React.FC<InboxModalProps> = ({ onClose, returnFocusRef 
   <ModalShell titleId="inbox-title" onClose={onClose} className="max-w-6xl flex flex-col max-h-[80dvh]" contentClassName="flex flex-col h-full" returnFocusRef={returnFocusRef}>
       <div className="p-6 border-b border-card-border flex items-start justify-between gap-4">
               <div className="space-y-1">
-                <h2 id="inbox-title" className="text-2xl font-semibold flex items-center gap-3"><img src={messagesIcon} alt="Messages" className="w-16 h-16 rounded-2xl shadow-sm" /> <span className="leading-tight">Messages</span></h2>
+                <h2 id="inbox-title" className="text-[24px] font-semibold flex items-center gap-3" style={{ fontFamily: '"I lova ya like a sister"' }}><img src={messagesIcon} alt="Messages" className="w-16 h-16 rounded-2xl shadow-sm" /> <span className="leading-tight">Messages</span></h2>
                 <p className="text-xs text-card-foreground/60">Direct messages • comments • system updates</p>
               </div>
               <div className="flex items-center gap-2">
@@ -288,7 +288,7 @@ export const InboxModal: React.FC<InboxModalProps> = ({ onClose, returnFocusRef 
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="space-y-1 min-w-0">
-                        <h3 className="font-semibold text-card-foreground leading-tight text-sm truncate">{active.subject}</h3>
+                        <h3 className="font-semibold text-[18px] text-card-foreground leading-tight truncate" style={{ fontFamily: '"I lova ya like a sister"' }}>{active.subject}</h3>
                         <p className="text-[11px] text-card-foreground/60">{active.from || 'System'} • {new Date(active.created_at).toLocaleString([], { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })}</p>
                       </div>
                       <div className="flex gap-2">
