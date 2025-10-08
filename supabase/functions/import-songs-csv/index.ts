@@ -1,5 +1,9 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+// Fix module imports
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2?dts';
+
+// Add type declarations for `Deno`
+/// <reference lib="deno.ns" />
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -224,17 +228,22 @@ function mapTheme(theme: string): string {
   return 'Awe & contemplation';
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
+  // Ensure `Deno` environment variables are properly handled
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+
+  if (!supabaseUrl || !supabaseKey) {
+    return new Response('Missing Supabase configuration', { status: 500 });
+  }
+
+  const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-    )
-
     let success = 0;
     let skipped = 0;
     let errors = 0;
@@ -258,7 +267,7 @@ serve(async (req) => {
       const slug = generateSlug(song.artist, song.title);
 
       // Check if exists
-      const { data: existing } = await supabaseClient
+      const { data: existing } = await supabase
         .from('songs')
         .select('id')
         .eq('slug', slug)
@@ -271,7 +280,7 @@ serve(async (req) => {
       }
 
       // Insert song
-      const { data: newSong, error: songError } = await supabaseClient
+      const { data: newSong, error: songError } = await supabase
         .from('songs')
         .insert({
           title: song.title,
@@ -290,7 +299,7 @@ serve(async (req) => {
 
       // Insert feeling card
       const canonicalTheme = mapTheme(song.theme);
-      const { error: cardError } = await supabaseClient
+      const { error: cardError } = await supabase
         .from('feeling_cards')
         .insert({
           song_id: newSong.id,
@@ -303,7 +312,7 @@ serve(async (req) => {
 
       if (cardError) {
         logs.push(`Error creating card for ${song.artist} - ${song.title}: ${cardError.message}`);
-        await supabaseClient.from('songs').delete().eq('id', newSong.id);
+        await supabase.from('songs').delete().eq('id', newSong.id);
         errors++;
         continue;
       }
