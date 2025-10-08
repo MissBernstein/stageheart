@@ -76,38 +76,56 @@ const getVariantStyles = (variant: ToastVariant) => {
   return variantStyles[variant];
 };
 
-const ToastItem: React.FC<{ toast: ToastRecord; onRemove: () => void }> = ({ toast, onRemove }) => {
-  const prefersReducedMotion = usePrefersReducedMotion();
 
-  const { container, indicator, Icon } = getVariantStyles(toast.variant);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.95 }}
-      transition={{ duration: motionDur.fast / 1000, ease: motionEase.standard }}
-      className={`relative flex items-center gap-3 rounded-lg border px-4 py-3 shadow-md ${container}`}
-      role="alert"
-    >
-      <span className={`flex h-2 w-2 shrink-0 rounded-full ${indicator}`} />
-      <div className="flex flex-col gap-1">
-        <p className="text-sm font-medium">{toast.title}</p>
-        {toast.description && <p className="text-xs text-muted-foreground">{toast.description}</p>}
-      </div>
-      <button
-        onClick={onRemove}
-        className="absolute right-2 top-2 rounded p-1 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-      >
-        <X className="h-4 w-4" />
-      </button>
-    </motion.div>
-  );
-};
 
 interface ToastProviderProps {
   children: ReactNode;
 }
+
+const ToastItem = ({ toast, onRemove, prefersReducedMotion }: { 
+  toast: ToastRecord; 
+  onRemove: () => void; 
+  prefersReducedMotion: boolean; 
+}) => {
+  const { container, indicator, Icon } = getVariantStyles(toast.variant);
+  
+  return (
+    <motion.div
+      initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
+      transition={prefersReducedMotion ? { duration: 0 } : { duration: motionDur.base / 1000, ease: motionEase.entrance }}
+      className={cn(
+        'pointer-events-auto w-full max-w-sm overflow-hidden rounded-2xl border p-4 shadow-lg backdrop-blur-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+        'motion-safe-only',
+        container,
+      )}
+      role="status"
+      aria-live="polite"
+      tabIndex={0}
+      onBlur={onRemove}
+    >
+      <div className="flex items-start gap-3">
+        <span className={cn('mt-0.5 h-2.5 w-2.5 flex-shrink-0 rounded-full', indicator)} aria-hidden />
+        <div className="flex-1 space-y-1">
+          <div className="flex items-start gap-2">
+            <Icon className="mt-0.5 h-4 w-4" aria-hidden />
+            <p className="font-semibold leading-tight">{toast.title}</p>
+          </div>
+          {toast.description && <p className="text-sm text-muted-foreground/90">{toast.description}</p>}
+        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="rounded-full p-1 text-sm/none text-foreground/60 transition-colors hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        >
+          <X className="h-4 w-4" aria-hidden />
+          <span className="sr-only">Dismiss toast</span>
+        </button>
+      </div>
+    </motion.div>
+  );
+};
 
 export const ToastProvider = ({ children }: ToastProviderProps) => {
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -167,46 +185,14 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
       {children}
       <div className="pointer-events-none fixed inset-x-0 bottom-6 z-[70] flex flex-col items-center gap-3 px-4">
         <AnimatePresence initial={false}>
-          {toasts.map(({ id, title, description, variant }) => {
-            const { container, indicator, Icon } = getVariantStyles(variant);
-            return (
-              <motion.div
-                key={id}
-                initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
-                transition={prefersReducedMotion ? { duration: 0 } : { duration: motionDur.base / 1000, ease: motionEase.entrance }}
-                className={cn(
-                  'pointer-events-auto w-full max-w-sm overflow-hidden rounded-2xl border p-4 shadow-lg backdrop-blur-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-                  'motion-safe-only',
-                  container,
-                )}
-                role="status"
-                aria-live="polite"
-                tabIndex={0}
-                onBlur={() => dismiss(id)}
-              >
-                <div className="flex items-start gap-3">
-                  <span className={cn('mt-0.5 h-2.5 w-2.5 flex-shrink-0 rounded-full', indicator)} aria-hidden />
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-start gap-2">
-                      <Icon className="mt-0.5 h-4 w-4" aria-hidden />
-                      <p className="font-semibold leading-tight">{title}</p>
-                    </div>
-                    {description && <p className="text-sm text-muted-foreground/90">{description}</p>}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => dismiss(id)}
-                    className="rounded-full p-1 text-sm/none text-foreground/60 transition-colors hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  >
-                    <X className="h-4 w-4" aria-hidden />
-                    <span className="sr-only">Dismiss toast</span>
-                  </button>
-                </div>
-              </motion.div>
-            );
-          })}
+          {toasts.map((toast) => (
+            <ToastItem
+              key={toast.id}
+              toast={toast}
+              onRemove={() => dismiss(toast.id)}
+              prefersReducedMotion={prefersReducedMotion}
+            />
+          ))}
         </AnimatePresence>
       </div>
       <ToastRegistrar />
