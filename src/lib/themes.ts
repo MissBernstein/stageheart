@@ -11,6 +11,9 @@ export const CANONICAL_THEMES = [
   'Identity & authenticity',
   'Resilience & striving',
   'Awe & contemplation',
+  'Drama & inner turmoil',
+  'Rebellion & defiance',
+  'Grief & solace',
 ] as const;
 
 export type CanonicalTheme = (typeof CANONICAL_THEMES)[number];
@@ -26,6 +29,40 @@ const createPatterns = (keywords: string[]): RegExp[] =>
   keywords.map((keyword) => new RegExp(keyword, 'i'));
 
 const THEME_RULES: ThemeRule[] = [
+  {
+    canonical: 'Drama & inner turmoil',
+    patterns: createPatterns([
+      'drama',
+      'turmoil',
+      'conflicted',
+      'epic struggle',
+      'inner battle',
+      'guilt',
+    ]),
+  },
+  {
+    canonical: 'Rebellion & defiance',
+    patterns: createPatterns([
+      'rebellion',
+      'defiance',
+      'rebel',
+      'unstoppable',
+      'fight',
+      'power',
+      'swagger',
+    ]),
+  },
+  {
+    canonical: 'Grief & solace',
+    patterns: createPatterns([
+      'grief',
+      'solace',
+      'mourning',
+      'comfort.*pain',
+      'sorrow',
+      'loss',
+    ]),
+  },
   {
     canonical: 'Nostalgia & holiday warmth',
     patterns: createPatterns([
