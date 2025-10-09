@@ -1,4 +1,3 @@
-// @keep - Supabase generated types for backend integration
 export type Json =
   | string
   | number
@@ -457,9 +456,42 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles_sanitized: {
+        Row: {
+          about_snippet: string | null
+          display_name: string | null
+          favorite_artists_sample: string[] | null
+          genres: string[] | null
+          id: string | null
+        }
+        Insert: {
+          about_snippet?: never
+          display_name?: string | null
+          favorite_artists_sample?: never
+          genres?: never
+          id?: string | null
+        }
+        Update: {
+          about_snippet?: never
+          display_name?: string | null
+          favorite_artists_sample?: never
+          genres?: never
+          id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      fetch_public_profiles: {
+        Args: { p_ids?: string[] }
+        Returns: {
+          about_snippet: string | null
+          display_name: string | null
+          favorite_artists_sample: string[] | null
+          genres: string[] | null
+          id: string | null
+        }[]
+      }
       increment_recording_plays: {
         Args: { recording_uuid: string }
         Returns: undefined
