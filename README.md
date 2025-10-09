@@ -59,6 +59,37 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- Supabase (Lovable Cloud backend)
+
+## Features
+
+### Discovered Voices Sync
+
+The app tracks voice profiles you've explored and syncs them across devices for authenticated users.
+
+**How it works:**
+- When you open a voice profile, it's added to your "Discovered Voices" list
+- For authenticated users, this list automatically syncs with the backend every 5 minutes
+- Anonymous users keep their list in local storage only
+- Conflict resolution: earliest discovery date and most recent opening are kept
+- Manual sync available via the refresh button
+
+**Database Schema:**
+```sql
+CREATE TABLE discovered_voices (
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  voice_user_id uuid NOT NULL,
+  first_discovered_at timestamptz NOT NULL DEFAULT now(),
+  last_opened_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, voice_user_id)
+);
+```
+
+**Privacy:**
+- Only you can see which profiles you've discovered
+- Row-level security ensures users can only access their own data
+- Anonymous browsing doesn't store data on the server
 
 ## How can I deploy this project?
 

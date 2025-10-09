@@ -49,6 +49,30 @@ export type Database = {
           },
         ]
       }
+      discovered_voices: {
+        Row: {
+          first_discovered_at: string
+          last_opened_at: string
+          updated_at: string
+          user_id: string
+          voice_user_id: string
+        }
+        Insert: {
+          first_discovered_at?: string
+          last_opened_at?: string
+          updated_at?: string
+          user_id: string
+          voice_user_id: string
+        }
+        Update: {
+          first_discovered_at?: string
+          last_opened_at?: string
+          updated_at?: string
+          user_id?: string
+          voice_user_id?: string
+        }
+        Relationships: []
+      }
       feeling_cards: {
         Row: {
           access_ideas: string[]

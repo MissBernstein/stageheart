@@ -9,8 +9,6 @@ import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
 import { Search, Filter, Play, X, Trash2, RefreshCw, Share2, Cloud, CloudOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { incrementPlay } from '@/lib/voicesApi';
-// import { useVoiceFavorites } from '@/hooks/useVoiceFavorites';
-// import { useToast } from '@/hooks/use-toast';
 import voicesIcon from '@/assets/feelingjourneyicon.png';
 import { usePlayer } from '@/hooks/usePlayer';
 import { Recording } from '@/types/voices';
@@ -20,6 +18,14 @@ import { ModalShell } from './ModalShell';
 import { UserProfileModal } from './UserProfileModal';
 import { ProceduralAvatar } from '@/components/ui/ProceduralAvatar';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { 
+  syncDiscoveredVoices, 
+  loadLocalDiscovered, 
+  saveLocalDiscovered, 
+  getLastSyncTime 
+} from '@/lib/discoveredVoicesSync';
+import { DiscoveredVoiceMeta } from '@/types/discoveredVoices';
 
 interface VoicesLibraryModalProps {
   onClose: () => void;
@@ -89,74 +95,97 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
   const countdownStartRef = useRef<number | null>(null);
   const preloadSet = useRef<Set<string>>(new Set());
   // Discovered voices state (persisted list of profiles whose user has been visited)
-  interface DiscoveredVoiceMeta { id: string; display_name: string; first_discovered_at: number; last_opened_at: number; synced?: boolean; }
-  const DISCOVERED_LS_KEY = 'stageheart_discovered_voice_ids_v1';
-  const DISCOVERED_LAST_SYNC_KEY = 'stageheart_discovered_voice_last_sync_v1';
   const SYNC_INTERVAL_MS = 1000 * 60 * 5; // 5 minutes
   const [discovered, setDiscovered] = useState<DiscoveredVoiceMeta[]>(() => {
-    try {
-      const raw = localStorage.getItem(DISCOVERED_LS_KEY);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return [];
-      return parsed.filter(p => p && p.id && p.display_name);
-    } catch { return []; }
+    return loadLocalDiscovered();
   });
 
   const persistDiscovered = (list: DiscoveredVoiceMeta[]) => {
-    try { localStorage.setItem(DISCOVERED_LS_KEY, JSON.stringify(list)); } catch {}
+    saveLocalDiscovered(list);
   };
 
   const markDiscovered = (id: string, display_name: string) => {
     setDiscovered(prev => {
       const existing = prev.find(p => p.id === id);
-      const now = Date.now();
+      const now = new Date().toISOString();
       let next: DiscoveredVoiceMeta[];
       if (existing) {
         existing.last_opened_at = now;
+        existing.dirty = true;
+        existing.synced = false;
         next = [...prev];
       } else {
-        next = [...prev, { id, display_name, first_discovered_at: now, last_opened_at: now }];
+        next = [...prev, { id, display_name, first_discovered_at: now, last_opened_at: now, synced: false, dirty: true }];
       }
       // Sort most recently opened first
-      next.sort((a,b) => b.last_opened_at - a.last_opened_at);
+      next.sort((a,b) => new Date(b.last_opened_at).getTime() - new Date(a.last_opened_at).getTime());
       persistDiscovered(next);
       return next;
     });
   };
 
-  // --- Backend Sync (Placeholder Implementation) ---
-  // These stubs allow multi-device continuity in future. They gracefully no-op now.
+  // --- Backend Sync (Real Implementation) ---
   const syncInFlightRef = useRef(false);
-  const attemptSyncDiscovered = async () => {
+  const { user } = useAuth();
+  
+  const attemptSyncDiscovered = async (force = false) => {
     if (syncInFlightRef.current) return;
-    const last = (() => { try { return parseInt(localStorage.getItem(DISCOVERED_LAST_SYNC_KEY)||'0',10);} catch { return 0; } })();
+    if (!user) return; // Anonymous users: local-only
+    
+    const lastSync = getLastSyncTime();
     const now = Date.now();
-    if (now - last < SYNC_INTERVAL_MS) return; // throttle
+    
+    // Throttle unless forced (manual sync button)
+    if (!force && now - lastSync < SYNC_INTERVAL_MS) return;
+    
     syncInFlightRef.current = true;
+    
     try {
-      const dirty = discovered.filter(d => !d.synced);
-      if (!dirty.length) { localStorage.setItem(DISCOVERED_LAST_SYNC_KEY, String(now)); return; }
-      // TODO: Replace with real API call (supabase edge function / table upsert)
-      // await supabase.from('discovered_voices').upsert(dirty.map(d => ({ user_id: currentUserId, voice_user_id: d.id, first_discovered_at: new Date(d.first_discovered_at).toISOString(), last_opened_at: new Date(d.last_opened_at).toISOString() }))); 
-      // For now we just mark them as synced.
-      setDiscovered(prev => {
-        const map = prev.map(p => dirty.some(d => d.id === p.id) ? { ...p, synced: true } : p);
-        persistDiscovered(map);
-        return map;
-      });
-      localStorage.setItem(DISCOVERED_LAST_SYNC_KEY, String(now));
-    } catch (e) {
-      // Silent fail; will retry later
-    } finally { syncInFlightRef.current = false; }
+      const result = await syncDiscoveredVoices(discovered, user.id);
+      
+      if (result.success) {
+        setDiscovered(result.merged);
+        persistDiscovered(result.merged);
+        toast({
+          title: 'Synced',
+          description: 'Discovered voices synced successfully',
+        });
+      } else {
+        console.warn('Sync failed:', result.error);
+        if (force) {
+          toast({
+            title: 'Sync failed',
+            description: result.error || 'Will retry later',
+            variant: 'destructive',
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Sync error:', error);
+      if (force) {
+        toast({
+          title: 'Sync error',
+          description: 'An unexpected error occurred',
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      syncInFlightRef.current = false;
+    }
   };
 
-  useEffect(() => { attemptSyncDiscovered(); /* attempt on mount & when list changes */ }, [discovered]);
+  // Auto-sync on mount and when dirty items exist
+  useEffect(() => {
+    const hasDirty = discovered.some(d => d.dirty || !d.synced);
+    if (hasDirty && user) {
+      attemptSyncDiscovered();
+    }
+  }, [discovered.length, user]);
 
   const clearDiscovered = () => {
     if (!window.confirm('Clear all discovered voices? This cannot be undone.')) return;
     setDiscovered([]);
-    try { localStorage.removeItem(DISCOVERED_LS_KEY); } catch {}
+    saveLocalDiscovered([]);
   };
 
   const [discoveredSearch, setDiscoveredSearch] = useState('');
@@ -553,8 +582,13 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
                       aria-label="Search discovered voices"
                     />
                   </div>
-                  <button onClick={attemptSyncDiscovered} title="Sync (placeholder)" className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-card-border/50 hover:bg-input/40 text-card-foreground/70">
-                    <RefreshCw className="w-3.5 h-3.5" />
+                  <button 
+                    onClick={() => attemptSyncDiscovered(true)} 
+                    title="Sync now" 
+                    disabled={syncInFlightRef.current || !user}
+                    className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-card-border/50 hover:bg-input/40 text-card-foreground/70 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${syncInFlightRef.current ? 'animate-spin' : ''}`} />
                     <span className="sr-only">Sync discovered voices</span>
                   </button>
                   <button onClick={clearDiscovered} className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-destructive/40 text-destructive/70 hover:bg-destructive/10" title="Clear all">
@@ -598,15 +632,21 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
                         {/* Sync status badge */}
                         <div
                           className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full flex items-center justify-center ring-1 ring-background shadow-md"
-                          title={d.synced ? 'Synced to cloud' : 'Not yet synced'}
-                          aria-label={d.synced ? 'Synced to cloud' : 'Not yet synced'}
+                          title={d.synced ? 'Synced' : 'Not yet synced'}
+                          aria-label={d.synced ? 'Synced' : 'Not yet synced'}
                         >
-                          {d.synced ? <Cloud className="h-3 w-3 text-primary" /> : <CloudOff className="h-3 w-3 text-card-foreground/50" />}
+                          {d.synced ? (
+                            <Cloud className="h-3 w-3 text-primary" />
+                          ) : (
+                            <CloudOff className="h-3 w-3 text-card-foreground/50" aria-label="Not yet synced" />
+                          )}
                         </div>
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium truncate" title={`Last opened ${new Date(d.last_opened_at).toLocaleString()}`}>{profile?.display_name || d.display_name || 'Unknown'}</p>
-                        <p className="text-[10px] text-card-foreground/50" title={`First discovered ${new Date(d.first_discovered_at).toLocaleString()}`}>First {new Date(d.first_discovered_at).toLocaleDateString()}</p>
+                        <p className="text-[10px] text-card-foreground/50" title={`First discovered ${new Date(d.first_discovered_at).toLocaleString()}`}>
+                          First {new Date(d.first_discovered_at).toLocaleDateString()}
+                        </p>
                       </div>
                     </div>
                     {sampleRec?.mood_tags && sampleRec.mood_tags.length > 0 && (
