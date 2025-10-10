@@ -45,6 +45,19 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
   useEffect(() => {
     let active = true;
     
+    // Prevent extension errors from bubbling up
+    const handleError = (event: ErrorEvent) => {
+      if (event.error?.message?.includes('extension') || 
+          event.filename?.includes('extension') ||
+          event.message?.includes('sendMessageToTab')) {
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+      }
+    };
+    
+    window.addEventListener('error', handleError);
+    
     // Get current user ID
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -88,6 +101,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
       active = false; 
       window.removeEventListener('keydown', onKey); 
       window.removeEventListener('profileUpdated', onProfileUpdated);
+      window.removeEventListener('error', handleError);
       document.body.style.overflow = prevOverflow; 
     };
   }, [userId, onClose, initialRecordings]);
