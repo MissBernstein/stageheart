@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
 import { ModalShell } from './ModalShell';
@@ -42,8 +42,19 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
   const voiceAvatarSeed = useVoiceAvatar();
   // search removed (profile will have <=3 recordings)
 
+  const handleMessageClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Message button clicked for:', profile?.display_name);
+    toast({
+      title: "Messaging Coming Soon",
+      description: `Direct messaging with ${profile?.display_name || 'this user'} will be available soon.`
+    });
+  }, [profile?.display_name, toast]);
+
   useEffect(() => {
     let active = true;
+    console.log('UserProfileModal useEffect triggered for userId:', userId);
     
     // Prevent extension errors from bubbling up
     const handleError = (event: ErrorEvent) => {
@@ -58,29 +69,37 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
     
     window.addEventListener('error', handleError);
     
-    // Get current user ID
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (active && user) {
-        console.log('Current user ID:', user.id, 'Viewing profile for:', userId);
-        setCurrentUserId(user.id);
-      }
-    })();
+    // Get current user ID (only once)
+    if (!currentUserId) {
+      (async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (active && user) {
+          console.log('Current user ID:', user.id, 'Viewing profile for:', userId);
+          setCurrentUserId(user.id);
+        }
+      })();
+    }
     
-    (async () => {
-      setLoadingProfile(true);
-      console.log('Starting profile load for userId:', userId);
-      const p = await getUserProfile(userId);
-      console.log('Profile load result:', p);
-      if (active) { setProfile(p); setLoadingProfile(false); }
-    })();
-    if (!initialRecordings) {
+    // Load profile data (only if not already loaded or userId changed)
+    if (!profile || profile.id !== userId) {
+      (async () => {
+        setLoadingProfile(true);
+        console.log('Starting profile load for userId:', userId);
+        const p = await getUserProfile(userId);
+        console.log('Profile load result:', p);
+        if (active) { setProfile(p); setLoadingProfile(false); }
+      })();
+    }
+    
+    // Load recordings (only if not provided and not already loaded)
+    if (!initialRecordings && recordings.length === 0) {
       (async () => {
         setLoadingRecs(true);
-  const recs = await listRecordingsByUser(userId);
+        const recs = await listRecordingsByUser(userId);
         if (active) { setRecordings(recs); setLoadingRecs(false); }
       })();
     }
+    
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -104,7 +123,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
       window.removeEventListener('error', handleError);
       document.body.style.overflow = prevOverflow; 
     };
-  }, [userId, onClose, initialRecordings]);
+  }, [userId, onClose]); // Removed initialRecordings from deps to prevent re-runs
 
   const filtered = recordings; // no search filtering needed
 
@@ -195,12 +214,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
                     variant="outline" 
                     size="sm" 
                     className="gap-2"
-                    onClick={() => {
-                      toast({
-                        title: "Messaging Coming Soon",
-                        description: `Direct messaging with ${profile?.display_name || 'this user'} will be available soon.`
-                      });
-                    }}
+                    onClick={handleMessageClick}
                   >
                     <img src={messagesIcon} alt="Message" className="w-4 h-4" />
                     Message
