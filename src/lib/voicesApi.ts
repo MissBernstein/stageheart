@@ -127,7 +127,6 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
       .from('user_profiles')
       .select('id, display_name, about, fav_genres, favorite_artists, links, status, profile_note_to_listeners, contact_visibility, dm_enabled, comments_enabled, created_at, updated_at')
       .eq('id', userId)
-      .eq('status', 'active')
       .maybeSingle();
     
     console.log('Direct query result:', { data, error });
@@ -206,8 +205,8 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
       display_name: profile.display_name,
       status: profile.status,
       contact_visibility: profile.contact_visibility,
-      dm_enabled: false,
-      comments_enabled: false,
+      dm_enabled: profile.dm_enabled ?? false,
+      comments_enabled: profile.comments_enabled ?? false,
       created_at: profile.created_at,
       updated_at: profile.updated_at
     } as UserProfile;
@@ -229,8 +228,8 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
           display_name: profile.display_name,
           status: profile.status,
           contact_visibility: profile.contact_visibility,
-          dm_enabled: false,
-          comments_enabled: false,
+          dm_enabled: profile.dm_enabled ?? false,
+          comments_enabled: profile.comments_enabled ?? false,
           created_at: profile.created_at,
           updated_at: profile.updated_at
         } as UserProfile;
@@ -243,8 +242,8 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
         display_name: profile.display_name,
         status: profile.status,
         contact_visibility: profile.contact_visibility,
-        dm_enabled: false,
-        comments_enabled: false,
+        dm_enabled: profile.dm_enabled ?? false,
+        comments_enabled: profile.comments_enabled ?? false,
         created_at: profile.created_at,
         updated_at: profile.updated_at
       } as UserProfile;

@@ -48,7 +48,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
   const [sendingMessage, setSendingMessage] = useState(false);
   const messageTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const isOwnProfile = currentUserId === userId;
-  const canMessage = Boolean(profile?.dm_enabled) && !isOwnProfile;
+  const canMessage = profile?.dm_enabled === true && !isOwnProfile;
 
   const resetComposer = useCallback(() => {
     setMessageDraft('');
@@ -85,7 +85,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
       return;
     }
 
-    if (!profile?.dm_enabled) {
+    if (profile?.dm_enabled === false) {
       toast({
         title: 'Messaging disabled',
         description: `${profile?.display_name || 'This performer'} has DMs turned off right now.`,
@@ -110,7 +110,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
       return;
     }
 
-    if (!profile?.dm_enabled) {
+    if (profile?.dm_enabled === false) {
       toast({
         title: 'Messaging disabled',
         description: `${profile?.display_name || 'This performer'} is not accepting DMs right now.`,
@@ -324,7 +324,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
                   </AnimatedButton>
                   <AnimatedButton variant="outline" size="sm" className="gap-2"><Share2 className="w-4 h-4" />Share</AnimatedButton>
                 </div>
-                {!loadingProfile && !isOwnProfile && profile && !profile.dm_enabled && (
+                {!loadingProfile && !isOwnProfile && profile?.dm_enabled === false && (
                   <p className="text-[11px] text-card-foreground/60">
                     {profile.display_name || 'This performer'} has DMs turned off for now.
                   </p>
