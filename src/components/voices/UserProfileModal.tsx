@@ -106,9 +106,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
                   {currentUserId === userId ? (
                     <ProceduralAvatar seed={voiceAvatarSeed} className="w-20 h-20" />
                   ) : (
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center text-3xl font-semibold text-card-foreground shadow-inner">
-                      {profile?.display_name?.charAt(0) || '?' }
-                    </div>
+                    <ProceduralAvatar seed={userId} className="w-20 h-20" />
                   )}
                 </motion.div>
                 <div className="space-y-2">
