@@ -8,7 +8,7 @@ import { ChipToggle } from '@/ui/ChipToggle';
 import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
 import { Search, Filter, Play, X, Trash2, RefreshCw, Share2, Cloud, CloudOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { incrementPlay } from '@/lib/voicesApi';
+import { incrementPlay, getRecordingSignedUrls } from '@/lib/voicesApi';
 import voicesIcon from '@/assets/feelingjourneyicon.png';
 import { usePlayer } from '@/hooks/usePlayer';
 import { Recording } from '@/types/voices';
@@ -241,7 +241,8 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
   // Build or refresh the mystery queue when recordings load or filter changes
   useEffect(() => {
     if (!loading) {
-      const playable = filtered.filter(r => (r.file_stream_url || r.file_original_url));
+      // All recordings are now playable - URLs fetched on-demand
+      const playable = filtered;
       if (playable.length) {
         setMysteryQueue(playable.slice(0, 25));
         setCurrentMysteryIndex(prev => prev < playable.length ? prev : 0);
@@ -258,11 +259,9 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
   useEffect(() => {
     const target = mysteryQueue[currentMysteryIndex];
     if (target) {
-      const hasSrc = !!(target.file_stream_url || target.file_original_url);
-      if (hasSrc) {
-        loadRecording(target);
-        setTimeout(() => { play(); }, 50);
-      }
+      // URLs will be fetched by usePlayer on-demand
+      loadRecording(target);
+      setTimeout(() => { play(); }, 50);
       setRevealed(false);
       setOfferReveal(false);
       stopAutoSkip();
@@ -273,17 +272,27 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
   useEffect(() => {
     if (!mysteryQueue.length) return;
     const next = mysteryQueue[(currentMysteryIndex + 1) % mysteryQueue.length];
-    if (!next) return;
-    if (preloadSet.current.has(next.id)) return;
-    const url = next.file_stream_url || next.file_original_url;
-    if (!url) return;
-    try {
-      const a = new Audio();
-      a.preload = 'auto';
-      a.src = url;
-      a.load();
-      preloadSet.current.add(next.id);
-    } catch {}
+    if (!next || preloadSet.current.has(next.id)) return;
+    
+    // Preload with signed URL fetch
+    (async () => {
+      try {
+        let url = next.file_stream_url || next.file_original_url;
+        if (!url) {
+          const urls = await getRecordingSignedUrls(next.id);
+          url = urls?.file_stream_url || urls?.file_original_url;
+        }
+        if (url) {
+          const a = new Audio();
+          a.preload = 'auto';
+          a.src = url;
+          a.load();
+          preloadSet.current.add(next.id);
+        }
+      } catch (e) {
+        console.warn('Preload failed:', e);
+      }
+    })();
   }, [currentMysteryIndex, mysteryQueue]);
 
   // Mid / end trigger for reveal offer
@@ -410,54 +419,47 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
               />
               <div className="flex items-start justify-between mb-4">
                 <h3 className="font-semibold text-[18px] tracking-tight" style={{ fontFamily: '"Love Ya Like A Sister"' }}>{currentMystery.title}</h3>
-                {(() => {
-                  const playable = !!(currentMystery.file_stream_url || currentMystery.file_original_url);
-                  return (
-                    <div className="relative">
-                      {/* Countdown ring */}
-                      {autoSkipProgress > 0 && !revealed && (
-                        <svg className="absolute -inset-1.5 h-[54px] w-[54px]" viewBox="0 0 60 60" aria-hidden>
-                          <circle cx="30" cy="30" r="26" stroke="var(--border)" strokeWidth="2" fill="none" opacity="0.25" />
-                          <motion.circle
-                            cx="30" cy="30" r="26" fill="none"
-                            stroke="hsl(var(--primary))"
-                            strokeWidth="3"
-                            strokeLinecap="round"
-                            strokeDasharray={2 * Math.PI * 26}
-                            strokeDashoffset={(1 - autoSkipProgress) * 2 * Math.PI * 26}
-                            animate={{ strokeDashoffset: (1 - autoSkipProgress) * 2 * Math.PI * 26 }}
-                            transition={{ type: 'tween', duration: 0.1 }}
-                          />
-                        </svg>
-                      )}
-                      <motion.div
-                        animate={prefersReducedMotion || !playable || currentRecording?.id !== currentMystery.id || !isPlaying ? { scale: 1 } : { scale: 1 + Math.min(0.05, 0.02 + (audioLevel || 0) * 0.05) }}
-                        transition={{ duration: 0.25 }}
-                      >
-                        <AnimatedButton
-                          size="icon"
-                          variant="ghost"
-                          disabled={!playable}
-                          onClick={() => {
-                            if (!playable) return;
-                            if (currentRecording?.id === currentMystery.id && isPlaying) {
-                              pause();
-                            } else {
-                              loadRecording(currentMystery);
-                              play();
-                              incrementPlay(currentMystery.id);
-                              currentMystery.plays_count += 1;
-                            }
-                          }}
-                          className="h-11 w-11"
-                        >
-                          {currentRecording?.id === currentMystery.id && isPlaying ? <PauseIcon /> : <Play className="w-5 h-5" />}
-                          <span className="sr-only">{currentRecording?.id === currentMystery.id && isPlaying ? 'Pause' : 'Play'}</span>
-                        </AnimatedButton>
-                      </motion.div>
-                    </div>
-                  );
-                })()}
+                <div className="relative">
+                  {/* Countdown ring */}
+                  {autoSkipProgress > 0 && !revealed && (
+                    <svg className="absolute -inset-1.5 h-[54px] w-[54px]" viewBox="0 0 60 60" aria-hidden>
+                      <circle cx="30" cy="30" r="26" stroke="var(--border)" strokeWidth="2" fill="none" opacity="0.25" />
+                      <motion.circle
+                        cx="30" cy="30" r="26" fill="none"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeDasharray={2 * Math.PI * 26}
+                        strokeDashoffset={(1 - autoSkipProgress) * 2 * Math.PI * 26}
+                        animate={{ strokeDashoffset: (1 - autoSkipProgress) * 2 * Math.PI * 26 }}
+                        transition={{ type: 'tween', duration: 0.1 }}
+                      />
+                    </svg>
+                  )}
+                  <motion.div
+                    animate={prefersReducedMotion || currentRecording?.id !== currentMystery.id || !isPlaying ? { scale: 1 } : { scale: 1 + Math.min(0.05, 0.02 + (audioLevel || 0) * 0.05) }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    <AnimatedButton
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => {
+                        if (currentRecording?.id === currentMystery.id && isPlaying) {
+                          pause();
+                        } else {
+                          loadRecording(currentMystery);
+                          play();
+                          incrementPlay(currentMystery.id);
+                          currentMystery.plays_count += 1;
+                        }
+                      }}
+                      className="h-11 w-11"
+                    >
+                      {currentRecording?.id === currentMystery.id && isPlaying ? <PauseIcon /> : <Play className="w-5 h-5" />}
+                      <span className="sr-only">{currentRecording?.id === currentMystery.id && isPlaying ? 'Pause' : 'Play'}</span>
+                    </AnimatedButton>
+                  </motion.div>
+                </div>
               </div>
               <div className="space-y-4 text-sm text-card-foreground/70">
                 <p className="text-xs uppercase tracking-wide text-card-foreground/40">Mysterious Voice #{currentMysteryIndex+1}</p>
@@ -499,9 +501,6 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
                       style={{ filter: `brightness(${1 + (audioLevel||0)*0.4})` }}
                     />
                   </div>
-                )}
-                {!currentMystery.file_stream_url && !currentMystery.file_original_url && (
-                  <p className="text-[11px] text-destructive/70">Audio not ready / unsupported format. Skipping will find another.</p>
                 )}
               </div>
             </AnimatedCard>

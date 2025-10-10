@@ -516,6 +516,10 @@ export type Database = {
           id: string | null
         }[]
       }
+      get_recording_signed_urls: {
+        Args: { p_expiry_seconds?: number; p_recording_id: string }
+        Returns: Json
+      }
       increment_recording_plays: {
         Args: { recording_uuid: string }
         Returns: undefined

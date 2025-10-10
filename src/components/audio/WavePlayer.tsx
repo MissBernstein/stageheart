@@ -2,6 +2,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { theme } from '../../styles/theme';
+import { getRecordingSignedUrls } from '@/lib/voicesApi';
 import type { Recording } from '../../types/voices';
 
 interface WavePlayerProps {
@@ -24,6 +25,33 @@ export const WavePlayer: React.FC<WavePlayerProps> = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(recording.duration_sec || 0);
   const [hasStarted, setHasStarted] = useState(false);
+  const [audioSrc, setAudioSrc] = useState<string>('');
+
+  // Fetch signed URL on mount or when recording changes
+  useEffect(() => {
+    let mounted = true;
+    
+    const loadAudioUrl = async () => {
+      // Try existing URLs first
+      let url = recording.file_stream_url || recording.file_original_url;
+      
+      // If no URL, fetch signed URL
+      if (!url) {
+        const urls = await getRecordingSignedUrls(recording.id);
+        url = urls?.file_stream_url || urls?.file_original_url || '';
+      }
+      
+      if (mounted && url) {
+        setAudioSrc(url);
+      }
+    };
+    
+    loadAudioUrl();
+    
+    return () => {
+      mounted = false;
+    };
+  }, [recording.id, recording.file_stream_url, recording.file_original_url]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -106,7 +134,7 @@ export const WavePlayer: React.FC<WavePlayerProps> = ({
     }}>
       <audio
         ref={audioRef}
-        src={recording.file_stream_url || recording.file_original_url}
+        src={audioSrc}
         preload="metadata"
         autoPlay={autoplay}
       />

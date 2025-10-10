@@ -11,9 +11,10 @@ export interface ListVoicesParams {
 export async function listVoices(params: ListVoicesParams = {}): Promise<Recording[]> {
   const { search, mood, limit = 50 } = params;
   
+  // Select columns excluding file URLs for security
   let query = supabase
     .from('recordings')
-    .select('*')
+    .select('id, user_id, title, filesize_bytes, duration_sec, format_original, format_stream, loudness_lufs, mood_tags, voice_type, language, is_signature, state, comments_enabled, plays_count, reports_count, moderation_status, created_at, updated_at')
     .eq('state', 'public')
     .eq('moderation_status', 'clean')
     .order('created_at', { ascending: false })
@@ -129,9 +130,17 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
 }
 
 export async function listRecordingsByUser(userId: string): Promise<Recording[]> {
+  // For user's own recordings, include URLs; for others, exclude them
+  const { data: { session } } = await supabase.auth.getSession();
+  const isOwnProfile = session?.user?.id === userId;
+  
+  const selectFields = isOwnProfile 
+    ? '*' 
+    : 'id, user_id, title, filesize_bytes, duration_sec, format_original, format_stream, loudness_lufs, mood_tags, voice_type, language, is_signature, state, comments_enabled, plays_count, reports_count, moderation_status, created_at, updated_at';
+  
   const { data: recordings, error } = await supabase
     .from('recordings')
-    .select('*')
+    .select(selectFields as any)
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
@@ -156,7 +165,7 @@ export async function listRecordingsByUser(userId: string): Promise<Recording[]>
   } as UserProfile : undefined;
 
   // Combine recordings with profile
-  return (recordings || []).map(r => ({
+  return (recordings || []).map((r: any) => ({
     ...r,
     user_profile: userProfile
   })) as Recording[];
@@ -219,6 +228,29 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
     ...data,
     links: Array.isArray(data.links) ? data.links as any[] : []
   } as unknown as UserProfile;
+}
+
+export async function getRecordingSignedUrls(recordingId: string, expirySeconds: number = 3600): Promise<{
+  file_original_url?: string;
+  file_stream_url?: string;
+  waveform_json_url?: string;
+} | null> {
+  try {
+    const { data, error } = await supabase.rpc('get_recording_signed_urls', {
+      p_recording_id: recordingId,
+      p_expiry_seconds: expirySeconds
+    });
+
+    if (error) {
+      console.error('Error getting signed URLs:', error);
+      return null;
+    }
+
+    return data as any;
+  } catch (e) {
+    console.error('Exception getting signed URLs:', e);
+    return null;
+  }
 }
 
 export async function reportRecording(recordingId: string, reason: string, reporterUserId?: string): Promise<boolean> {

@@ -135,10 +135,25 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
   }, []);
 
-  const loadRecording = useCallback((recording: Recording) => {
+  const loadRecording = useCallback(async (recording: Recording) => {
     if (!audioRef.current) return;
     
-    audioRef.current.src = recording.file_stream_url || recording.file_original_url || '';
+    // Fetch signed URL if not already present
+    let audioUrl = recording.file_stream_url || recording.file_original_url || '';
+    
+    if (!audioUrl && recording.id) {
+      try {
+        const { getRecordingSignedUrls } = await import('@/lib/voicesApi');
+        const urls = await getRecordingSignedUrls(recording.id);
+        if (urls) {
+          audioUrl = urls.file_stream_url || urls.file_original_url || '';
+        }
+      } catch (e) {
+        console.error('Failed to fetch signed URL:', e);
+      }
+    }
+    
+    audioRef.current.src = audioUrl;
     setCurrentRecording(recording);
     setCurrentTime(0);
     setDuration(0);
