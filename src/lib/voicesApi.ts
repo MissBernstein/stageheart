@@ -122,12 +122,15 @@ export async function listVoices(params: ListVoicesParams = {}): Promise<Recordi
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   console.log('getUserProfile called with userId:', userId);
   
-  const { data, error } = await supabase
-    .from('user_profiles')
-    .select('id, display_name, about, fav_genres, favorite_artists, links, status, profile_note_to_listeners, contact_visibility')
-    .eq('id', userId)
-    .eq('status', 'active')
-    .maybeSingle();
+  try {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('id, display_name, about, fav_genres, favorite_artists, links, status, profile_note_to_listeners, contact_visibility')
+      .eq('id', userId)
+      .eq('status', 'active')
+      .maybeSingle();
+    
+    console.log('Direct query result:', { data, error });
 
   if (error) {
     console.error('Error fetching user profile (will try sanitized fallback):', error.message);
@@ -171,11 +174,18 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     }
   }
 
-  if (!data) return null;
+  if (!data) {
+    console.log('No direct profile data found for userId:', userId);
+    return null;
+  }
+
+  console.log('Direct profile query successful:', data);
 
   // Check if we need to filter sensitive fields based on contact_visibility
   const { data: { session } } = await supabase.auth.getSession();
   const isOwnProfile = session?.user?.id === userId;
+  
+  console.log('Profile access check - isOwnProfile:', isOwnProfile, 'contact_visibility:', data.contact_visibility);
   
   // Transform Json type to ProfileLink[]
   const profile = {
@@ -241,6 +251,10 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   }
 
   return profile;
+  } catch (err) {
+    console.error('Unexpected error in getUserProfile:', err);
+    return null;
+  }
 }
 
 export async function listRecordingsByUser(userId: string): Promise<Recording[]> {
