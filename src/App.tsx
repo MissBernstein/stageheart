@@ -20,6 +20,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import { PlayerProvider } from "./hooks/usePlayer";
 import { UnreadMessagesProvider } from "./hooks/useUnreadMessages";
 import { CombinedLegalBanner } from "./components/CombinedLegalBanner";
+import { AdminGuard } from "./components/auth/AdminGuard";
 
 const queryClient = new QueryClient();
 
@@ -45,10 +46,10 @@ const App = () => (
                   <Route path="/privacy" element={<Privacy />} />
                   <Route path="/favorites" element={<Favorites />} />
                   <Route path="/add" element={<AddSong />} />
-                  <Route path="/admin/submissions" element={<AdminSubmissions />} />
-                  <Route path="/admin/migrate" element={<MigrateLegacySongs />} />
-                  <Route path="/admin/simple-migration" element={<SimpleMigration />} />
-                  <Route path="/admin/import-songs" element={<ImportSongsPage />} />
+                  <Route path="/admin/submissions" element={<AdminGuard><AdminSubmissions /></AdminGuard>} />
+                  <Route path="/admin/migrate" element={<AdminGuard><MigrateLegacySongs /></AdminGuard>} />
+                  <Route path="/admin/simple-migration" element={<AdminGuard><SimpleMigration /></AdminGuard>} />
+                  <Route path="/admin/import-songs" element={<AdminGuard><ImportSongsPage /></AdminGuard>} />
                   {/* Voices & Profiles Feature - accessible at /app/* */}
                   <Route path="/app/*" element={<VoicesApp />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
