@@ -16,7 +16,7 @@ import { usePlayer } from '@/hooks/usePlayer';
 import { ProceduralAvatar } from '@/components/ui/ProceduralAvatar';
 import { useVoiceAvatar } from '@/hooks/useVoiceAvatar';
 import { supabase } from '@/integrations/supabase/client';
-// (search removed)
+import _ from 'lodash';
 
 interface UserProfileModalProps {
   userId: string;
@@ -42,38 +42,45 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
   const voiceAvatarSeed = useVoiceAvatar();
   // search removed (profile will have <=3 recordings)
 
-  const handleMessageClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('Message button clicked for:', profile?.display_name);
-    toast({
-      title: "Messaging Coming Soon",
-      description: `Direct messaging with ${profile?.display_name || 'this user'} will be available soon.`
-    });
-  }, [profile?.display_name, toast]);
+  // Debounce Message Button Click
+  const handleMessageClick = useCallback(
+    _.debounce((e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('Message button clicked for:', profile?.display_name);
+      toast({
+        title: 'Messaging Coming Soon',
+        description: `Direct messaging with ${profile?.display_name || 'this user'} will be available soon.`,
+      });
+    }, 300),
+    [profile?.display_name, toast]
+  );
 
+  // Optimize useEffect dependencies and cleanup
   useEffect(() => {
-    let active = true;
+    const activeRef = { current: true };
     console.log('UserProfileModal useEffect triggered for userId:', userId);
-    
+
     // Prevent extension errors from bubbling up
     const handleError = (event: ErrorEvent) => {
-      if (event.error?.message?.includes('extension') || 
-          event.filename?.includes('extension') ||
-          event.message?.includes('sendMessageToTab')) {
+      if (
+        event.error?.message?.includes('extension') ||
+        event.filename?.includes('extension') ||
+        event.message?.includes('sendMessageToTab')
+      ) {
         event.preventDefault();
         event.stopPropagation();
         return false;
       }
     };
-    
+
     window.addEventListener('error', handleError);
-    
+
     // Get current user ID (only once)
     if (!currentUserId) {
       (async () => {
         const { data: { user } } = await supabase.auth.getUser();
-        if (active && user) {
+        if (activeRef.current && user) {
           console.log('Current user ID:', user.id, 'Viewing profile for:', userId);
           setCurrentUserId(user.id);
         }
@@ -87,7 +94,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
         console.log('Starting profile load for userId:', userId);
         const p = await getUserProfile(userId);
         console.log('Profile load result:', p);
-        if (active) { setProfile(p); setLoadingProfile(false); }
+        if (activeRef.current) {
+          setProfile(p);
+          setLoadingProfile(false);
+        }
       })();
     }
     
@@ -96,7 +106,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
       (async () => {
         setLoadingRecs(true);
         const recs = await listRecordingsByUser(userId);
-        if (active) { setRecordings(recs); setLoadingRecs(false); }
+        if (activeRef.current) {
+          setRecordings(recs);
+          setLoadingRecs(false);
+        }
       })();
     }
     
@@ -107,7 +120,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
     // Listen for profile updates from settings modal
     const onProfileUpdated = async () => {
       console.log('Profile updated event received');
-      if (active) {
+      if (activeRef.current) {
         const updatedProfile = await getUserProfile(userId);
         console.log('Updated profile data:', updatedProfile);
         setProfile(updatedProfile);
@@ -117,7 +130,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
     window.addEventListener('keydown', onKey);
     window.addEventListener('profileUpdated', onProfileUpdated);
     return () => { 
-      active = false; 
+      activeRef.current = false;
       window.removeEventListener('keydown', onKey); 
       window.removeEventListener('profileUpdated', onProfileUpdated);
       window.removeEventListener('error', handleError);
