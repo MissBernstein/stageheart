@@ -119,7 +119,19 @@ export async function sendMessage(toUserId: string, body: string, subject?: stri
 
   if (error) {
     console.error('Error sending message:', error);
-    return { success: false, error: error.message };
+    let friendly = error.message;
+    const details = [error?.details, error?.hint].filter(Boolean).join(' ');
+    const combined = [friendly, details].filter(Boolean).join(' ').toLowerCase();
+
+    if (combined.includes('row level security') || combined.includes('violates row-level security')) {
+      friendly = 'This performer does not currently accept direct messages.';
+    } else if (combined.includes('not null') || combined.includes('null value')) {
+      friendly = 'Message could not be sent because a required field was missing.';
+    } else if (!friendly) {
+      friendly = 'Message could not be sent. Please try again in a moment.';
+    }
+
+    return { success: false, error: friendly.trim() };
   }
 
   return { success: true, id: data.id };

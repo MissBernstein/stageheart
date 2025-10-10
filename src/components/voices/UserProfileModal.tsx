@@ -47,6 +47,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
   const [messageDraft, setMessageDraft] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
   const messageTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const isOwnProfile = currentUserId === userId;
+  const canMessage = Boolean(profile?.dm_enabled) && !isOwnProfile;
 
   const resetComposer = useCallback(() => {
     setMessageDraft('');
@@ -57,11 +59,36 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
     e.preventDefault();
     e.stopPropagation();
 
-    if (currentUserId === userId) {
+    if (loadingProfile) {
+      toast({
+        title: 'Hang tight',
+        description: 'We’re still loading this profile. Try again in a second.',
+      });
+      return;
+    }
+
+    if (!profile) {
+      toast({
+        title: 'Profile unavailable',
+        description: 'We couldn’t load this performer’s details. Please try again later.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (isOwnProfile) {
       toast({
         title: 'Can’t message yourself',
         description: 'Switch profiles to reach out to another performer.',
         variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!profile?.dm_enabled) {
+      toast({
+        title: 'Messaging disabled',
+        description: `${profile?.display_name || 'This performer'} has DMs turned off right now.`,
       });
       return;
     }
@@ -71,7 +98,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
     } else {
       setShowMessageComposer(true);
     }
-  }, [currentUserId, resetComposer, showMessageComposer, toast, userId]);
+  }, [isOwnProfile, loadingProfile, profile, resetComposer, showMessageComposer, toast]);
 
   const handleSendMessage = useCallback(async () => {
     const body = messageDraft.trim();
@@ -80,6 +107,15 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
         title: 'Add a message first',
         description: 'Write a quick note before hitting send.',
       });
+      return;
+    }
+
+    if (!profile?.dm_enabled) {
+      toast({
+        title: 'Messaging disabled',
+        description: `${profile?.display_name || 'This performer'} is not accepting DMs right now.`,
+      });
+      resetComposer();
       return;
     }
 
@@ -101,7 +137,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
       description: `Your note to ${profile?.display_name || 'this performer'} is on the way.`,
     });
     resetComposer();
-  }, [messageDraft, profile?.display_name, resetComposer, toast, userId]);
+  }, [messageDraft, profile, resetComposer, toast, userId]);
 
   useEffect(() => {
     if (!showMessageComposer) return;
@@ -283,14 +319,21 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
                     size="sm" 
                     className="gap-2"
                     onClick={handleMessageClick}
+                    disabled={!canMessage || loadingProfile || sendingMessage || !profile}
+                    aria-disabled={!canMessage || loadingProfile || !profile}
                   >
                     <img src={messagesIcon} alt="Message" className="w-4 h-4" />
                     Message
                   </AnimatedButton>
                   <AnimatedButton variant="outline" size="sm" className="gap-2"><Share2 className="w-4 h-4" />Share</AnimatedButton>
                 </div>
+                {!loadingProfile && !isOwnProfile && profile && !profile.dm_enabled && (
+                  <p className="text-[11px] text-card-foreground/60">
+                    {profile.display_name || 'This performer'} has DMs turned off for now.
+                  </p>
+                )}
                 <AnimatePresence>
-                  {showMessageComposer && (
+                  {showMessageComposer && canMessage && (
                     <motion.div
                       key="message-composer"
                       className="w-full max-w-md rounded-2xl border border-card-border/60 bg-card/70 p-4 shadow-sm space-y-3"
