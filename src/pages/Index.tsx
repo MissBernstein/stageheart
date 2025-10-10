@@ -402,6 +402,7 @@ const Index = () => {
                 onNavigateInbox={() => setShowInbox(true)}
                 onOpenSettings={() => setShowSettings(true)}
                 onOpenMyProfile={() => setShowUserProfile(true)}
+                onLogout={handleLogout}
                 // capture trigger refs via onOpenChange if needed
               />
             </div>

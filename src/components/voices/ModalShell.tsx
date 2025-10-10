@@ -126,9 +126,9 @@ export const ModalShell: React.FC<ModalShellProps> = ({
               initial={prefersReducedMotion ? undefined : { opacity: 0, y: 12, scale: 0.98 }}
               animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0, scale: 1, transition: { duration: 0.22, ease: [0.16,0.8,0.24,1] } }}
               exit={prefersReducedMotion ? undefined : { opacity: 0, y: 8, scale: 0.985, transition: { duration: 0.15 } }}
-              className={`outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded-3xl bg-card/95 border border-card-border/70 shadow-card mx-auto max-h-[80vh] overflow-hidden ${className}`}
+              className={`outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded-3xl bg-card/95 border border-card-border/70 shadow-card mx-auto max-h-[80vh] flex flex-col ${className}`}
             >
-              <div className={`overflow-y-auto ${contentClassName}`}>
+              <div className={`overflow-y-auto flex-1 ${contentClassName}`}>
                 {children}
               </div>
             </motion.div>

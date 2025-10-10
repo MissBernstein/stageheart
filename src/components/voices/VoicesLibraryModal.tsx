@@ -655,19 +655,19 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
                         ))}
                       </div>
                     )}
-                    <div className="flex gap-2 mt-auto">
+                    <div className="flex gap-1 mt-auto">
                       <AnimatedButton size="sm" variant="outline" className="text-[11px] flex-1"
                         onClick={(e:any) => { profileTriggerRef.current = e.currentTarget; markDiscovered(d.id, profile?.display_name || d.display_name); setProfileUserId(d.id); }}>
                         View Profile
                       </AnimatedButton>
                       {sampleRec && (
-                        <AnimatedButton size="icon" variant="ghost" className="h-8 w-8"
+                        <AnimatedButton size="icon" variant="ghost" className="h-8 w-8 shrink-0"
                           onClick={() => { loadRecording(sampleRec); play(); incrementPlay(sampleRec.id); sampleRec.plays_count += 1; }}>
                           {currentRecording?.id === sampleRec.id && isPlaying ? <PauseIcon /> : <Play className="w-4 h-4" />}
                           <span className="sr-only">{currentRecording?.id === sampleRec.id && isPlaying ? 'Pause' : 'Play sample'}</span>
                         </AnimatedButton>
                       )}
-                      <AnimatedButton size="icon" variant="ghost" title="Share profile link" className="h-8 w-8" onClick={() => shareProfile(d.id, profile?.display_name || d.display_name)}>
+                      <AnimatedButton size="icon" variant="ghost" title="Share profile link" className="h-8 w-8 shrink-0" onClick={() => shareProfile(d.id, profile?.display_name || d.display_name)}>
                         <Share2 className="w-4 h-4" />
                         <span className="sr-only">Share profile link</span>
                       </AnimatedButton>
