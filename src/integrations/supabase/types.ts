@@ -612,6 +612,15 @@ export type Database = {
           id: string | null
         }[]
       }
+      get_recording_by_file_path: {
+        Args: { file_path: string }
+        Returns: {
+          moderation_status: string
+          owner_id: string
+          recording_id: string
+          recording_state: string
+        }[]
+      }
       get_recording_signed_urls: {
         Args: { p_expiry_seconds?: number; p_recording_id: string }
         Returns: Json
