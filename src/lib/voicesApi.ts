@@ -132,8 +132,14 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     
     console.log('Direct query result:', { data, error });
 
-  if (error) {
-    console.error('Error fetching user profile (will try sanitized fallback):', error.message);
+  // If we have an error OR no data, try the sanitized fallback
+  if (error || !data) {
+    if (error) {
+      console.error('Error fetching user profile (will try sanitized fallback):', error.message);
+    } else {
+      console.log('No direct profile data found, trying sanitized fallback for userId:', userId);
+    }
+    
     // Attempt sanitized fallback for anonymous / restricted access
     try {
       console.log('Trying sanitized fallback for userId:', userId);
@@ -172,11 +178,6 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
       console.warn('Sanitized user profile fallback failed:', (e as any).message);
       return null;
     }
-  }
-
-  if (!data) {
-    console.log('No direct profile data found for userId:', userId);
-    return null;
   }
 
   console.log('Direct profile query successful:', data);
