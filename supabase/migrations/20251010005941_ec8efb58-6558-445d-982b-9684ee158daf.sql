@@ -17,12 +17,26 @@ GRANT SELECT ON public.public_profiles_sanitized TO authenticated;
 
 -- Update comment to clarify security model
 COMMENT ON VIEW public.public_profiles_sanitized IS 
-'Sanitized view of active user profiles. Contains limited, safe-to-expose profile information.
-SECURITY MODEL: This view uses security_invoker=on, meaning it executes with the caller''s permissions
-and respects the RLS policies of the underlying user_profiles table. Direct access is restricted to
-authenticated users. Anonymous users should use the fetch_public_profiles() SECURITY DEFINER function.
-DATA EXPOSED: display_name, limited about text (200 chars), genres, sample of favorite_artists (max 5).
-FILTERED TO: status=active profiles only.';
+'### Security Model for public_profiles_sanitized View ###
+
+1. **Security Configuration**:
+   - This view uses `security_invoker=on`, meaning it executes with the caller''s permissions.
+   - It respects the Row-Level Security (RLS) policies of the underlying `user_profiles` table.
+
+2. **Access Control**:
+   - Direct access is restricted to authenticated users.
+   - Anonymous users must use the `fetch_public_profiles()` SECURITY DEFINER function.
+
+3. **Data Exposure**:
+   - Fields exposed: `display_name`, truncated `about` text (200 chars), `genres`, and a sample of `favorite_artists` (max 5).
+   - Only profiles with `status=active` are included.
+
+4. **Purpose**:
+   - Provides a sanitized subset of user profiles safe for limited public consumption.
+
+### Notes ###
+- Ensure RLS is enabled on the `user_profiles` table.
+- Regularly audit permissions and access patterns to maintain security.';
 
 -- Verify base table has proper RLS (should already be enabled)
 ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
@@ -31,8 +45,10 @@ ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 DO $$
 BEGIN
   RAISE NOTICE 'Security configuration verified for public_profiles_sanitized view:';
-  RAISE NOTICE '  - security_invoker: ON (respects caller permissions)';
+  RAISE NOTICE '  - security_invoker: ON (respects caller permissions and RLS policies)';
   RAISE NOTICE '  - Base table RLS: ENABLED';
   RAISE NOTICE '  - Access: authenticated users only';
-  RAISE NOTICE '  - Anonymous access: via fetch_public_profiles() function only';
+  RAISE NOTICE '  - Anonymous access: via fetch_public_profiles() SECURITY DEFINER function';
+  RAISE NOTICE '  - Data exposed: display_name, about_snippet, genres, favorite_artists_sample';
+  RAISE NOTICE '  - Profiles filtered to: status=active only';
 END $$;
