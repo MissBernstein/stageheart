@@ -120,6 +120,8 @@ export async function listVoices(params: ListVoicesParams = {}): Promise<Recordi
 }
 
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
+  console.log('getUserProfile called with userId:', userId);
+  
   const { data, error } = await supabase
     .from('user_profiles')
     .select('id, display_name, about, fav_genres, favorite_artists, links, status, profile_note_to_listeners, contact_visibility')
@@ -131,9 +133,23 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     console.error('Error fetching user profile (will try sanitized fallback):', error.message);
     // Attempt sanitized fallback for anonymous / restricted access
     try {
+      console.log('Trying sanitized fallback for userId:', userId);
       const { data: sanitized, error: sanitizedErr } = await (supabase as any).rpc('fetch_public_profiles', { p_ids: [userId] });
-      if (sanitizedErr || !Array.isArray(sanitized) || !sanitized.length) return null;
+      console.log('Sanitized RPC response:', { sanitized, sanitizedErr });
+      
+      if (sanitizedErr) {
+        console.error('Sanitized fallback failed:', sanitizedErr);
+        return null;
+      }
+      
+      if (!Array.isArray(sanitized) || !sanitized.length) {
+        console.log('No sanitized data found for userId:', userId);
+        return null;
+      }
+      
       const s = sanitized[0];
+      console.log('Sanitized profile data:', s);
+      
       return {
         id: s.id,
         display_name: s.display_name,

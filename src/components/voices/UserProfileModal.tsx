@@ -28,6 +28,8 @@ interface UserProfileModalProps {
 
 
 export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onClose, initialRecordings, returnFocusRef }) => {
+  console.log('UserProfileModal opened with userId:', userId);
+  
   const prefersReducedMotion = usePrefersReducedMotion();
   const { loadRecording, currentRecording, isPlaying, play, pause } = usePlayer();
   const { isFavorite, toggleFavorite } = useVoiceFavorites();
@@ -47,14 +49,16 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (active && user) {
+        console.log('Current user ID:', user.id, 'Viewing profile for:', userId);
         setCurrentUserId(user.id);
       }
     })();
     
     (async () => {
       setLoadingProfile(true);
+      console.log('Starting profile load for userId:', userId);
       const p = await getUserProfile(userId);
-      console.log('Loaded profile data:', p);
+      console.log('Profile load result:', p);
       if (active) { setProfile(p); setLoadingProfile(false); }
     })();
     if (!initialRecordings) {
