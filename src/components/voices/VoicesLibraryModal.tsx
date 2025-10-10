@@ -546,16 +546,16 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
                 transition={{ duration: 0.28, ease: [0.22,0.72,0.28,0.99] }}
               >
                 <div className="flex items-center gap-3">
-                  {/* Procedural waveform avatar seeded by user id for a consistent abstract identity */}
-                  <ProceduralAvatar seed={currentMystery.user_id || 'unknown'} className="w-8 h-8" />
+                  {/* Procedural waveform avatar seeded by user profile id for a consistent abstract identity */}
+                  <ProceduralAvatar seed={currentMystery.user_profile?.id || 'unknown'} className="w-8 h-8" />
                   <div>
                     <p className="text-sm font-medium">{currentMystery.user_profile?.display_name || 'Anonymous'}</p>
                     <p className="text-[11px] text-card-foreground/60">Singer revealed • You can view their profile now.</p>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <AnimatedButton size="sm" onClick={(e:any) => { profileTriggerRef.current = e.currentTarget; markDiscovered(currentMystery.user_id, currentMystery.user_profile?.display_name || 'Anonymous'); setProfileUserId(currentMystery.user_id); }} className="text-xs">Open Profile</AnimatedButton>
-                  <AnimatedButton size="sm" variant="secondary" title="Share profile link" onClick={() => shareProfile(currentMystery.user_id, currentMystery.user_profile?.display_name || 'Anonymous')} className="text-xs flex items-center gap-1"><Share2 className="w-3.5 h-3.5" /> Share</AnimatedButton>
+                  <AnimatedButton size="sm" onClick={(e:any) => { profileTriggerRef.current = e.currentTarget; markDiscovered(currentMystery.user_profile?.id || '', currentMystery.user_profile?.display_name || 'Anonymous'); setProfileUserId(currentMystery.user_profile?.id || null); }} className="text-xs">Open Profile</AnimatedButton>
+                  <AnimatedButton size="sm" variant="secondary" title="Share profile link" onClick={() => shareProfile(currentMystery.user_profile?.id || '', currentMystery.user_profile?.display_name || 'Anonymous')} className="text-xs flex items-center gap-1"><Share2 className="w-3.5 h-3.5" /> Share</AnimatedButton>
                   <AnimatedButton size="sm" variant="outline" onClick={nextMystery} className="text-xs">Discover Another Voice</AnimatedButton>
                 </div>
               </motion.div>
@@ -602,8 +602,8 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filteredDiscovered.slice(0, 24).map(d => {
-                const profile = recordings.find(r => r.user_id === d.id)?.user_profile; // may be undefined if not in current fetch
-                const sampleRec = recordings.find(r => r.user_id === d.id);
+                const profile = recordings.find(r => r.user_profile?.id === d.id)?.user_profile; // may be undefined if not in current fetch
+                const sampleRec = recordings.find(r => r.user_profile?.id === d.id);
                 const isPlayingSample = currentRecording?.id === sampleRec?.id;
                 return (
                   <motion.div key={d.id} className="p-4 rounded-xl border border-card-border/60 bg-card/60 backdrop-blur-sm flex flex-col gap-3 group relative"

@@ -11,7 +11,8 @@ export interface ListVoicesParams {
 export async function listVoices(params: ListVoicesParams = {}): Promise<Recording[]> {
   const { search, mood, limit = 50 } = params;
   
-  // Select columns excluding file URLs for security
+  // Select columns excluding file URLs and user_id for security
+  // Note: user_id is kept internally for profile fetching but removed from final response
   let query = supabase
     .from('recordings')
     .select('id, user_id, title, filesize_bytes, duration_sec, format_original, format_stream, loudness_lufs, mood_tags, voice_type, language, is_signature, state, comments_enabled, plays_count, reports_count, moderation_status, created_at, updated_at')
@@ -66,16 +67,19 @@ export async function listVoices(params: ListVoicesParams = {}): Promise<Recordi
 
   const profileMap = new Map((profiles || []).map(p => [p.id, p]));
 
-  // Combine recordings with their profiles
-  let result = recordings.map(r => ({
-    ...r,
-    user_profile: profileMap.get(r.user_id) ? {
-      ...profileMap.get(r.user_id)!,
-      links: Array.isArray(profileMap.get(r.user_id)?.links) 
-        ? profileMap.get(r.user_id)!.links as any[]
-        : []
-    } as UserProfile : undefined
-  })) as Recording[];
+  // Combine recordings with their profiles and REMOVE user_id for security
+  let result = recordings.map(r => {
+    const { user_id, ...recordingWithoutUserId } = r;
+    return {
+      ...recordingWithoutUserId,
+      user_profile: profileMap.get(user_id) ? {
+        ...profileMap.get(user_id)!,
+        links: Array.isArray(profileMap.get(user_id)?.links) 
+          ? profileMap.get(user_id)!.links as any[]
+          : []
+      } as UserProfile : undefined
+    };
+  }) as Recording[];
 
   // Apply search filter
   if (search) {

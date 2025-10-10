@@ -33,7 +33,7 @@ export interface ProfileLink {
 
 export interface Recording {
   id: string;
-  user_id: string;
+  user_id?: string; // Only present for owner's own recordings; excluded from public queries for privacy
   title: string;
   file_original_url?: string;
   file_stream_url?: string;
