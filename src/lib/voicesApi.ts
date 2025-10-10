@@ -36,12 +36,13 @@ export async function listVoices(params: ListVoicesParams = {}): Promise<Recordi
 
   // Fetch user profiles for all recordings
   const userIds = [...new Set(recordings.map(r => r.user_id))];
-  // Select only non-sensitive profile columns; avoid exposing privacy flags directly
+  
+  // Select only columns appropriate for public listing, including contact_visibility for filtering
   const { data: profiles, error: profilesError } = await supabase
     .from('user_profiles')
-    // Only select columns guaranteed by current migration; new genre split columns may not exist yet
-    .select('id, display_name, about, fav_genres, favorite_artists, links, status')
+    .select('id, display_name, about, fav_genres, favorite_artists, links, status, contact_visibility')
     .in('id', userIds);
+    
   if (profilesError) {
     console.warn('Profile fetch restricted or failed; attempting sanitized fallback:', profilesError.message);
     // Fallback: call sanitized RPC if available (anonymous safe). We only supply ids to reduce data volume
@@ -56,7 +57,8 @@ export async function listVoices(params: ListVoicesParams = {}): Promise<Recordi
           fav_genres: s.genres,
           favorite_artists: s.favorite_artists_sample,
           links: [],
-          status: 'active'
+          status: 'active',
+          contact_visibility: 'public' // Sanitized profiles are public
         });
       }
       (profiles as any) = existing;
@@ -68,16 +70,40 @@ export async function listVoices(params: ListVoicesParams = {}): Promise<Recordi
   const profileMap = new Map((profiles || []).map(p => [p.id, p]));
 
   // Combine recordings with their profiles and REMOVE user_id for security
+  // Also filter profile data based on contact_visibility
   let result = recordings.map(r => {
     const { user_id, ...recordingWithoutUserId } = r;
+    const fullProfile = profileMap.get(user_id);
+    
+    let userProfile: UserProfile | undefined = undefined;
+    
+    if (fullProfile) {
+      // For public visibility, show full profile
+      if (fullProfile.contact_visibility === 'public') {
+        userProfile = {
+          ...fullProfile,
+          links: Array.isArray(fullProfile.links) ? fullProfile.links as any[] : []
+        } as UserProfile;
+      } else {
+        // For after_meet or private, only show basic info in listing
+        // Full profile data requires opening the profile page
+        userProfile = {
+          id: fullProfile.id,
+          display_name: fullProfile.display_name,
+          status: fullProfile.status,
+          contact_visibility: fullProfile.contact_visibility,
+          dm_enabled: false,
+          comments_enabled: false,
+          links: [],
+          created_at: '',
+          updated_at: ''
+        } as UserProfile;
+      }
+    }
+    
     return {
       ...recordingWithoutUserId,
-      user_profile: profileMap.get(user_id) ? {
-        ...profileMap.get(user_id)!,
-        links: Array.isArray(profileMap.get(user_id)?.links) 
-          ? profileMap.get(user_id)!.links as any[]
-          : []
-      } as UserProfile : undefined
+      user_profile: userProfile
     };
   }) as Recording[];
 
@@ -96,7 +122,7 @@ export async function listVoices(params: ListVoicesParams = {}): Promise<Recordi
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   const { data, error } = await supabase
     .from('user_profiles')
-    .select('id, display_name, about, fav_genres, favorite_artists, links, status, profile_note_to_listeners')
+    .select('id, display_name, about, fav_genres, favorite_artists, links, status, profile_note_to_listeners, contact_visibility')
     .eq('id', userId)
     .eq('status', 'active')
     .maybeSingle();
@@ -105,9 +131,9 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     console.error('Error fetching user profile (will try sanitized fallback):', error.message);
     // Attempt sanitized fallback for anonymous / restricted access
     try {
-  const { data: sanitized, error: sanitizedErr } = await (supabase as any).rpc('fetch_public_profiles', { p_ids: [userId] });
-  if (sanitizedErr || !Array.isArray(sanitized) || !sanitized.length) return null;
-  const s = sanitized[0];
+      const { data: sanitized, error: sanitizedErr } = await (supabase as any).rpc('fetch_public_profiles', { p_ids: [userId] });
+      if (sanitizedErr || !Array.isArray(sanitized) || !sanitized.length) return null;
+      const s = sanitized[0];
       return {
         id: s.id,
         display_name: s.display_name,
@@ -116,7 +142,12 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
         favorite_artists: s.favorite_artists_sample,
         links: [],
         status: 'active',
-        profile_note_to_listeners: ''
+        profile_note_to_listeners: '',
+        contact_visibility: 'private',
+        dm_enabled: false,
+        comments_enabled: false,
+        created_at: '',
+        updated_at: ''
       } as unknown as UserProfile;
     } catch (e) {
       console.warn('Sanitized user profile fallback failed:', (e as any).message);
@@ -126,11 +157,74 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
 
   if (!data) return null;
 
+  // Check if we need to filter sensitive fields based on contact_visibility
+  const { data: { session } } = await supabase.auth.getSession();
+  const isOwnProfile = session?.user?.id === userId;
+  
   // Transform Json type to ProfileLink[]
-  return {
+  const profile = {
     ...data,
     links: Array.isArray(data.links) ? data.links as any[] : []
   } as unknown as UserProfile;
+
+  // If it's the user's own profile or public visibility, return full data
+  if (isOwnProfile || data.contact_visibility === 'public') {
+    return profile;
+  }
+
+  // For 'private' visibility, filter out sensitive fields
+  if (data.contact_visibility === 'private') {
+    return {
+      id: profile.id,
+      display_name: profile.display_name,
+      status: profile.status,
+      contact_visibility: profile.contact_visibility,
+      dm_enabled: false,
+      comments_enabled: false,
+      created_at: profile.created_at,
+      updated_at: profile.updated_at
+    } as UserProfile;
+  }
+
+  // For 'after_meet', check if user has met this profile owner
+  if (data.contact_visibility === 'after_meet') {
+    try {
+      const { data: hasMet } = await supabase.rpc('has_met_user', { 
+        profile_user_id: userId 
+      });
+      
+      if (hasMet) {
+        return profile; // Full access after meeting
+      } else {
+        // Limited access before meeting
+        return {
+          id: profile.id,
+          display_name: profile.display_name,
+          status: profile.status,
+          contact_visibility: profile.contact_visibility,
+          dm_enabled: false,
+          comments_enabled: false,
+          created_at: profile.created_at,
+          updated_at: profile.updated_at
+        } as UserProfile;
+      }
+    } catch (e) {
+      console.warn('Failed to check meet status:', e);
+      // Default to limited access on error
+      return {
+        id: profile.id,
+        display_name: profile.display_name,
+        status: profile.status,
+        contact_visibility: profile.contact_visibility,
+        dm_enabled: false,
+        comments_enabled: false,
+        created_at: profile.created_at,
+        updated_at: profile.updated_at
+      } as UserProfile;
+    }
+  }
+
+  return profile;
 }
 
 export async function listRecordingsByUser(userId: string): Promise<Recording[]> {

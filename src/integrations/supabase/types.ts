@@ -520,6 +520,10 @@ export type Database = {
         Args: { p_expiry_seconds?: number; p_recording_id: string }
         Returns: Json
       }
+      has_met_user: {
+        Args: { profile_user_id: string }
+        Returns: boolean
+      }
       increment_recording_plays: {
         Args: { recording_uuid: string }
         Returns: undefined
