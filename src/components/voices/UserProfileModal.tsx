@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePrefersReducedMotion } from '@/ui/usePrefersReducedMotion';
 import { ModalShell } from './ModalShell';
-import { X, Share2, Link as LinkIcon, Globe2, Loader2, Heart, Mic } from 'lucide-react';
+import { X, Share2, Link as LinkIcon, Globe2, Loader2, Heart, Mic, Send } from 'lucide-react';
 import headphonesIcon from '@/assets/headphonesicon.png';
 import messagesIcon from '@/assets/messagesicon.png';
 import { incrementPlay } from '@/lib/voicesApi';
@@ -16,7 +16,8 @@ import { usePlayer } from '@/hooks/usePlayer';
 import { ProceduralAvatar } from '@/components/ui/ProceduralAvatar';
 import { useVoiceAvatar } from '@/hooks/useVoiceAvatar';
 import { supabase } from '@/integrations/supabase/client';
-import _ from 'lodash';
+import { Textarea } from '@/components/ui/textarea';
+import { sendMessage } from '@/lib/messagesApi';
 
 interface UserProfileModalProps {
   userId: string;
@@ -42,19 +43,73 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
   const voiceAvatarSeed = useVoiceAvatar();
   // search removed (profile will have <=3 recordings)
 
-  // Debounce Message Button Click
-  const handleMessageClick = useCallback(
-    _.debounce((e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      console.log('Message button clicked for:', profile?.display_name);
+  const [showMessageComposer, setShowMessageComposer] = useState(false);
+  const [messageDraft, setMessageDraft] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const messageTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const resetComposer = useCallback(() => {
+    setMessageDraft('');
+    setShowMessageComposer(false);
+  }, []);
+
+  const handleMessageClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (currentUserId === userId) {
       toast({
-        title: 'Messaging Coming Soon',
-        description: `Direct messaging with ${profile?.display_name || 'this user'} will be available soon.`,
+        title: 'Can’t message yourself',
+        description: 'Switch profiles to reach out to another performer.',
+        variant: 'destructive',
       });
-    }, 300),
-    [profile?.display_name, toast]
-  );
+      return;
+    }
+
+    if (showMessageComposer) {
+      resetComposer();
+    } else {
+      setShowMessageComposer(true);
+    }
+  }, [currentUserId, resetComposer, showMessageComposer, toast, userId]);
+
+  const handleSendMessage = useCallback(async () => {
+    const body = messageDraft.trim();
+    if (!body) {
+      toast({
+        title: 'Add a message first',
+        description: 'Write a quick note before hitting send.',
+      });
+      return;
+    }
+
+    setSendingMessage(true);
+    const result = await sendMessage(userId, body);
+    setSendingMessage(false);
+
+    if (!result.success) {
+      toast({
+        title: 'Message not sent',
+        description: result.error || 'Something went wrong. Please try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    toast({
+      title: 'Message sent',
+      description: `Your note to ${profile?.display_name || 'this performer'} is on the way.`,
+    });
+    resetComposer();
+  }, [messageDraft, profile?.display_name, resetComposer, toast, userId]);
+
+  useEffect(() => {
+    if (!showMessageComposer) return;
+    const id = requestAnimationFrame(() => {
+      messageTextareaRef.current?.focus();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [showMessageComposer]);
 
   // Optimize useEffect dependencies and cleanup
   useEffect(() => {
@@ -234,6 +289,56 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
                   </AnimatedButton>
                   <AnimatedButton variant="outline" size="sm" className="gap-2"><Share2 className="w-4 h-4" />Share</AnimatedButton>
                 </div>
+                <AnimatePresence>
+                  {showMessageComposer && (
+                    <motion.div
+                      key="message-composer"
+                      className="w-full max-w-md rounded-2xl border border-card-border/60 bg-card/70 p-4 shadow-sm space-y-3"
+                      initial={!prefersReducedMotion ? { opacity: 0, y: 12 } : false}
+                      animate={!prefersReducedMotion ? { opacity: 1, y: 0 } : {}}
+                      exit={!prefersReducedMotion ? { opacity: 0, y: -8 } : {}}
+                      transition={{ duration: 0.25 }}
+                    >
+                      <Textarea
+                        ref={messageTextareaRef}
+                        value={messageDraft}
+                        onChange={event => setMessageDraft(event.target.value)}
+                        placeholder={`Say hi to ${profile?.display_name || 'this performer'}...`}
+                        maxLength={500}
+                        disabled={sendingMessage}
+                        className="min-h-[120px] resize-none bg-input/40 border-card-border/60 text-sm text-card-foreground/80 placeholder:text-card-foreground/50 focus-visible:ring-primary/40"
+                      />
+                      <div className="flex items-center justify-between text-[11px] text-card-foreground/50">
+                        <span>{messageDraft.length}/500</span>
+                        <div className="flex items-center gap-2">
+                          <AnimatedButton
+                            size="sm"
+                            variant="ghost"
+                            onClick={resetComposer}
+                            className="px-3"
+                            disabled={sendingMessage}
+                          >
+                            Cancel
+                          </AnimatedButton>
+                          <AnimatedButton
+                            size="sm"
+                            variant="secondary"
+                            onClick={handleSendMessage}
+                            className="px-4 gap-2"
+                            disabled={sendingMessage}
+                          >
+                            {sendingMessage ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Send className="w-4 h-4" />
+                            )}
+                            Send
+                          </AnimatedButton>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                 {profile?.profile_note_to_listeners && (
                   <p className="text-xs text-card-foreground/60 max-w-prose leading-relaxed bg-input/30 rounded-xl p-3">{profile.profile_note_to_listeners}</p>
                 )}
