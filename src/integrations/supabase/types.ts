@@ -44,6 +44,13 @@ export type Database = {
             foreignKeyName: "comments_recording_id_fkey"
             columns: ["recording_id"]
             isOneToOne: false
+            referencedRelation: "public_recordings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
             referencedRelation: "recordings"
             referencedColumns: ["id"]
           },
@@ -186,6 +193,13 @@ export type Database = {
             foreignKeyName: "recording_meets_recording_id_fkey"
             columns: ["recording_id"]
             isOneToOne: false
+            referencedRelation: "public_recordings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recording_meets_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
             referencedRelation: "recordings"
             referencedColumns: ["id"]
           },
@@ -214,6 +228,13 @@ export type Database = {
           reporter_user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "recording_reports_recording_id_fkey"
+            columns: ["recording_id"]
+            isOneToOne: false
+            referencedRelation: "public_recordings"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "recording_reports_recording_id_fkey"
             columns: ["recording_id"]
@@ -501,6 +522,81 @@ export type Database = {
           favorite_artists_sample?: never
           genres?: never
           id?: string | null
+        }
+        Relationships: []
+      }
+      public_recordings: {
+        Row: {
+          comments_enabled: boolean | null
+          created_at: string | null
+          duration_sec: number | null
+          filesize_bytes: number | null
+          format_original:
+            | Database["public"]["Enums"]["recording_format"]
+            | null
+          format_stream: Database["public"]["Enums"]["recording_format"] | null
+          id: string | null
+          is_signature: boolean | null
+          language: string | null
+          loudness_lufs: number | null
+          moderation_status:
+            | Database["public"]["Enums"]["moderation_status"]
+            | null
+          mood_tags: string[] | null
+          plays_count: number | null
+          reports_count: number | null
+          state: Database["public"]["Enums"]["recording_state"] | null
+          title: string | null
+          updated_at: string | null
+          voice_type: string | null
+        }
+        Insert: {
+          comments_enabled?: boolean | null
+          created_at?: string | null
+          duration_sec?: number | null
+          filesize_bytes?: number | null
+          format_original?:
+            | Database["public"]["Enums"]["recording_format"]
+            | null
+          format_stream?: Database["public"]["Enums"]["recording_format"] | null
+          id?: string | null
+          is_signature?: boolean | null
+          language?: string | null
+          loudness_lufs?: number | null
+          moderation_status?:
+            | Database["public"]["Enums"]["moderation_status"]
+            | null
+          mood_tags?: string[] | null
+          plays_count?: number | null
+          reports_count?: number | null
+          state?: Database["public"]["Enums"]["recording_state"] | null
+          title?: string | null
+          updated_at?: string | null
+          voice_type?: string | null
+        }
+        Update: {
+          comments_enabled?: boolean | null
+          created_at?: string | null
+          duration_sec?: number | null
+          filesize_bytes?: number | null
+          format_original?:
+            | Database["public"]["Enums"]["recording_format"]
+            | null
+          format_stream?: Database["public"]["Enums"]["recording_format"] | null
+          id?: string | null
+          is_signature?: boolean | null
+          language?: string | null
+          loudness_lufs?: number | null
+          moderation_status?:
+            | Database["public"]["Enums"]["moderation_status"]
+            | null
+          mood_tags?: string[] | null
+          plays_count?: number | null
+          reports_count?: number | null
+          state?: Database["public"]["Enums"]["recording_state"] | null
+          title?: string | null
+          updated_at?: string | null
+          voice_type?: string | null
         }
         Relationships: []
       }
