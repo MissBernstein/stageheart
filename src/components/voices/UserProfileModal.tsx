@@ -177,7 +177,20 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
               >
                 <h3 className="text-[18px] font-semibold tracking-wide text-card-foreground/70" style={{ fontFamily: '"Love Ya Like A Sister"' }}>CONNECT</h3>
                 <div className="flex flex-wrap gap-3">
-                  <AnimatedButton variant="outline" size="sm" className="gap-2"><img src={messagesIcon} alt="Message" className="w-4 h-4" />Message</AnimatedButton>
+                  <AnimatedButton 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-2"
+                    onClick={() => {
+                      toast({
+                        title: "Messaging Coming Soon",
+                        description: `Direct messaging with ${profile?.display_name || 'this user'} will be available soon.`
+                      });
+                    }}
+                  >
+                    <img src={messagesIcon} alt="Message" className="w-4 h-4" />
+                    Message
+                  </AnimatedButton>
                   <AnimatedButton variant="outline" size="sm" className="gap-2"><Share2 className="w-4 h-4" />Share</AnimatedButton>
                 </div>
                 {profile?.profile_note_to_listeners && (
