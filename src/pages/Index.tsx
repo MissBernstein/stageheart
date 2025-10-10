@@ -195,20 +195,20 @@ const Index = () => {
         const { count, error } = await sb
           .from('messages')
           .select('id', { count: 'exact', head: true })
-          .eq('recipient_user_id', session.user.id)
-          .is('read_at', null);
+          .eq('to_user_id', session.user.id)
+          .eq('is_read', false);
         if (!error && mounted && typeof count === 'number') setUnreadMessages(count);
       } catch { /* silent */ }
       // Realtime subscription
       try {
         channel = supabase.channel('unread-messages')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `recipient_user_id=eq.${session.user.id}` }, async () => {
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `to_user_id=eq.${session.user.id}` }, async () => {
             const sb2: any = supabase;
             const { count } = await sb2
               .from('messages')
               .select('id', { count: 'exact', head: true })
-              .eq('recipient_user_id', session.user.id)
-              .is('read_at', null);
+              .eq('to_user_id', session.user.id)
+              .eq('is_read', false);
             if (mounted && typeof count === 'number') setUnreadMessages(count);
           })
           .subscribe();
