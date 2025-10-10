@@ -204,8 +204,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
       })();
     }
     
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     
     // Listen for profile updates from settings modal
@@ -225,7 +223,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
       window.removeEventListener('keydown', onKey); 
       window.removeEventListener('profileUpdated', onProfileUpdated);
       window.removeEventListener('error', handleError);
-      document.body.style.overflow = prevOverflow; 
     };
   }, [userId, onClose]); // Removed initialRecordings from deps to prevent re-runs
 
