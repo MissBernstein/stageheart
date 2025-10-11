@@ -561,9 +561,37 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
         </div>
       </div>
       <div ref={liveRegionRef} aria-live="polite" className="sr-only" />
+      
+      {/* Mobile horizontal tabs - visible only on mobile */}
+      <div className="md:hidden border-b border-card-border/60 overflow-x-auto">
+        <div className="flex gap-1 p-2 min-w-max" role="tablist" aria-orientation="horizontal">
+          {tabs.map(t => (
+            <button
+              key={t.key}
+              role="tab"
+              aria-selected={tab === t.key}
+              aria-controls={`settings-panel-${t.key}`}
+              id={`settings-tab-mobile-${t.key}`}
+              onClick={() => { setTab(t.key); try { localStorage.setItem(LAST_TAB_KEY, t.key); } catch {} }}
+              className={`relative flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                tab === t.key 
+                  ? 'bg-primary/10 text-primary' 
+                  : 'text-card-foreground/60 hover:text-card-foreground hover:bg-card/80'
+              }`}
+            >
+              <span className="shrink-0">{t.icon}</span>
+              <span>{t.label}</span>
+              {dirtyMap[t.key] && (
+                <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-amber-500 border border-card" aria-hidden title="Unsaved changes" />
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="flex flex-1 min-h-0">
-        {/* Left nav */}
-        <div className="w-48 border-r border-card-border/60 p-4 flex flex-col gap-2 overflow-y-auto" role="tablist" aria-orientation="vertical" onKeyDown={onTabListKeyDown}>
+        {/* Left nav - hidden on mobile, visible on desktop */}
+        <div className="hidden md:flex md:w-48 border-r border-card-border/60 p-4 flex-col gap-2 overflow-y-auto" role="tablist" aria-orientation="vertical" onKeyDown={onTabListKeyDown}>
           {tabs.map(t => (
             <div key={t.key} className="relative">
               <TabButton k={t.key} icon={t.icon} label={t.label} />
@@ -571,16 +599,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
             </div>
           ))}
         </div>
-        {/* Content */}
-  <div className="flex-1 overflow-y-auto p-8 space-y-8 relative">
+        {/* Content - full width on mobile, flex-1 on desktop */}
+  <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-8 relative">
           <AnimatePresence mode="wait" initial={false}>
           {tab === 'profile' && (
-            <motion.section key="profile" id="settings-panel-profile" role="tabpanel" aria-labelledby="settings-tab-profile" className="space-y-6" aria-describedby="profile-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
+            <motion.section key="profile" id="settings-panel-profile" role="tabpanel" aria-labelledby="settings-tab-profile" className="space-y-4 md:space-y-6" aria-describedby="profile-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
               <div className="space-y-2 pb-2 border-b border-card-border/30">
-                <h3 id="profile-heading" className="text-[18px] font-semibold text-card-foreground" style={{ fontFamily: '"Love Ya Like A Sister"' }}>Profile</h3>
-                <p className="text-sm text-card-foreground/70">Control what listeners see about you.</p>
+                <h3 id="profile-heading" className="text-base md:text-[18px] font-semibold text-card-foreground" style={{ fontFamily: '"Love Ya Like A Sister"' }}>Profile</h3>
+                <p className="text-xs md:text-sm text-card-foreground/70">Control what listeners see about you.</p>
               </div>
-              <div className="grid md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                 <div className="space-y-2">
                   <label className="text-xs font-medium uppercase tracking-wide text-card-foreground/60 flex items-center justify-between">Voice Avatar</label>
                   <div className="flex items-center gap-4">
@@ -592,34 +620,34 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
                   </div>
                   <p className="text-[10px] text-card-foreground/60 leading-snug">Abstract waveform inspired snippet—keeps focus on the sound, not appearance.</p>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 col-span-1 md:col-span-1">
                   <label className="text-xs font-medium uppercase tracking-wide text-card-foreground/60 flex items-center justify-between">Display Name {errors.displayName && <span className="text-destructive text-[10px] font-normal">{errors.displayName}</span>}</label>
                   <Input value={displayName} onChange={e=> setDisplayName(e.target.value)} placeholder="Your name" aria-invalid={!!errors.displayName} />
                 </div>
-                <div className="space-y-2 md:col-span-2">
+                <div className="space-y-2 col-span-1 md:col-span-2">
                   <GenreTagsSection 
                     label="Genres I love singing"
                     genres={genresSinging}
                     setGenres={setGenresSinging}
                   />
                 </div>
-                <div className="space-y-2 md:col-span-1">
+                <div className="space-y-2 col-span-1 md:col-span-1">
                   <GenreTagsSection 
                     label="Genres I love listening to"
                     genres={genresListening}
                     setGenres={setGenresListening}
                   />
                 </div>
-                <div className="md:col-span-3 space-y-2">
+                <div className="col-span-1 md:col-span-3 space-y-2">
                   <label className="text-xs font-medium uppercase tracking-wide text-card-foreground/60 flex items-center justify-between">Bio {errors.bio && <span className="text-destructive text-[10px] font-normal">{errors.bio}</span>}</label>
                   <Textarea value={bio} onChange={e=> setBio(e.target.value)} rows={4} maxLength={500} placeholder="Share your story, style, influences… (max 500 chars)" className="resize-y" aria-invalid={!!errors.bio} />
                   <p className="text-[10px] text-card-foreground/50 text-right">{bio.length}/500</p>
                 </div>
                 
                 {/* Website and Social Links */}
-                <div className="md:col-span-3 space-y-4">
+                <div className="col-span-1 md:col-span-3 space-y-4">
                   <h4 className="text-xs font-medium uppercase tracking-wide text-card-foreground/60">Website & Socials <span className="text-[10px] font-normal text-card-foreground/40">(Optional)</span></h4>
-                  <div className="grid md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <label className="text-xs font-medium text-card-foreground/60">Website</label>
                       <Input 
@@ -671,11 +699,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
             </Suspense>
           )}
           {tab === 'privacyNotifications' && (
-            <div key="privacy-wrapper" id="settings-panel-privacyNotifications" role="tabpanel" aria-labelledby="settings-tab-privacyNotifications" className="space-y-10">
-            <motion.section key="privacy" className="space-y-6" aria-labelledby="privacy-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
+            <div key="privacy-wrapper" id="settings-panel-privacyNotifications" role="tabpanel" aria-labelledby="settings-tab-privacyNotifications" className="space-y-6 md:space-y-10">
+            <motion.section key="privacy" className="space-y-4 md:space-y-6" aria-labelledby="privacy-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
               <div className="space-y-2 pb-2 border-b border-card-border/30">
-                <h3 id="privacy-heading" className="text-[18px] font-semibold text-card-foreground" style={{ fontFamily: '"Love Ya Like A Sister"' }}>Privacy & Contact</h3>
-                <p className="text-sm text-card-foreground/70">Tune how people can reach you or request a meet.</p>
+                <h3 id="privacy-heading" className="text-base md:text-[18px] font-semibold text-card-foreground" style={{ fontFamily: '"Love Ya Like A Sister"' }}>Privacy & Contact</h3>
+                <p className="text-xs md:text-sm text-card-foreground/70">Tune how people can reach you or request a meet.</p>
               </div>
               <div className="space-y-4">
                 <ToggleRow
@@ -688,10 +716,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
                 />
               </div>
             </motion.section>
-            <motion.section key="notif-sub" className="space-y-6" aria-labelledby="notif-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
+            <motion.section key="notif-sub" className="space-y-4 md:space-y-6" aria-labelledby="notif-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
               <div className="space-y-2 pb-2 border-b border-card-border/30">
-                <h3 id="notif-heading" className="text-[18px] font-semibold text-card-foreground" style={{ fontFamily: '"Love Ya Like A Sister"' }}>Notifications</h3>
-                <p className="text-sm text-card-foreground/70">Choose which events trigger notifications.</p>
+                <h3 id="notif-heading" className="text-base md:text-[18px] font-semibold text-card-foreground" style={{ fontFamily: '"Love Ya Like A Sister"' }}>Notifications</h3>
+                <p className="text-xs md:text-sm text-card-foreground/70">Choose which events trigger notifications.</p>
               </div>
               <div className="space-y-4">
                 <ToggleRow label="New messages" description="Notify me when I receive a new message" value={notifyNewMessages} onChange={setNotifyNewMessages} />

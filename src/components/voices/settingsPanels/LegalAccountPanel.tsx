@@ -28,10 +28,10 @@ const LegalAccountPanel: React.FC<Props> = ({ dangerDelete, showDeleteConfirm, c
   );
 
   return (
-    <motion.section key="account-combined" id="settings-panel-legalAccount" role="tabpanel" aria-labelledby="settings-tab-legalAccount" className="space-y-10" aria-describedby="account-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
+    <motion.section key="account-combined" id="settings-panel-legalAccount" role="tabpanel" aria-labelledby="settings-tab-legalAccount" className="space-y-6 md:space-y-10" aria-describedby="account-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
       <div className="space-y-2 pb-2 border-b border-card-border/30">
-        <h3 id="account-heading" className="text-lg font-semibold text-card-foreground">Account & Danger Zone</h3>
-        <p className="text-sm text-card-foreground/70">Manage your account lifecycle.</p>
+        <h3 id="account-heading" className="text-base md:text-lg font-semibold text-card-foreground">Account & Danger Zone</h3>
+        <p className="text-xs md:text-sm text-card-foreground/70">Manage your account lifecycle.</p>
       </div>
       <div className="space-y-4">
         <p className="text-xs text-card-foreground/60">More sections (email change, password, export data) will appear here once backend endpoints exist.</p>
@@ -48,9 +48,9 @@ const LegalAccountPanel: React.FC<Props> = ({ dangerDelete, showDeleteConfirm, c
           </div>
         )}
       </div>
-      <div className="space-y-2 pt-8 pb-2 border-t border-card-border/50 border-b border-card-border/30">
-        <h3 id="legal-heading" className="text-lg font-semibold text-card-foreground">Legal Consents</h3>
-        <p className="text-sm text-card-foreground/70">Review or manage your current acceptance status.</p>
+      <div className="space-y-2 pt-6 md:pt-8 pb-2 border-t border-card-border/50 border-b border-card-border/30">
+        <h3 id="legal-heading" className="text-base md:text-lg font-semibold text-card-foreground">Legal Consents</h3>
+        <p className="text-xs md:text-sm text-card-foreground/70">Review or manage your current acceptance status.</p>
       </div>
       <div className="space-y-4">
         {row('Terms of Use', TERMS_VERSION, termsRec, needsTerms)}

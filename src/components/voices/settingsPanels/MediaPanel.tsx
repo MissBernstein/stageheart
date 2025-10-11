@@ -325,10 +325,10 @@ const MediaPanel: React.FC<MediaPanelProps> = ({ recordings, loadingRecordings, 
 
   return (
     <div className="space-y-10" id="settings-panel-media" role="tabpanel" aria-labelledby="settings-tab-media">
-      <motion.section key="recordings" className="space-y-6" aria-labelledby="recordings-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
+      <motion.section key="recordings" className="space-y-4 md:space-y-6" aria-labelledby="recordings-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
         <div className="space-y-2 pb-2 border-b border-card-border/30">
-          <h3 id="recordings-heading" className="text-lg font-semibold text-card-foreground">Recordings</h3>
-          <p className="text-sm text-card-foreground/70">Upload up to 3 short showcase clips (mp3 / wav / m4a). Drag & drop or click the upload area below. Newly uploaded recordings start as private; toggle visibility after upload.</p>
+          <h3 id="recordings-heading" className="text-base md:text-lg font-semibold text-card-foreground">Recordings</h3>
+          <p className="text-xs md:text-sm text-card-foreground/70">Upload up to 3 short showcase clips (mp3 / wav / m4a). Drag & drop or click the upload area below. Newly uploaded recordings start as private; toggle visibility after upload.</p>
         </div>
         {canAdd && (
           <div
@@ -384,17 +384,18 @@ const MediaPanel: React.FC<MediaPanelProps> = ({ recordings, loadingRecordings, 
             <p className="text-xs mt-1">Use the upload area above to add your first one.</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {recordings.slice(0, 3).map((recording, idx) => (
               <motion.div
                 key={recording.id}
-                className="border border-card-border rounded-lg p-4 space-y-3"
+                className="border border-card-border rounded-lg p-3 md:p-4 space-y-3"
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1 flex-1 pr-4 min-w-0">
+                {/* Mobile: Stack vertically, Desktop: Side by side */}
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                  <div className="space-y-1 flex-1 min-w-0">
                     {editingId === recording.id ? (
                       <div className="flex items-center gap-2">
                         <input autoFocus value={editingTitle} onChange={e=> setEditingTitle(e.target.value)} className="flex-1 bg-input/50 border border-input-border rounded px-2 py-1 text-sm" />
@@ -424,7 +425,9 @@ const MediaPanel: React.FC<MediaPanelProps> = ({ recordings, loadingRecordings, 
                       {recording.is_signature && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-amber-200/70 text-amber-900 tracking-wide">SIGNATURE</span>}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  
+                  {/* Controls - wrap on mobile */}
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className={`px-2 py-1 rounded-full text-xs ${recording.state === 'public' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
                       {recording.state === 'public' ? 'Public' : 'Private'}
                     </span>
@@ -432,7 +435,7 @@ const MediaPanel: React.FC<MediaPanelProps> = ({ recordings, loadingRecordings, 
                     <button onClick={()=> setSignature(recording)} className="p-1 rounded hover:bg-amber-100" aria-label="Set signature">
                       {recording.is_signature ? <Star className="w-4 h-4 text-amber-500" /> : <StarOff className="w-4 h-4 text-card-foreground/40" />}
                     </button>
-                    <div className="flex flex-col gap-1">
+                    <div className="flex gap-1">
                       <button disabled={idx===0} onClick={()=> moveRecording(recording.id, -1)} className="p-1 rounded hover:bg-accent disabled:opacity-30" aria-label="Move up"><ArrowUp className="w-3.5 h-3.5" /></button>
                       <button disabled={idx===recordings.length-1} onClick={()=> moveRecording(recording.id, 1)} className="p-1 rounded hover:bg-accent disabled:opacity-30" aria-label="Move down"><ArrowDown className="w-3.5 h-3.5" /></button>
                     </div>
@@ -481,12 +484,12 @@ const MediaPanel: React.FC<MediaPanelProps> = ({ recordings, loadingRecordings, 
         )}
       </motion.section>
   <audio ref={audioRef} className="hidden" src={currentPlayId ? recordings.find(r=> r.id===currentPlayId)?.file_stream_url || undefined : undefined} />
-  <motion.section key="playback-sub" className="space-y-6" aria-labelledby="playback-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
+  <motion.section key="playback-sub" className="space-y-4 md:space-y-6" aria-labelledby="playback-heading" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:0.25}}>
         <div className="space-y-2 pb-2 border-b border-card-border/30">
-          <h3 id="playback-heading" className="text-lg font-semibold text-card-foreground">Playback & Experience</h3>
-          <p className="text-sm text-card-foreground/70">Default listening preferences.</p>
+          <h3 id="playback-heading" className="text-base md:text-lg font-semibold text-card-foreground">Playback & Experience</h3>
+          <p className="text-xs md:text-sm text-card-foreground/70">Default listening preferences.</p>
         </div>
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           <div className="space-y-2">
             <label className="text-xs font-medium uppercase tracking-wide text-card-foreground/60">Default Volume ({Math.round(volumeDefault*100)}%)</label>
             <input type="range" min={0} max={1} step={0.01} value={volumeDefault} onChange={e=> setVolumeDefault(parseFloat(e.target.value))} className="w-full" />
