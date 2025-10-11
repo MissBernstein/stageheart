@@ -525,46 +525,49 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
 
   return (
   <ModalShell titleId="settings-title" onClose={onClose} className="max-w-5xl flex flex-col max-h-[80dvh]" contentClassName="flex flex-col h-full" returnFocusRef={returnFocusRef}>
-  <div className="p-6 border-b border-card-border flex items-start justify-between gap-4 relative bg-gradient-to-b from-background/60 to-background/20">
-        <div className="space-y-1">
-          <h2 id="settings-title" className="text-[24px] font-semibold flex items-center gap-3" style={{ fontFamily: '"Love Ya Like A Sister"' }}>
-            <img src={settingsIcon} alt="Settings" className="w-14 h-14 object-contain" />
-            <span>Settings</span>
-          </h2>
-          <p className="text-xs text-card-foreground/60">Profile • Recordings • Privacy • Notifications • Playback • Account</p>
-          <div className="flex items-center gap-3 pt-1 text-[10px] text-card-foreground/50">
-            <a href="/terms" className="underline underline-offset-2 hover:text-card-foreground/80">Terms</a>
-            <a href="/privacy" className="underline underline-offset-2 hover:text-card-foreground/80">Privacy</a>
+  <div className="p-4 md:p-6 border-b border-card-border relative bg-gradient-to-b from-background/60 to-background/20">
+        {/* Mobile: Stack vertically, Desktop: Side by side */}
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 md:gap-4">
+          <div className="space-y-1 flex-1 min-w-0">
+            <h2 id="settings-title" className="text-lg md:text-[24px] font-semibold flex items-center gap-2 md:gap-3" style={{ fontFamily: '"Love Ya Like A Sister"' }}>
+              <img src={settingsIcon} alt="Settings" className="w-10 h-10 md:w-14 md:h-14 object-contain" />
+              <span>Settings</span>
+            </h2>
+            <p className="text-[10px] md:text-xs text-card-foreground/60 hidden md:block">Profile • Recordings • Privacy • Notifications • Playback • Account</p>
+            <div className="flex items-center gap-3 pt-1 text-[10px] text-card-foreground/50">
+              <a href="/terms" className="underline underline-offset-2 hover:text-card-foreground/80">Terms</a>
+              <a href="/privacy" className="underline underline-offset-2 hover:text-card-foreground/80">Privacy</a>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="relative flex items-center">
-            <AnimatedButton size="sm" variant="outline" onClick={save} disabled={saving || !isDirty || Object.keys(errors).length>0} className="h-8 text-[11px] flex items-center gap-1 pr-3 relative">
-              {saving ? 'Saving…' : (
-                justSaved ? (<><Check className="w-3 h-3 text-emerald-400" /> Saved</>) : (<><Save className="w-3 h-3" /> {isDirty ? 'Save' : 'Saved'}</>)
+          <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+            <div className="relative flex items-center">
+              <AnimatedButton size="sm" variant="outline" onClick={save} disabled={saving || !isDirty || Object.keys(errors).length>0} className="h-7 md:h-8 text-[10px] md:text-[11px] flex items-center gap-1 px-2 md:pr-3 relative">
+                {saving ? 'Saving…' : (
+                  justSaved ? (<><Check className="w-3 h-3 text-emerald-400" /> <span className="hidden md:inline">Saved</span></>) : (<><Save className="w-3 h-3" /> <span className="hidden md:inline">{isDirty ? 'Save' : 'Saved'}</span></>)
+                )}
+                {isDirty && !saving && !justSaved && <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 text-[9px] font-semibold tracking-wide">!</span>}
+              </AnimatedButton>
+              {/* Success pulse */}
+              {justSaved && (
+                <motion.span
+                  aria-hidden
+                  className="absolute -right-2 -top-1 h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(16,185,129,0.3)]"
+                  initial={{ scale:0, opacity:0 }}
+                  animate={{ scale:1, opacity:1 }}
+                  exit={{ scale:0.4, opacity:0 }}
+                  transition={{ duration:0.35, ease:[0.22,0.72,0.28,0.99] }}
+                />
               )}
-              {isDirty && !saving && !justSaved && <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 text-[9px] font-semibold tracking-wide">UNSAVED</span>}
-            </AnimatedButton>
-            {/* Success pulse */}
-            {justSaved && (
-              <motion.span
-                aria-hidden
-                className="absolute -right-2 -top-1 h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(16,185,129,0.3)]"
-                initial={{ scale:0, opacity:0 }}
-                animate={{ scale:1, opacity:1 }}
-                exit={{ scale:0.4, opacity:0 }}
-                transition={{ duration:0.35, ease:[0.22,0.72,0.28,0.99] }}
-              />
-            )}
+            </div>
+            <AnimatedButton variant="ghost" size="icon" onClick={handleClose} className="h-8 w-8 md:h-10 md:w-10"><X className="w-4 h-4 md:w-5 md:h-5" /><span className="sr-only">Close settings</span></AnimatedButton>
           </div>
-          <AnimatedButton variant="ghost" size="icon" onClick={handleClose} className="h-10 w-10"><X /><span className="sr-only">Close settings</span></AnimatedButton>
         </div>
       </div>
       <div ref={liveRegionRef} aria-live="polite" className="sr-only" />
       
       {/* Mobile horizontal tabs - visible only on mobile */}
-      <div className="md:hidden border-b border-card-border/60 overflow-x-auto">
-        <div className="flex gap-1 p-2 min-w-max" role="tablist" aria-orientation="horizontal">
+      <div className="md:hidden border-b border-card-border/60 overflow-x-auto scrollbar-hide">
+        <div className="flex gap-1 p-2" role="tablist" aria-orientation="horizontal">
           {tabs.map(t => (
             <button
               key={t.key}
@@ -573,14 +576,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
               aria-controls={`settings-panel-${t.key}`}
               id={`settings-tab-mobile-${t.key}`}
               onClick={() => { setTab(t.key); try { localStorage.setItem(LAST_TAB_KEY, t.key); } catch {} }}
-              className={`relative flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+              className={`relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap flex-shrink-0 ${
                 tab === t.key 
                   ? 'bg-primary/10 text-primary' 
                   : 'text-card-foreground/60 hover:text-card-foreground hover:bg-card/80'
               }`}
             >
               <span className="shrink-0">{t.icon}</span>
-              <span>{t.label}</span>
+              <span className="text-[11px]">{t.label}</span>
               {dirtyMap[t.key] && (
                 <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-amber-500 border border-card" aria-hidden title="Unsaved changes" />
               )}
