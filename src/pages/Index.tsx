@@ -151,14 +151,18 @@ const Index = () => {
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
         if (!mounted) return;
         setSession(newSession);
-        if (!newSession) navigate('/auth');
+        if (!newSession && location.pathname !== '/auth') {
+          navigate('/auth', { replace: true });
+        }
         setLoading(false);
       });
       unsub = () => subscription.unsubscribe();
       const { data: { session } } = await supabase.auth.getSession();
       if (!mounted) return;
       setSession(session);
-      if (!session) navigate('/auth');
+      if (!session && location.pathname !== '/auth') {
+        navigate('/auth', { replace: true });
+      }
       setLoading(false);
     })();
 
@@ -177,7 +181,7 @@ const Index = () => {
       });
     }
     return () => { mounted = false; if (unsub) unsub(); };
-  }, [navigate]);
+  }, []);
 
   // Fetch unread messages count (lightweight aggregate) & subscribe
   useEffect(() => {
