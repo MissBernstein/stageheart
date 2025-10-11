@@ -229,6 +229,11 @@ function mapTheme(theme: string): string {
 }
 
 serve(async (req: Request) => {
+  // CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
   // Ensure `Deno` environment variables are properly handled
   const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
   const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
@@ -238,6 +243,32 @@ serve(async (req: Request) => {
   }
 
   const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
+
+  // Verify admin role server-side
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) {
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized: No authorization header' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+  if (authError || !user) {
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized: Invalid token' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // Check if user has admin role
+  const { data: isAdmin, error: roleError } = await supabase.rpc('is_current_user_admin');
+  if (roleError || !isAdmin) {
+    return new Response(
+      JSON.stringify({ error: 'Forbidden: Admin access required' }),
+      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })

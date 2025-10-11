@@ -1,5 +1,12 @@
 // Real Supabase implementation for messages
 import { supabase } from '@/integrations/supabase/client';
+import { z } from 'zod';
+
+// Message validation schema
+const messageBodySchema = z.string()
+  .trim()
+  .min(1, 'Message cannot be empty')
+  .max(5000, 'Message must be less than 5000 characters');
 
 export type MessageType = 'dm' | 'meet' | 'comment' | 'system';
 
@@ -105,6 +112,12 @@ export async function sendMessage(toUserId: string, body: string, subject?: stri
   
   if (!user) {
     return { success: false, error: 'Not authenticated' };
+  }
+
+  // Validate message body
+  const validation = messageBodySchema.safeParse(body);
+  if (!validation.success) {
+    return { success: false, error: validation.error.errors[0].message };
   }
 
   const { data, error } = await supabase

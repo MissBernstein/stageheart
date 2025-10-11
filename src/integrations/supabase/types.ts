@@ -568,6 +568,10 @@ export type Database = {
         Args: { recording_uuid: string }
         Returns: undefined
       }
+      is_current_user_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
