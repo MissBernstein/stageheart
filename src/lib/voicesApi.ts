@@ -40,7 +40,7 @@ export async function listVoices(params: ListVoicesParams = {}): Promise<Recordi
   // Select only columns appropriate for public listing, including contact_visibility for filtering
   const { data: profiles, error: profilesError } = await supabase
     .from('user_profiles')
-    .select('id, display_name, about, fav_genres, favorite_artists, links, status, contact_visibility')
+    .select('id, display_name, about, fav_genres, favorite_artists, links, status, contact_visibility, dm_enabled, comments_enabled')
     .in('id', userIds);
     
   if (profilesError) {
@@ -85,15 +85,15 @@ export async function listVoices(params: ListVoicesParams = {}): Promise<Recordi
           links: Array.isArray(fullProfile.links) ? fullProfile.links as any[] : []
         } as UserProfile;
       } else {
-        // For after_meet or private, only show basic info in listing
-        // Full profile data requires opening the profile page
+        // For after_meet or private, show basic info plus dm_enabled for messaging
+        // The actual value is needed to allow/prevent messaging
         userProfile = {
           id: fullProfile.id,
           display_name: fullProfile.display_name,
           status: fullProfile.status,
           contact_visibility: fullProfile.contact_visibility,
-          dm_enabled: false,
-          comments_enabled: false,
+          dm_enabled: fullProfile.dm_enabled ?? false, // Use actual value from DB
+          comments_enabled: fullProfile.comments_enabled ?? false,
           links: [],
           created_at: '',
           updated_at: ''
@@ -156,8 +156,10 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
       }
       
       const s = sanitized[0];
-      console.log('Sanitized profile data:', s);
+      console.log('Sanitized profile data (fallback - limited access):', s);
       
+      // Sanitized fallback should not be used for dm_enabled check
+      // This path is only hit when RLS blocks the direct query
       return {
         id: s.id,
         display_name: s.display_name,
@@ -168,7 +170,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
         status: 'active',
         profile_note_to_listeners: '',
         contact_visibility: 'private',
-        dm_enabled: false,
+        dm_enabled: false, // Sanitized profiles have restricted access
         comments_enabled: false,
         created_at: '',
         updated_at: ''
@@ -185,7 +187,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   const { data: { session } } = await supabase.auth.getSession();
   const isOwnProfile = session?.user?.id === userId;
   
-  console.log('Profile access check - isOwnProfile:', isOwnProfile, 'contact_visibility:', data.contact_visibility);
+  console.log('[getUserProfile] Profile access check - isOwnProfile:', isOwnProfile, 'contact_visibility:', data.contact_visibility);
   
   // Transform Json type to ProfileLink[]
   const profile = {
@@ -193,13 +195,21 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     links: Array.isArray(data.links) ? data.links as any[] : []
   } as unknown as UserProfile;
 
+  console.log('[getUserProfile] Full profile before filtering:', { 
+    id: profile.id, 
+    dm_enabled: profile.dm_enabled, 
+    contact_visibility: profile.contact_visibility 
+  });
+
   // If it's the user's own profile or public visibility, return full data
   if (isOwnProfile || data.contact_visibility === 'public') {
+    console.log('[getUserProfile] Returning full profile (own or public)');
     return profile;
   }
 
-  // For 'private' visibility, filter out sensitive fields
+  // For 'private' visibility, filter out sensitive fields but keep dm_enabled
   if (data.contact_visibility === 'private') {
+    console.log('[getUserProfile] Filtering for private visibility, preserving dm_enabled:', profile.dm_enabled);
     return {
       id: profile.id,
       display_name: profile.display_name,
@@ -219,10 +229,12 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
         profile_user_id: userId 
       });
       
+      console.log('[getUserProfile] after_meet check - hasMet:', hasMet, 'dm_enabled:', profile.dm_enabled);
+      
       if (hasMet) {
         return profile; // Full access after meeting
       } else {
-        // Limited access before meeting
+        // Limited access before meeting but preserve dm_enabled for messaging
         return {
           id: profile.id,
           display_name: profile.display_name,
@@ -236,7 +248,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
       }
     } catch (e) {
       console.warn('Failed to check meet status:', e);
-      // Default to limited access on error
+      // Default to limited access on error but preserve dm_enabled
       return {
         id: profile.id,
         display_name: profile.display_name,

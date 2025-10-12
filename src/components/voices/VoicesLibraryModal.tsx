@@ -69,10 +69,16 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
     } else {
       el.removeAttribute('aria-hidden');
       try { delete (el as any).inert; } catch { (el as any).inert = false; }
-      // Restore focus to triggering button
-      if (profileTriggerRef.current) {
-        profileTriggerRef.current.focus?.();
-      }
+      // Restore focus to triggering button after modal closes
+      requestAnimationFrame(() => {
+        if (profileTriggerRef.current && typeof profileTriggerRef.current.focus === 'function') {
+          try {
+            profileTriggerRef.current.focus();
+          } catch (e) {
+            console.log('Could not restore focus:', e);
+          }
+        }
+      });
     }
   }, [profileUserId]);
 
@@ -686,8 +692,11 @@ export const VoicesLibraryModal: React.FC<VoicesLibraryModalProps> = ({ onClose,
       {profileUserId && (
         <UserProfileModal
           userId={profileUserId}
-          onClose={() => setProfileUserId(null)}
-          returnFocusRef={returnFocusRef}
+          onClose={() => {
+            setProfileUserId(null);
+            // Profile modal will handle its own cleanup, focus restoration handled by parent useEffect
+          }}
+          returnFocusRef={{ current: profileTriggerRef.current as HTMLElement }}
         />
       )}
     </ModalShell>
