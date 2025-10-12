@@ -566,29 +566,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
       <div ref={liveRegionRef} aria-live="polite" className="sr-only" />
       
       {/* Mobile horizontal tabs - visible only on mobile */}
-      <div className="md:hidden border-b border-card-border/60 overflow-x-auto scrollbar-hide">
-        <div className="flex gap-1 p-2" role="tablist" aria-orientation="horizontal">
-          {tabs.map(t => (
-            <button
-              key={t.key}
-              role="tab"
-              aria-selected={tab === t.key}
-              aria-controls={`settings-panel-${t.key}`}
-              id={`settings-tab-mobile-${t.key}`}
-              onClick={() => { setTab(t.key); try { localStorage.setItem(LAST_TAB_KEY, t.key); } catch {} }}
-              className={`relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap flex-shrink-0 ${
-                tab === t.key 
-                  ? 'bg-primary/10 text-primary' 
-                  : 'text-card-foreground/60 hover:text-card-foreground hover:bg-card/80'
-              }`}
-            >
-              <span className="shrink-0">{t.icon}</span>
-              <span className="text-[11px]">{t.label}</span>
-              {dirtyMap[t.key] && (
-                <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-amber-500 border border-card" aria-hidden title="Unsaved changes" />
-              )}
-            </button>
-          ))}
+      <div className="md:hidden border-b border-card-border/60 bg-card/30 backdrop-blur-sm">
+        <div className="overflow-x-auto scrollbar-hide">
+          <div className="flex gap-2 p-3 min-w-min" role="tablist" aria-orientation="horizontal">
+            {tabs.map(t => (
+              <button
+                key={t.key}
+                role="tab"
+                aria-selected={tab === t.key}
+                aria-controls={`settings-panel-${t.key}`}
+                id={`settings-tab-mobile-${t.key}`}
+                onClick={() => { setTab(t.key); try { localStorage.setItem(LAST_TAB_KEY, t.key); } catch {} }}
+                className={`relative flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap flex-shrink-0 min-w-fit ${
+                  tab === t.key 
+                    ? 'bg-primary text-primary-foreground shadow-sm' 
+                    : 'bg-card/60 text-card-foreground/70 hover:text-card-foreground hover:bg-card'
+                }`}
+              >
+                <span className="shrink-0">{t.icon}</span>
+                <span>{t.label}</span>
+                {dirtyMap[t.key] && (
+                  <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-amber-500 border border-background" aria-hidden title="Unsaved changes" />
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
