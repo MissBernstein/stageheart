@@ -329,7 +329,7 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
 
   const dbUpdates: Record<string, any> = { id: userId };
   for (const [k, v] of Object.entries(updates)) {
-    if (v === undefined || v === null) continue;
+    if (v === undefined) continue; // Allow null values for explicit clearing
     if (!ALLOWED_COLUMNS.has(k)) continue; // skip unsupported
     dbUpdates[k] = v;
   }
@@ -337,7 +337,8 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
   if (Array.isArray(updates.links)) dbUpdates.links = updates.links as any;
   if (!dbUpdates.display_name) dbUpdates.display_name = (updates as any).display_name || '';
 
-  console.debug('[updateUserProfile] Sanitized upsert payload', dbUpdates);
+  console.log('[updateUserProfile] Saving profile with dm_enabled:', dbUpdates.dm_enabled);
+  console.debug('[updateUserProfile] Full upsert payload', dbUpdates);
 
   const { data, error } = await supabase
     .from('user_profiles')
@@ -350,7 +351,12 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
     throw new Error(`Failed to update profile: ${error.message}`);
   }
 
-  if (!data) return null;
+  if (!data) {
+    console.error('[updateUserProfile] No data returned after upsert');
+    return null;
+  }
+
+  console.log('[updateUserProfile] Successfully saved, dm_enabled in response:', data.dm_enabled);
 
   return {
     ...data,

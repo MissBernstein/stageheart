@@ -256,7 +256,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
           if (profile) {
             setDisplayName(profile.display_name || defaultSettings.displayName);
             setBio(profile.about || defaultSettings.bio);
+            // Ensure boolean values have proper defaults (not null)
             setDmEnabled(profile.dm_enabled ?? defaultSettings.dmEnabled);
+            
+            console.log('[SettingsModal] Loaded profile dm_enabled:', profile.dm_enabled);
             
             // Load social links from profile
             if (profile.links) {
@@ -408,15 +411,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, returnFoc
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { updateUserProfile } = await import('@/lib/voicesApi');
-        await updateUserProfile(user.id, {
+        
+        console.log('[SettingsModal] Saving dm_enabled:', dmEnabled);
+        
+        const profileUpdates = {
           display_name: displayName,
           about: bio,
-          dm_enabled: dmEnabled,
-            comments_enabled: true,
+          dm_enabled: dmEnabled, // Ensure boolean is explicitly set
+          comments_enabled: true,
           // DB currently only has fav_genres – merge both sets for persistence
           fav_genres: [...new Set([...genresSinging, ...genresListening])],
           links: links
-        } as any); // cast to allow extra local props suppressed in API layer
+        } as any; // cast to allow extra local props suppressed in API layer
+        
+        const updatedProfile = await updateUserProfile(user.id, profileUpdates);
+        console.log('[SettingsModal] Profile saved, dm_enabled in response:', updatedProfile?.dm_enabled);
       }
 
       // Re-sync meta after remote (in case we want to reflect any silent normalization later)

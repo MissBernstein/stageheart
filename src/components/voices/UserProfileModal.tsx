@@ -49,6 +49,19 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ userId, onCl
   const messageTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const isOwnProfile = currentUserId === userId;
   const canMessage = profile?.dm_enabled === true && !isOwnProfile;
+  
+  // Debug logging for dm_enabled
+  useEffect(() => {
+    if (profile) {
+      console.log('[UserProfileModal] Profile loaded:', {
+        userId: profile.id,
+        displayName: profile.display_name,
+        dm_enabled: profile.dm_enabled,
+        canMessage,
+        isOwnProfile
+      });
+    }
+  }, [profile, canMessage, isOwnProfile]);
 
   const resetComposer = useCallback(() => {
     setMessageDraft('');
